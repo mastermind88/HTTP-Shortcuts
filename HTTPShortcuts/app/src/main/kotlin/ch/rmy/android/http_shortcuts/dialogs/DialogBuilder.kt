@@ -24,6 +24,7 @@ import ch.rmy.android.http_shortcuts.extensions.showIfPossible
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.icons.IconView
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.input
@@ -42,6 +43,10 @@ open class DialogBuilder(val context: Context) {
         if (title?.isNotEmpty() == true) {
             dialog.title(text = title)
         }
+    }
+
+    fun title(title: Localizable?) = also {
+        title(title?.localize(context)?.toString())
     }
 
     fun item(
@@ -86,10 +91,13 @@ open class DialogBuilder(val context: Context) {
         items.add(MenuItem.Separator)
     }
 
-    open fun message(@StringRes text: Int, isHtml: Boolean = false) =
+    fun message(text: Localizable) =
+        message(text.localize(context))
+
+    fun message(@StringRes text: Int, isHtml: Boolean = false) =
         message(context.getString(text), isHtml)
 
-    open fun message(text: CharSequence, isHtml: Boolean = false) = also {
+    fun message(text: CharSequence, isHtml: Boolean = false) = also {
         dialog.message(text = text) {
             messageTextView.movementMethod = LinkMovementMethod.getInstance()
             if (isHtml) {

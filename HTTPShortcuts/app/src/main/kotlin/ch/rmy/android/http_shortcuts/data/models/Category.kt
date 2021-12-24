@@ -1,6 +1,6 @@
 package ch.rmy.android.http_shortcuts.data.models
 
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils
+import ch.rmy.android.http_shortcuts.utils.UUIDUtils.isUUID
 import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
@@ -22,7 +22,7 @@ open class Category(
     var hidden: Boolean = false
 
     fun validate() {
-        if (!UUIDUtils.isUUID(id) && id.toIntOrNull() == null) {
+        if (!isUUID(id) && id.toIntOrNull() == null) {
             throw IllegalArgumentException("Invalid category ID found, must be UUID: $id")
         }
 

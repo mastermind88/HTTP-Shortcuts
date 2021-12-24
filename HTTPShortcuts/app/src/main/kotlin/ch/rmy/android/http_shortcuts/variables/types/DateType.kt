@@ -4,7 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.Commons
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.cancel
 import ch.rmy.android.http_shortcuts.extensions.showIfPossible
@@ -17,6 +17,8 @@ import java.util.Date
 import java.util.Locale
 
 internal class DateType : BaseVariableType() {
+
+    private val variablesRepository = VariableRepository()
 
     override fun resolveValue(context: Context, variable: Variable): Single<String> =
         Single.create<Date> { emitter ->
@@ -52,7 +54,7 @@ internal class DateType : BaseVariableType() {
         }
             .flatMap { resolvedDate ->
                 if (variable.rememberValue) {
-                    Commons.setVariableValue(variable.id, DATE_FORMAT.format(resolvedDate.time))
+                    variablesRepository.setVariableValue(variable.id, DATE_FORMAT.format(resolvedDate.time))
                 } else {
                     Completable.complete()
                 }

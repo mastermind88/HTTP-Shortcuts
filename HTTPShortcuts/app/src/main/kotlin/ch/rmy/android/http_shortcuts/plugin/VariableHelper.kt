@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.plugin
 
-import ch.rmy.android.http_shortcuts.data.Controller
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInput
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfo
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfos

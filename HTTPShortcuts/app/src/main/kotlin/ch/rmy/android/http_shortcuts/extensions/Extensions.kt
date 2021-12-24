@@ -18,10 +18,12 @@ import ch.rmy.android.http_shortcuts.utils.Destroyable
 import ch.rmy.android.http_shortcuts.utils.Destroyer
 import io.reactivex.disposables.Disposable
 
+@Deprecated("These should no longer be needed once all activity/fragments use MVI pattern")
 fun Context.showMessageDialog(@StringRes stringRes: Int, onDismiss: () -> Unit = {}) {
     showMessageDialog(getString(stringRes), onDismiss)
 }
 
+@Deprecated("These should no longer be needed once all activity/fragments use MVI pattern")
 fun Context.showMessageDialog(string: CharSequence, onDismiss: () -> Unit = {}) {
     DialogBuilder(this)
         .message(string)
@@ -30,10 +32,12 @@ fun Context.showMessageDialog(string: CharSequence, onDismiss: () -> Unit = {}) 
         .showIfPossible()
 }
 
+@Deprecated("These should no longer be needed once all activity/fragments use MVI pattern")
 fun Fragment.showMessageDialog(@StringRes stringRes: Int, onDismiss: () -> Unit = {}) {
     requireContext().showMessageDialog(stringRes, onDismiss)
 }
 
+@Deprecated("These should no longer be needed once all activity/fragments use MVI pattern")
 fun Fragment.showMessageDialog(string: CharSequence, onDismiss: () -> Unit = {}) {
     requireContext().showMessageDialog(string, onDismiss)
 }
@@ -105,3 +109,9 @@ fun <T> MutableCollection<T>.safeRemoveIf(predicate: Predicate<T>) {
 
 fun <T> T.takeUnlessEmpty(): T? where T : Collection<*> =
     takeUnless { it.isEmpty() }
+
+fun <T> List<T>.move(oldPosition: Int, newPosition: Int): List<T> =
+    toMutableList()
+        .also { list ->
+            list.add(newPosition, list.removeAt(oldPosition))
+        }

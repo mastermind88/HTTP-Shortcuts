@@ -1,18 +1,23 @@
 package ch.rmy.android.http_shortcuts.activities.settings
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.net.toUri
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.databinding.ActivityContactBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.consume
+import ch.rmy.android.http_shortcuts.extensions.mapIfNotNull
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.sendMail
+import ch.rmy.android.http_shortcuts.extensions.showToast
+import ch.rmy.android.http_shortcuts.extensions.startActivity
 import ch.rmy.android.http_shortcuts.extensions.tryOrLog
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.FileUtil
@@ -68,6 +73,27 @@ class ContactActivity : BaseActivity() {
             getString(R.string.settings_mail),
             attachment = createMetaDataFile(),
         )
+    }
+
+    private fun sendMail(address: String, subject: String, text: String, title: String, attachment: Uri? = null) {
+        try {
+            Intent(Intent.ACTION_SEND, "mailto:$address".toUri())
+                .setType("message/rfc822")
+                .putExtra(Intent.EXTRA_EMAIL, arrayOf(address))
+                .putExtra(Intent.EXTRA_SUBJECT, subject)
+                .putExtra(Intent.EXTRA_TEXT, text)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .mapIfNotNull(attachment) {
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        .putExtra(Intent.EXTRA_STREAM, it)
+                }
+                .let {
+                    Intent.createChooser(it, title)
+                }
+                .startActivity(this)
+        } catch (e: ActivityNotFoundException) {
+            showToast(R.string.error_not_supported)
+        }
     }
 
     private fun createMetaDataFile(): Uri? =

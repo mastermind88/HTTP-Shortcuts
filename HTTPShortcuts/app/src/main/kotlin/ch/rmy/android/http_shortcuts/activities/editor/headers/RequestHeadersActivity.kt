@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.data.models.Header
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.databinding.ActivityRequestHeadersBinding
 import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
@@ -14,22 +14,16 @@ import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
-import io.reactivex.Completable
 
 class RequestHeadersActivity : BaseActivity() {
 
     private val viewModel: RequestHeadersViewModel by bindViewModel()
-    private val variablesData by lazy {
-        viewModel.variables
-    }
-    private val headers by lazy {
-        viewModel.headers
-    }
-    private val variablePlaceholderProvider by lazy {
-        VariablePlaceholderProvider(variablesData)
-    }
+    private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
     private lateinit var binding: ActivityRequestHeadersBinding
+
+    private lateinit var adapter: RequestHeadersAdapter
+    private var isDraggingEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,61 +31,71 @@ class RequestHeadersActivity : BaseActivity() {
         setTitle(R.string.section_request_headers)
 
         initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize()
     }
 
     private fun initViews() {
-        val adapter = destroyer.own(RequestHeaderAdapter(context, headers, variablePlaceholderProvider))
+        adapter = RequestHeadersAdapter(variablePlaceholderProvider)
 
         val manager = LinearLayoutManager(context)
         binding.headerList.layoutManager = manager
         binding.headerList.setHasFixedSize(true)
         binding.headerList.adapter = adapter
 
+        binding.buttonAddHeader.applyTheme(themeHelper)
+    }
+
+    private fun initUserInputBindings() {
         initDragOrdering()
 
-        adapter.clickListener = { it.value?.let { header -> showEditDialog(header) } }
-        binding.buttonAddHeader.applyTheme(themeHelper)
+        adapter.userEvents
+            .subscribe { event ->
+                when (event) {
+                    is RequestHeadersAdapter.UserEvent.HeaderClicked -> viewModel.onHeaderClicked(event.id)
+                }
+            }
+            .attachTo(destroyer)
+
         binding.buttonAddHeader.setOnClickListener {
-            showAddDialog()
+            viewModel.onAddHeaderButtonClicked()
         }
     }
 
     private fun initDragOrdering() {
-        val dragOrderingHelper = DragOrderingHelper { headers.size > 1 }
+        val dragOrderingHelper = DragOrderingHelper { isDraggingEnabled }
         dragOrderingHelper.attachTo(binding.headerList)
         dragOrderingHelper.positionChangeSource
-            .concatMapCompletable { (oldPosition, newPosition) ->
-                viewModel.moveHeader(oldPosition, newPosition)
+            .subscribe { (oldPosition, newPosition) ->
+                viewModel.onHeaderMoved(oldPosition, newPosition)
             }
-            .subscribe()
             .attachTo(destroyer)
     }
 
-    private fun showEditDialog(header: Header) {
-        val headerId = header.id
-        KeyValueDialog(
-            variablePlaceholderProvider = variablePlaceholderProvider,
-            title = getString(R.string.title_custom_header_edit),
-            keyLabel = getString(R.string.label_custom_header_key),
-            valueLabel = getString(R.string.label_custom_header_value),
-            data = header.key to header.value,
-            suggestions = SUGGESTED_KEYS,
-            keyValidator = { validateHeaderName(context, it) },
-            valueValidator = { validateHeaderValue(context, it) },
-        )
-            .show(context)
-            .flatMapCompletable { event ->
-                when (event) {
-                    is KeyValueDialog.Event.DataChangedEvent -> {
-                        viewModel.updateHeader(headerId, event.data.first, event.data.second)
-                    }
-                    is KeyValueDialog.Event.DataRemovedEvent -> {
-                        viewModel.removeHeader(headerId)
-                    }
-                }
+    private fun initViewModelBindings() {
+        viewModel.viewState
+            .subscribe { viewState ->
+                adapter.items = viewState.headerItems
+                isDraggingEnabled = viewState.isDraggingEnabled
+                variablePlaceholderProvider.variables = viewState.variables
             }
-            .subscribe()
             .attachTo(destroyer)
+        viewModel.events
+            .subscribe(::handleEvent)
+            .attachTo(destroyer)
+    }
+
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is RequestHeadersEvent.ShowAddHeaderDialog -> {
+                showAddDialog()
+            }
+            is RequestHeadersEvent.ShowEditHeaderDialog -> {
+                showEditDialog(event.headerId, event.key, event.value)
+            }
+            else -> super.handleEvent(event)
+        }
     }
 
     private fun showAddDialog() {
@@ -105,16 +109,44 @@ class RequestHeadersActivity : BaseActivity() {
             valueValidator = { validateHeaderValue(context, it) },
         )
             .show(context)
-            .flatMapCompletable { event ->
+            .subscribe { event ->
                 when (event) {
                     is KeyValueDialog.Event.DataChangedEvent -> {
-                        viewModel.addHeader(event.data.first, event.data.second)
+                        viewModel.onAddHeaderDialogConfirmed(event.data.first, event.data.second)
                     }
-                    else -> Completable.complete()
+                    else -> Unit
                 }
             }
-            .subscribe()
             .attachTo(destroyer)
+    }
+
+    private fun showEditDialog(headerId: String, key: String, value: String) {
+        KeyValueDialog(
+            variablePlaceholderProvider = variablePlaceholderProvider,
+            title = getString(R.string.title_custom_header_edit),
+            keyLabel = getString(R.string.label_custom_header_key),
+            valueLabel = getString(R.string.label_custom_header_value),
+            data = key to value,
+            suggestions = SUGGESTED_KEYS,
+            keyValidator = { validateHeaderName(context, it) },
+            valueValidator = { validateHeaderValue(context, it) },
+        )
+            .show(context)
+            .subscribe { event ->
+                when (event) {
+                    is KeyValueDialog.Event.DataChangedEvent -> {
+                        viewModel.onEditHeaderDialogConfirmed(headerId, event.data.first, event.data.second)
+                    }
+                    is KeyValueDialog.Event.DataRemovedEvent -> {
+                        viewModel.onRemoveHeaderButtonClicked(headerId)
+                    }
+                }
+            }
+            .attachTo(destroyer)
+    }
+
+    override fun onBackPressed() {
+        viewModel.onBackPressed()
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, RequestHeadersActivity::class.java)

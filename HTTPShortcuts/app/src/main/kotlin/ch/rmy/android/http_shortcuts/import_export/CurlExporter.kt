@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
-import ch.rmy.android.http_shortcuts.data.Controller
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.mapFor

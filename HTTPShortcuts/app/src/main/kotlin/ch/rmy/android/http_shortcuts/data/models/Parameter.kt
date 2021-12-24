@@ -23,6 +23,9 @@ open class Parameter(
             other.type == type &&
             other.fileName == fileName
 
+    val isStringParameter: Boolean
+        get() = type == TYPE_STRING
+
     val isFileParameter: Boolean
         get() = type == TYPE_FILE
 

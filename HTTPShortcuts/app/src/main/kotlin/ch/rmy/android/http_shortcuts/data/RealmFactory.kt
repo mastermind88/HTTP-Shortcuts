@@ -33,13 +33,6 @@ internal class RealmFactory {
                 Realm.init(context)
                 configuration = createConfiguration(context)
                 instance = RealmFactory()
-                    .apply {
-                        createRealm().use { realm ->
-                            if (Repository.getBase(realm) == null) {
-                                setupBase(context, realm)
-                            }
-                        }
-                    }
             } catch (e: MissingLibraryException) {
                 logInfo("Realm binary not found")
                 throw RealmNotFoundException(e)
@@ -48,13 +41,21 @@ internal class RealmFactory {
 
         fun getInstance(): RealmFactory = instance!!
 
-        fun <T> withRealm(block: (realm: Realm) -> T): T =
-            getInstance().createRealm().use(block)
+        // TODO: Remove this
+        @Deprecated("Don't use RealmFactory directly")
+        fun <T> withRealmContext(block: RealmContext.() -> T): T =
+            getInstance().createRealm().use { realm ->
+                block(
+                    object : RealmTransactionContext {
+                        override val realmInstance: Realm
+                            get() = realm
+                    }
+                )
+            }
 
         private fun createConfiguration(context: Context): RealmConfiguration =
             RealmConfiguration.Builder()
                 .schemaVersion(DatabaseMigration.VERSION)
-                .allowWritesOnUiThread(true) // TODO: Refactor app such that this is no longer needed
                 .migration(DatabaseMigration())
                 .initialData { realm ->
                     setupBase(context, realm)

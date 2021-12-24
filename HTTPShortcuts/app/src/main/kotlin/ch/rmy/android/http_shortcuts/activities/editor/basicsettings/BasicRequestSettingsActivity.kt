@@ -2,36 +2,25 @@ package ch.rmy.android.http_shortcuts.activities.editor.basicsettings
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.EditText
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityBasicRequestSettingsBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.type
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils.bindVariableViews
-import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
 class BasicRequestSettingsActivity : BaseActivity() {
 
     private val viewModel: BasicRequestSettingsViewModel by bindViewModel()
-    private val shortcutData by lazy {
-        viewModel.shortcut
-    }
-    private val variablesData by lazy {
-        viewModel.variables
-    }
-    private val variablePlaceholderProvider by lazy {
-        VariablePlaceholderProvider(variablesData)
-    }
+
+    private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
     private lateinit var binding: ActivityBasicRequestSettingsBinding
 
@@ -41,7 +30,9 @@ class BasicRequestSettingsActivity : BaseActivity() {
         setTitle(R.string.section_basic_request)
 
         initViews()
-        bindViewsToViewModel()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize()
     }
 
     private fun initViews() {
@@ -54,48 +45,39 @@ class BasicRequestSettingsActivity : BaseActivity() {
             .attachTo(destroyer)
     }
 
-    private fun bindViewsToViewModel() {
-        shortcutData.observe(this) {
-            updateShortcutViews()
-        }
-        variablesData.observe(this) {
-            updateShortcutViews()
-        }
-
+    private fun initUserInputBindings() {
         binding.inputMethod.selectionChanges
-            .concatMapCompletable { method -> viewModel.setMethod(method) }
-            .subscribe()
-            .attachTo(destroyer)
-        bindTextChangeListener(binding.inputUrl) { shortcutData.value?.url }
-    }
+            .subscribe { method ->
+                viewModel.onMethodChanged(method)
+            }
+            .attachTo(destroyer            )
 
-    private fun bindTextChangeListener(textView: EditText, currentValueProvider: () -> String?) {
-        textView.observeTextChanges()
+        binding.inputUrl.observeTextChanges()
             .debounce(300, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .filter { it.toString() != currentValueProvider.invoke() }
-            .concatMapCompletable { updateViewModelFromUrlView() }
-            .subscribe()
+            .subscribe {
+                viewModel.onUrlChanged(binding.inputUrl.rawString)
+            }
             .attachTo(destroyer)
     }
 
-    private fun updateViewModelFromUrlView(): Completable =
-        viewModel.setUrl(binding.inputUrl.rawString)
+    private fun initViewModelBindings() {
+        viewModel.viewState
+            .subscribe { viewState ->
+                binding.inputMethod.visible = viewState.methodVisible
+                binding.inputMethod.selectedItem = viewState.method
+                binding.inputUrl.rawString = viewState.url
 
-    private fun updateShortcutViews() {
-        val shortcut = shortcutData.value ?: return
-
-        binding.inputMethod.visible = shortcut.type == ShortcutExecutionType.APP
-        binding.inputMethod.selectedItem = shortcut.method
-        binding.inputUrl.rawString = shortcut.url
+                variablePlaceholderProvider.variables = viewState.variables
+            }
+            .attachTo(destroyer)
+        viewModel.events
+            .subscribe(::handleEvent)
+            .attachTo(destroyer)
     }
 
     override fun onBackPressed() {
-        updateViewModelFromUrlView()
-            .subscribe {
-                finish()
-            }
-            .attachTo(destroyer)
+        viewModel.onBackPressed()
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, BasicRequestSettingsActivity::class.java)

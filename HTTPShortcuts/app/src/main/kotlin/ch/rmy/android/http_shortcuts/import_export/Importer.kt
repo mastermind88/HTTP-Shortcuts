@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.Repository
+import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.migration.ImportMigrator
 import ch.rmy.android.http_shortcuts.data.migration.ImportVersionMismatchException
 import ch.rmy.android.http_shortcuts.data.models.Base
@@ -110,9 +110,9 @@ class Importer(private val context: Context) {
         }
 
     private fun importBase(base: Base, importMode: ImportMode) {
-        RealmFactory.withRealm {
-            it.executeTransaction { realm ->
-                val oldBase = Repository.getBase(realm)!!
+        RealmFactory.withRealmContext {
+            realmInstance.executeTransaction {
+                val oldBase = getBase().findFirst()!!
                 if (base.title != null) {
                     oldBase.title = base.title
                 }

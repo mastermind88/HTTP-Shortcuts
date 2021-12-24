@@ -5,13 +5,15 @@ import android.view.LayoutInflater
 import android.widget.SeekBar
 import android.widget.TextView
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.Commons
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.utils.SimpleOnSeekBarChangeListener
 import io.reactivex.Single
 
 internal class SliderType : BaseVariableType(), HasTitle {
+
+    private val variablesRepository = VariableRepository()
 
     override fun resolveValue(context: Context, variable: Variable): Single<String> =
         Single.create<String> { emitter ->
@@ -50,7 +52,7 @@ internal class SliderType : BaseVariableType(), HasTitle {
         }
             .mapIf(variable.rememberValue) {
                 flatMap { resolvedValue ->
-                    Commons.setVariableValue(variable.id, resolvedValue)
+                    variablesRepository.setVariableValue(variable.id, resolvedValue)
                         .toSingle { resolvedValue }
                 }
             }

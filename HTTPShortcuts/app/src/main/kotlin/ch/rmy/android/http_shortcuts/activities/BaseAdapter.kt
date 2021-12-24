@@ -1,85 +1,68 @@
 package ch.rmy.android.http_shortcuts.activities
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
-import ch.rmy.android.http_shortcuts.data.models.HasId
-import ch.rmy.android.http_shortcuts.databinding.ListEmptyItemBinding
-import ch.rmy.android.http_shortcuts.utils.Destroyable
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils
-import io.realm.RealmObject
 
-abstract class BaseAdapter<T> internal constructor(val context: Context, private val items: ListLiveData<T>) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>(), Destroyable where T : RealmObject, T : HasId {
+abstract class BaseAdapter<T : Any> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var clickListener: ((LiveData<T?>) -> Unit)? = null
-    var longClickListener: ((LiveData<T?>) -> Boolean)? = null
+    var items: List<T>
+        get() = differ.currentList
+        set(value) {
+            differ.submitList(value)
+        }
 
-    private val observer = Observer<List<T>> { notifyDataSetChanged() }
+    override fun getItemCount(): Int =
+        items.size
 
-    init {
-        setHasStableIds(true)
-        items.observeForever(observer)
-    }
+    protected abstract fun areItemsTheSame(oldItem: T, newItem: T): Boolean
 
-    override fun destroy() {
-        items.removeObserver(observer)
-    }
-
-    override fun getItemViewType(position: Int) = if (isEmpty) TYPE_EMPTY_MARKER else TYPE_ITEM
-
-    private fun getItem(position: Int) = items[position]!!
-
-    override fun getItemId(position: Int) = if (isEmpty) ID_EMPTY_MARKER else UUIDUtils.toLong(getItem(position).id)
-
-    override fun getItemCount() = if (isEmpty && emptyMarker != null) 1 else count
-
-    private val count: Int
-        get() = items.size
-
-    protected val isEmpty: Boolean
-        get() = items.isEmpty()
+    protected open fun areItemContentsTheSame(oldItem: T, newItem: T): Boolean =
+        oldItem == newItem
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
-        if (viewType == TYPE_EMPTY_MARKER) {
-            EmptyMarkerViewHolder(ListEmptyItemBinding.inflate(LayoutInflater.from(parent.context), parent, false), emptyMarker!!)
-        } else {
-            createViewHolder(parent)
-        }
+        createViewHolder(viewType, parent, LayoutInflater.from(parent.context))
+            ?: throw IllegalStateException("ViewHolder creation failed, not implemented?")
 
-    internal open val emptyMarker: EmptyMarker? = null
-
-    protected abstract fun createViewHolder(parentView: ViewGroup): BaseViewHolder<*>
+    protected abstract fun createViewHolder(viewType: Int, parent: ViewGroup, layoutInflater: LayoutInflater): RecyclerView.ViewHolder?
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is BaseViewHolder<*>) {
-            @Suppress("UNCHECKED_CAST")
-            (holder as BaseViewHolder<T>).setItem(getItem(position))
-        }
+        val item = items[position]
+        bindViewHolder(holder, position, item)
     }
 
-    private inner class EmptyMarkerViewHolder constructor(
-        binding: ListEmptyItemBinding,
-        emptyMarker: EmptyMarker,
-    ) : RecyclerView.ViewHolder(binding.root) {
+    protected abstract fun bindViewHolder(holder: RecyclerView.ViewHolder, position: Int, item: T)
 
-        init {
-            binding.emptyMarker.text = emptyMarker.title
-            binding.emptyMarkerInstructions.text = emptyMarker.instructions
-        }
-    }
+    private val differ = AsyncListDiffer(
+        object : ListUpdateCallback {
+            override fun onInserted(position: Int, count: Int) {
+                notifyItemRangeInserted(position, count)
+            }
 
-    class EmptyMarker(val title: String, val instructions: String)
+            override fun onRemoved(position: Int, count: Int) {
+                notifyItemRangeRemoved(position, count)
+            }
 
-    companion object {
+            override fun onMoved(fromPosition: Int, toPosition: Int) {
+                notifyItemMoved(fromPosition, toPosition)
+            }
 
-        private const val TYPE_ITEM = 0
-        private const val TYPE_EMPTY_MARKER = 1
+            override fun onChanged(position: Int, count: Int, payload: Any?) {
+                notifyItemRangeChanged(position, count, payload)
+            }
+        },
+        AsyncDifferConfig.Builder(
+            object : DiffUtil.ItemCallback<T>() {
+                override fun areItemsTheSame(oldItem: T, newItem: T): Boolean =
+                    this@BaseAdapter.areItemsTheSame(oldItem, newItem)
 
-        private const val ID_EMPTY_MARKER = -1L
-    }
+                override fun areContentsTheSame(oldItem: T, newItem: T): Boolean =
+                    this@BaseAdapter.areItemContentsTheSame(oldItem, newItem)
+            },
+        ).build()
+    )
 }

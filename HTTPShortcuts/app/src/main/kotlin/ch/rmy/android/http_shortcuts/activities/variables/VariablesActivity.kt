@@ -4,12 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.Repository
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariablesBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -17,68 +15,101 @@ import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
-import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.mapFor
 import ch.rmy.android.http_shortcuts.extensions.mapIf
-import ch.rmy.android.http_shortcuts.extensions.openURL
-import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
-import ch.rmy.android.http_shortcuts.utils.ExternalURLs
-import ch.rmy.android.http_shortcuts.variables.VariableManager
-import ch.rmy.android.http_shortcuts.variables.VariableResolver
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 class VariablesActivity : BaseActivity() {
 
     private val viewModel: VariablesViewModel by bindViewModel()
 
     private lateinit var binding: ActivityVariablesBinding
+    private lateinit var adapter: VariableAdapter
 
-    private val variables by lazy { viewModel.getVariables() }
+    private var isDraggingEnabled = false
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = applyBinding(ActivityVariablesBinding.inflate(layoutInflater))
         setTitle(R.string.title_variables)
 
-        val adapter = destroyer.own(VariableAdapter(context, variables))
-        adapter.clickListener = ::showContextMenu
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize()
+    }
 
+    private fun initViews() {
+        adapter = VariableAdapter()
         val manager = LinearLayoutManager(context)
         binding.variableList.layoutManager = manager
         binding.variableList.setHasFixedSize(true)
         binding.variableList.adapter = adapter
 
+        binding.buttonCreateVariable.applyTheme(themeHelper)
+    }
+
+    private fun initUserInputBindings() {
         initDragOrdering()
 
-        binding.buttonCreateVariable.applyTheme(themeHelper)
-        binding.buttonCreateVariable.setOnClickListener { openEditorForCreation() }
+        adapter.userEvents
+            .subscribe { event ->
+                when (event) {
+                    is VariableAdapter.UserEvent.VariableClicked -> viewModel.onVariableClicked(event.id)
+                }
+            }
+            .attachTo(destroyer)
+        binding.buttonCreateVariable.setOnClickListener {
+            viewModel.onCreateButtonClicked()
+        }
     }
 
     private fun initDragOrdering() {
-        val dragOrderingHelper = DragOrderingHelper { variables.size > 1 }
+        val dragOrderingHelper = DragOrderingHelper { isDraggingEnabled }
+        dragOrderingHelper.attachTo(binding.variableList)
         dragOrderingHelper.positionChangeSource
             .subscribe { (oldPosition, newPosition) ->
-                val variable = variables[oldPosition]!!
-                viewModel.moveVariable(variable.id, newPosition)
-                    .subscribe()
-                    .attachTo(destroyer)
+                viewModel.onVariableMoved(oldPosition, newPosition)
             }
             .attachTo(destroyer)
-        dragOrderingHelper.attachTo(binding.variableList)
     }
 
-    private fun openEditorForCreation() {
+    private fun initViewModelBindings() {
+        viewModel.viewState
+            .subscribe { viewState ->
+                // TODO
+                adapter.items = viewState.variables
+                isDraggingEnabled = viewState.isDraggingEnabled
+            }
+            .attachTo(destroyer)
+        viewModel.events
+            .subscribe(::handleEvent)
+            .attachTo(destroyer)
+    }
+
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is VariablesEvent.ShowCreationDialog -> {
+                showCreationDialog()
+            }
+            is VariablesEvent.ShowContextMenu -> {
+                showContextMenu(event.variableId, event.title)
+            }
+            is VariablesEvent.ShowDeletionDialog -> {
+                showDeletionDialog(event.variableId, event.message)
+            }
+            else -> super.handleEvent(event)
+        }
+    }
+
+    private fun showCreationDialog() {
         DialogBuilder(context)
             .title(R.string.title_select_variable_type)
             .mapFor(VariableTypes.TYPES) { variableType ->
                 item(variableType.name) {
-                    VariableEditorActivity.IntentBuilder(context)
-                        .variableType(variableType.type)
-                        .startActivity(this@VariablesActivity)
+                    viewModel.onCreationDialogVariableTypeSelected(variableType.type)
                 }
                     .mapIf(variableType.type == Variable.TYPE_CONSTANT) {
                         separator()
@@ -87,99 +118,29 @@ class VariablesActivity : BaseActivity() {
             .showIfPossible()
     }
 
-    private fun showContextMenu(variableData: LiveData<Variable?>) {
-        val variable = variableData.value ?: return
+    private fun showContextMenu(variableId: String, title: Localizable) {
         DialogBuilder(context)
-            .title(variable.key)
+            .title(title)
             .item(R.string.action_edit) {
-                editVariable(variable)
+                viewModel.onEditOptionSelected(variableId)
             }
             .item(R.string.action_duplicate) {
-                duplicateVariable(variable)
+                viewModel.onDuplicateOptionSelected(variableId)
             }
             .item(R.string.action_delete) {
-                beginDeletion(variableData.value ?: return@item)
+                viewModel.onDeletionOptionSelected(variableId)
             }
             .showIfPossible()
     }
 
-    private fun editVariable(variable: Variable) {
-        VariableEditorActivity.IntentBuilder(context)
-            .variableId(variable.id)
-            .startActivity(this)
-    }
-
-    private fun duplicateVariable(variable: Variable) {
-        val key = variable.key
-        viewModel.duplicateVariable(variable.id)
-            .subscribe({
-                showSnackbar(getString(R.string.message_variable_duplicated).format(key))
-            }, {
-                showSnackbar(R.string.error_generic, long = true)
-            })
-            .attachTo(destroyer)
-    }
-
-    private fun beginDeletion(variable: Variable) {
-        val variableId = variable.id
-        val variableKey = variable.key
-
-        getShortcutNamesWhereVariableIsInUse(variableId)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { shortcutNames ->
-                    val message = getString(R.string.confirm_delete_variable_message)
-                        .mapIf(shortcutNames.isNotEmpty()) {
-                            plus("\n\n")
-                                .plus(
-                                    context.resources.getQuantityString(
-                                        R.plurals.warning_variable_still_in_use_in_shortcuts,
-                                        shortcutNames.size,
-                                        shortcutNames.joinToString(),
-                                        shortcutNames.size,
-                                    )
-                                )
-                        }
-                    DialogBuilder(context)
-                        .message(message)
-                        .positive(R.string.dialog_delete) {
-                            deleteVariable(variableId, variableKey)
-                        }
-                        .negative(R.string.dialog_cancel)
-                        .showIfPossible()
-                },
-                { error ->
-                    logException(error)
-                    showSnackbar(R.string.error_generic)
-                }
-            )
-            .attachTo(destroyer)
-    }
-
-    // TODO: Also check if the variable is used inside another variable
-    private fun getShortcutNamesWhereVariableIsInUse(variableId: String): Single<List<String>> =
-        Single.fromCallable {
-            RealmFactory.withRealm { realm ->
-                val variableLookup = VariableManager(Repository.getBase(realm)!!.variables)
-                Repository.getShortcuts(realm)
-                    .filter { shortcut ->
-                        VariableResolver.extractVariableIds(shortcut, variableLookup)
-                            .contains(variableId)
-                    }
-                    .map {
-                        it.name
-                    }
-                    .distinct()
+    private fun showDeletionDialog(variableId: String, message: Localizable) {
+        DialogBuilder(context)
+            .message(message)
+            .positive(R.string.dialog_delete) {
+                viewModel.onDeletionConfirmed(variableId)
             }
-        }
-            .subscribeOn(Schedulers.computation())
-
-    private fun deleteVariable(variableId: String, variableKey: String) {
-        viewModel.deleteVariable(variableId)
-            .subscribe {
-                showSnackbar(String.format(getString(R.string.variable_deleted), variableKey))
-            }
-            .attachTo(destroyer)
+            .negative(R.string.dialog_cancel)
+            .showIfPossible()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -188,12 +149,12 @@ class VariablesActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.action_show_help -> consume { showHelp() }
+        R.id.action_show_help -> consume { viewModel.onHelpButtonClicked() }
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun showHelp() {
-        openURL(ExternalURLs.VARIABLES_DOCUMENTATION)
+    override fun onBackPressed() {
+        viewModel.onBackPressed()
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, VariablesActivity::class.java)

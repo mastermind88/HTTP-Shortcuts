@@ -2,7 +2,7 @@ package ch.rmy.android.http_shortcuts.activities.main
 
 import android.content.Context
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseAdapter
+import ch.rmy.android.http_shortcuts.activities.LegacyBaseAdapter
 import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
@@ -12,7 +12,7 @@ abstract class BaseShortcutAdapter
 internal constructor(
     context: Context,
     shortcuts: ListLiveData<Shortcut>,
-) : BaseAdapter<Shortcut>(context, shortcuts) {
+) : LegacyBaseAdapter<Shortcut>(context, shortcuts) {
 
     var textColor: TextColor = TextColor.DARK
         set(value) {

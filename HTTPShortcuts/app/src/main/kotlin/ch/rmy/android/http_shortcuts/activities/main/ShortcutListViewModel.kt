@@ -2,37 +2,38 @@ package ch.rmy.android.http_shortcuts.activities.main
 
 import android.app.Application
 import androidx.lifecycle.LiveData
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Repository.copyShortcut
-import ch.rmy.android.http_shortcuts.data.Repository.getBase
-import ch.rmy.android.http_shortcuts.data.Repository.getCategoryByIdAsync
-import ch.rmy.android.http_shortcuts.data.Repository.getPendingExecutions
-import ch.rmy.android.http_shortcuts.data.Repository.getShortcutById
-import ch.rmy.android.http_shortcuts.data.Repository.moveShortcut
-import ch.rmy.android.http_shortcuts.data.Transactions
+import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExecutionsRepository
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.widgets.WidgetsRepository
 import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.toLiveData
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
+import io.reactivex.android.schedulers.AndroidSchedulers
 
 class ShortcutListViewModel(application: Application) : MainViewModel(application) {
+
+    private val shortcutRepository = ShortcutRepository()
+    private val pendingExecutionsRepository = PendingExecutionsRepository()
+    private val widgetsRepository = WidgetsRepository()
 
     var categoryId: String = ""
 
     var exportedShortcutId: String? = null
 
     fun getCategory(): LiveData<Category?> =
-        getCategoryByIdAsync(persistedRealm, categoryId)
+        getCategoryById(categoryId)
+            .findFirstAsync()
             .toLiveData()
 
     fun getPendingShortcuts(): ListLiveData<PendingExecution> =
-        getPendingExecutions(persistedRealm)
+        getPendingExecutions()
+            .findAll()
             .toLiveData()
 
     fun getShortcuts(): ListLiveData<Shortcut> =
-        getBase(persistedRealm)!!
+        getBase()
+            .findFirst()!!
             .categories
             .firstOrNull { category -> category.id == categoryId }
             ?.shortcuts
@@ -40,27 +41,16 @@ class ShortcutListViewModel(application: Application) : MainViewModel(applicatio
             ?: (object : ListLiveData<Shortcut>() {})
 
     fun deleteShortcut(shortcutId: String) =
-        Transactions.commit { realm ->
-            val shortcut = getShortcutById(realm, shortcutId) ?: return@commit
-            getPendingExecutions(realm, shortcutId).deleteAllFromRealm()
-            shortcut.headers.deleteAllFromRealm()
-            shortcut.parameters.deleteAllFromRealm()
-            shortcut.deleteFromRealm()
-            Repository.getDeadWidgets(realm).forEach { widget ->
-                widget.deleteFromRealm()
-            }
-        }
+        shortcutRepository.deleteShortcut(shortcutId)
+            .mergeWith(pendingExecutionsRepository.removePendingExecution(shortcutId))
+            .andThen(widgetsRepository.deleteDeadWidgets())
+            .observeOn(AndroidSchedulers.mainThread())
 
     fun removePendingExecution(shortcutId: String) =
-        Transactions.commit { realm ->
-            getPendingExecutions(realm, shortcutId).deleteAllFromRealm()
-        }
+        pendingExecutionsRepository
+            .removePendingExecution(shortcutId)
+            .observeOn(AndroidSchedulers.mainThread())
 
     fun duplicateShortcut(shortcutId: String, newName: String, newPosition: Int?, categoryId: String) =
-        Transactions.commit { realm ->
-            val shortcut = getShortcutById(realm, shortcutId) ?: return@commit
-            val newShortcut = copyShortcut(realm, shortcut, newUUID())
-            newShortcut.name = newName
-            moveShortcut(realm, newShortcut.id, newPosition, categoryId)
-        }
+        shortcutRepository.duplicateShortcut(shortcutId, newName, newPosition, categoryId)
 }

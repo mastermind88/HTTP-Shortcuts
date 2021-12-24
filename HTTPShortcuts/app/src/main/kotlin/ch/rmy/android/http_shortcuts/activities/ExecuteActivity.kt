@@ -14,8 +14,6 @@ import androidx.core.net.toUri
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.execute.ProgressIndicator
 import ch.rmy.android.http_shortcuts.activities.response.DisplayResponseActivity
-import ch.rmy.android.http_shortcuts.data.Commons
-import ch.rmy.android.http_shortcuts.data.Controller
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
@@ -29,7 +27,6 @@ import ch.rmy.android.http_shortcuts.exceptions.ResumeLaterException
 import ch.rmy.android.http_shortcuts.exceptions.UnsupportedFeatureException
 import ch.rmy.android.http_shortcuts.exceptions.UserException
 import ch.rmy.android.http_shortcuts.extensions.cancel
-import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.finishWithoutAnimation
 import ch.rmy.android.http_shortcuts.extensions.loadImage
 import ch.rmy.android.http_shortcuts.extensions.logException

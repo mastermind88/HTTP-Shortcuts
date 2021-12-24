@@ -2,9 +2,6 @@ package ch.rmy.android.http_shortcuts.scripting.actions.types
 
 import android.content.Context
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.DataSource
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Transactions
 import ch.rmy.android.http_shortcuts.exceptions.ActionException
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.scripting.ExecutionContext

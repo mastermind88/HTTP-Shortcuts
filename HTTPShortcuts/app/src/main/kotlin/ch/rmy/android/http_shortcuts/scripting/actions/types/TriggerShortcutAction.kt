@@ -1,8 +1,6 @@
 package ch.rmy.android.http_shortcuts.scripting.actions.types
 
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.Commons
-import ch.rmy.android.http_shortcuts.data.DataSource
 import ch.rmy.android.http_shortcuts.exceptions.ActionException
 import ch.rmy.android.http_shortcuts.scripting.ExecutionContext
 import ch.rmy.android.http_shortcuts.utils.DateUtil

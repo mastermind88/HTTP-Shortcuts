@@ -1,9 +1,8 @@
 package ch.rmy.android.http_shortcuts.variables
 
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.Variable
 
-class VariablePlaceholderProvider(private val variables: ListLiveData<Variable>) {
+class VariablePlaceholderProvider(var variables: Collection<Variable> = emptyList()) {
 
     val placeholders
         get() = variables.map(::toPlaceholder)

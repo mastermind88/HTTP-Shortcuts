@@ -9,7 +9,7 @@ import androidx.annotation.RequiresApi
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.Repository
+import ch.rmy.android.http_shortcuts.data.domains.getShortcuts
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.context
@@ -38,8 +38,9 @@ class QuickTileService : TileService() {
     }
 
     private fun getShortcuts() =
-        RealmFactory.withRealm { realm ->
-            Repository.getShortcuts(realm)
+        RealmFactory.withRealmContext {
+            getShortcuts()
+                .findAll()
                 .filter { it.quickSettingsTileShortcut }
                 .map { it.detachFromRealm() }
         }

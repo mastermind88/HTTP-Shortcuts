@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.variables.SelectVariableOptionsAdapter
+import ch.rmy.android.http_shortcuts.activities.variables.editor.SelectVariableOptionsAdapter
 import ch.rmy.android.http_shortcuts.data.models.Option
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.databinding.VariableEditorSelectBinding

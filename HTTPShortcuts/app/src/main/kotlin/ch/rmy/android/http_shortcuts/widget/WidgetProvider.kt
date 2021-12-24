@@ -3,8 +3,6 @@ package ch.rmy.android.http_shortcuts.widget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Transactions
 
 class WidgetProvider : AppWidgetProvider() {
 

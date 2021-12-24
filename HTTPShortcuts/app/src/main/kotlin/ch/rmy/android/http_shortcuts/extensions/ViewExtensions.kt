@@ -12,9 +12,12 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.utils.SimpleTextWatcher
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import ch.rmy.android.http_shortcuts.views.PanelButton
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
@@ -151,3 +154,22 @@ fun ImageView.loadImage(uri: Uri) {
         .error(R.drawable.bitsies_cancel)
         .into(this)
 }
+
+fun TextView.setText(localizable: Localizable?) {
+    text = localizable?.localize(context)
+}
+
+fun TextView.setHint(localizable: Localizable?) {
+    hint = localizable?.localize(context)
+}
+
+fun Toolbar.setSubtitle(localizable: Localizable?) {
+    subtitle = localizable?.localize(context)
+}
+
+fun PanelButton.setSubtitle(localizable: Localizable?) {
+    subtitle = localizable?.localize(context) ?: ""
+}
+
+val RecyclerView.ViewHolder.context: Context
+    get() = itemView.context

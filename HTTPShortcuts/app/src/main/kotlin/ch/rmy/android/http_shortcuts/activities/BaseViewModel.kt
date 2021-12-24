@@ -1,0 +1,110 @@
+package ch.rmy.android.http_shortcuts.activities
+
+import android.app.Application
+import android.content.Intent
+import androidx.annotation.StringRes
+import androidx.annotation.UiThread
+import androidx.lifecycle.AndroidViewModel
+import ch.rmy.android.http_shortcuts.R
+import ch.rmy.android.http_shortcuts.extensions.attachTo
+import ch.rmy.android.http_shortcuts.extensions.logException
+import ch.rmy.android.http_shortcuts.utils.Destroyer
+import ch.rmy.android.http_shortcuts.utils.ProgressMonitor
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import com.victorrendina.rxqueue2.QueueSubject
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.BehaviorSubject
+
+abstract class BaseViewModel<ViewState : Any>(application: Application) : AndroidViewModel(application) {
+
+    protected val progressMonitor = ProgressMonitor()
+
+    private val eventSubject = QueueSubject.create<ViewModelEvent>()
+
+    val events: Observable<ViewModelEvent>
+        get() = eventSubject.observeOn(AndroidSchedulers.mainThread())
+
+    private val viewStateSubject = BehaviorSubject.create<ViewState>()
+
+    val viewState: Observable<ViewState>
+        get() = viewStateSubject.observeOn(AndroidSchedulers.mainThread())
+
+    protected lateinit var currentViewState: ViewState
+
+    protected fun emitEvent(event: ViewModelEvent) {
+        eventSubject.onNext(event)
+    }
+
+    private var viewStateTransactionInProgress = false
+
+    @UiThread
+    protected fun updateViewState(mutation: ViewState.() -> ViewState) {
+        val publishViewState = !viewStateTransactionInProgress
+        viewStateTransactionInProgress = true
+        currentViewState = mutation(currentViewState)
+        viewStateTransactionInProgress = false
+        if (publishViewState) {
+            viewStateSubject.onNext(currentViewState)
+        }
+    }
+
+    protected val destroyer = Destroyer()
+
+    fun initialize() {
+        if (::currentViewState.isInitialized) {
+            return
+        }
+        currentViewState = initViewState()
+        viewStateSubject.onNext(currentViewState)
+        onInitialized()
+    }
+
+    protected open fun onInitialized() {
+
+    }
+
+    protected abstract fun initViewState(): ViewState
+
+    protected fun performOperation(operation: Completable, onComplete: (() -> Unit) = {}) {
+        operation
+            .compose(progressMonitor.transformer())
+            .subscribe(
+                onComplete,
+                { error ->
+                    logException(error)
+                    showError()
+                },
+            )
+            .attachTo(destroyer)
+    }
+
+    private fun showError() {
+        showSnackbar(R.string.error_generic, long = true)
+    }
+
+    protected fun waitForOperationsToFinish(action: () -> Unit) {
+        progressMonitor.anyInProgress
+            .takeWhile { it }
+            .ignoreElements()
+            .subscribe(action)
+            .attachTo(destroyer)
+    }
+
+    protected fun showSnackbar(@StringRes stringRes: Int, long: Boolean = false) {
+        emitEvent(ViewModelEvent.ShowSnackbar(stringRes, long = long))
+    }
+
+    protected fun showSnackbar(message: Localizable, long: Boolean = false) {
+        emitEvent(ViewModelEvent.ShowSnackbar(message, long = long))
+    }
+
+    protected fun finish(result: Int? = null, intent: Intent? = null, skipAnimation: Boolean = false) {
+        emitEvent(ViewModelEvent.Finish(result, intent, skipAnimation))
+    }
+
+    final override fun onCleared() {
+        destroyer.destroy()
+    }
+}

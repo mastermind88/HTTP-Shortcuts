@@ -3,11 +3,10 @@ package ch.rmy.android.http_shortcuts.activities.editor.body
 import android.content.Context
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.data.models.Parameter
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityRequestBodyBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -23,26 +22,16 @@ import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils
 import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 
 class RequestBodyActivity : BaseActivity() {
 
     private val viewModel: RequestBodyViewModel by bindViewModel()
-    private val shortcutData by lazy {
-        viewModel.shortcut
-    }
-    private val parameters by lazy {
-        viewModel.parameters
-    }
-    private val variablesData by lazy {
-        viewModel.variables
-    }
-    private val variablePlaceholderProvider by lazy {
-        VariablePlaceholderProvider(variablesData)
-    }
+    private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
     private lateinit var binding: ActivityRequestBodyBinding
+    private lateinit var adapter: ParameterAdapter
+
+    private var isDraggingEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +39,9 @@ class RequestBodyActivity : BaseActivity() {
         setTitle(R.string.section_request_body)
 
         initViews()
-        bindViewsToViewModel()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize()
     }
 
     private fun initViews() {
@@ -60,7 +51,7 @@ class RequestBodyActivity : BaseActivity() {
             }
         )
 
-        val adapter = destroyer.own(ParameterAdapter(context, parameters, variablePlaceholderProvider))
+        adapter = ParameterAdapter(variablePlaceholderProvider)
 
         val manager = LinearLayoutManager(context)
         binding.parameterList.layoutManager = manager
@@ -69,14 +60,9 @@ class RequestBodyActivity : BaseActivity() {
 
         initDragOrdering()
 
-        adapter.clickListener = { it.value?.let { parameter -> showEditDialog(parameter) } }
         binding.buttonAddParameter.applyTheme(themeHelper)
         binding.buttonAddParameter.setOnClickListener {
-            if (shortcutData.value?.requestBodyType == Shortcut.REQUEST_BODY_TYPE_FORM_DATA) {
-                showParameterTypeDialog()
-            } else {
-                showAddDialogForStringParameter()
-            }
+            viewModel.onAddParameterButtonClicked()
         }
 
         VariableViewUtils.bindVariableViews(binding.inputBodyContent, binding.variableButtonBodyContent, variablePlaceholderProvider)
@@ -84,121 +70,93 @@ class RequestBodyActivity : BaseActivity() {
         binding.inputContentType.setAdapter(ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, CONTENT_TYPE_SUGGESTIONS))
     }
 
-    private fun initDragOrdering() {
-        val dragOrderingHelper = DragOrderingHelper { parameters.size > 1 }
-        dragOrderingHelper.attachTo(binding.parameterList)
-        dragOrderingHelper.positionChangeSource
-            .concatMapCompletable { (oldPosition, newPosition) ->
-                viewModel.moveParameter(oldPosition, newPosition)
-            }
-            .subscribe()
-            .attachTo(destroyer)
-    }
+    private fun initUserInputBindings() {
+        initDragOrdering()
 
-    private fun bindViewsToViewModel() {
-        shortcutData.observe(this) {
-            updateShortcutViews()
-        }
-        variablesData.observe(this) {
-            updateShortcutViews()
-        }
+        adapter.userEvents
+            .subscribe { event ->
+                when (event) {
+                    is ParameterAdapter.UserEvent.ParameterClicked -> viewModel.onParameterClicked(event.id)
+                }
+            }
+            .attachTo(destroyer)
 
         binding.inputRequestBodyType.selectionChanges
-            .concatMapCompletable { type -> viewModel.setRequestBodyType(type) }
-            .subscribe()
+            .subscribe { requestBodyType ->
+                viewModel.onRequestBodyTypeChanged(requestBodyType)
+            }
             .attachTo(destroyer)
 
-        bindTextChangeListener(binding.inputContentType) { shortcutData.value?.contentType }
-        bindTextChangeListener(binding.inputBodyContent) { shortcutData.value?.bodyContent }
-    }
-
-    private fun bindTextChangeListener(textView: EditText, currentValueProvider: () -> String?) {
-        textView.observeTextChanges()
-            .debounce(300, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .filter { it.toString() != currentValueProvider.invoke() }
-            .concatMapCompletable { updateViewModelFromViews() }
-            .subscribe()
+        binding.inputContentType
+            .observeTextChanges()
+            .subscribe { newContentType ->
+                viewModel.onContentTypeChanged(newContentType.toString())
+            }
             .attachTo(destroyer)
-    }
 
-    private fun updateViewModelFromViews(): Completable =
-        viewModel.setRequestBody(
-            contentType = binding.inputContentType.text.toString(),
-            bodyContent = binding.inputBodyContent.rawString
-        )
+        binding.inputBodyContent
+            .observeTextChanges()
+            .subscribe {
+                viewModel.onBodyContentChanged(binding.inputBodyContent.rawString)
+            }
+            .attachTo(destroyer)
 
-    private fun updateShortcutViews() {
-        val shortcut = shortcutData.value ?: return
-        binding.inputRequestBodyType.selectedItem = shortcut.requestBodyType
-        binding.inputContentType.setTextSafely(shortcut.contentType)
-        binding.inputBodyContent.rawString = shortcut.bodyContent
-
-        val usesParameters = shortcut.usesRequestParameters()
-        binding.parameterList.visible = usesParameters
-        binding.buttonAddParameter.visible = usesParameters
-
-        val usesCustomBody = shortcut.usesCustomBody()
-        binding.containerInputContentType.visible = usesCustomBody
-        binding.containerInputBodyContent.visible = usesCustomBody
-    }
-
-    private fun showEditDialog(parameter: Parameter) {
-        if (parameter.isFileParameter || parameter.isFilesParameter) {
-            showEditDialogForFileParameter(parameter)
-        } else {
-            showEditDialogForStringParameter(parameter)
+        binding.buttonAddParameter.setOnClickListener {
+            viewModel.onAddParameterButtonClicked()
         }
     }
 
-    private fun showEditDialogForStringParameter(parameter: Parameter) {
-        val parameterId = parameter.id
-        KeyValueDialog(
-            variablePlaceholderProvider = variablePlaceholderProvider,
-            title = getString(R.string.title_post_param_edit),
-            keyLabel = getString(R.string.label_post_param_key),
-            valueLabel = getString(R.string.label_post_param_value),
-            data = parameter.key to parameter.value,
-            isMultiLine = true,
-        )
-            .show(context)
-            .flatMapCompletable { event ->
-                when (event) {
-                    is KeyValueDialog.Event.DataChangedEvent -> {
-                        viewModel.updateParameter(parameterId, event.data.first, value = event.data.second)
-                    }
-                    is KeyValueDialog.Event.DataRemovedEvent -> {
-                        viewModel.removeParameter(parameterId)
-                    }
-                }
+    private fun initDragOrdering() {
+        val dragOrderingHelper = DragOrderingHelper { isDraggingEnabled }
+        dragOrderingHelper.attachTo(binding.parameterList)
+        dragOrderingHelper.positionChangeSource
+            .subscribe { (oldPosition, newPosition) ->
+                viewModel.onParameterMoved(oldPosition, newPosition)
             }
-            .subscribe()
             .attachTo(destroyer)
     }
 
-    private fun showEditDialogForFileParameter(parameter: Parameter) {
-        val parameterId = parameter.id
-        FileParameterDialog(
-            variablePlaceholderProvider = variablePlaceholderProvider,
-            title = getString(R.string.title_post_param_edit_file),
-            showRemoveOption = true,
-            showFileNameOption = parameter.isFileParameter,
-            keyName = parameter.key,
-            fileName = parameter.fileName,
-        )
-            .show(context)
-            .flatMapCompletable { event ->
-                when (event) {
-                    is FileParameterDialog.Event.DataChangedEvent -> {
-                        viewModel.updateParameter(parameterId, event.keyName, fileName = event.fileName)
-                    }
-                    is FileParameterDialog.Event.DataRemovedEvent -> {
-                        viewModel.removeParameter(parameterId)
-                    }
-                }
+    private fun initViewModelBindings() {
+        viewModel.viewState
+            .subscribe { viewState ->
+                adapter.items = viewState.parameters
+                isDraggingEnabled = viewState.isDraggingEnabled
+
+                binding.inputRequestBodyType.selectedItem = viewState.requestBodyType
+                binding.inputContentType.setTextSafely(viewState.contentType)
+                binding.inputBodyContent.rawString = viewState.bodyContent
+                binding.parameterList.visible = viewState.parameterListVisible
+                binding.buttonAddParameter.visible = viewState.addParameterButtonVisible
+                binding.containerInputContentType.visible = viewState.contentTypeVisible
+                binding.containerInputBodyContent.visible = viewState.bodyContentVisible
+
+                variablePlaceholderProvider.variables = viewState.variables
             }
-            .subscribe()
             .attachTo(destroyer)
+        viewModel.events
+            .subscribe(::handleEvent)
+            .attachTo(destroyer)
+    }
+
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is RequestBodyEvent.ShowAddParameterTypeSelectionDialog -> {
+                showParameterTypeDialog()
+            }
+            is RequestBodyEvent.ShowAddParameterForStringDialog -> {
+                showAddDialogForStringParameter()
+            }
+            is RequestBodyEvent.ShowAddParameterForFileDialog -> {
+                showAddDialogForFileParameter(event.multiple)
+            }
+            is RequestBodyEvent.ShowEditParameterForStringDialog -> {
+                showEditDialogForStringParameter(event.parameterId, event.key, event.value)
+            }
+            is RequestBodyEvent.ShowEditParameterForFileDialog -> {
+                showEditDialogForFileParameter(event.parameterId, event.key, event.showFileNameOption, event.fileName)
+            }
+            else -> super.handleEvent(event)
+        }
     }
 
     private fun showParameterTypeDialog() {
@@ -225,13 +183,12 @@ class RequestBodyActivity : BaseActivity() {
             isMultiLine = true,
         )
             .show(context)
-            .flatMapCompletable { event ->
+            .subscribe { event ->
                 when (event) {
-                    is KeyValueDialog.Event.DataChangedEvent -> viewModel.addStringParameter(event.data.first, event.data.second)
+                    is KeyValueDialog.Event.DataChangedEvent -> viewModel.onAddStringParameterDialogConfirmed(event.data.first, event.data.second)
                     else -> Completable.complete()
                 }
             }
-            .subscribe()
             .attachTo(destroyer)
     }
 
@@ -242,22 +199,68 @@ class RequestBodyActivity : BaseActivity() {
             showFileNameOption = !multiple,
         )
             .show(context)
-            .flatMapCompletable { event ->
+            .subscribe { event ->
                 when (event) {
-                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.addFileParameter(event.keyName, event.fileName, multiple)
+                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.onAddFileParameterDialogConfirmed(event.keyName, event.fileName, multiple)
                     else -> Completable.complete()
                 }
             }
-            .subscribe()
+            .attachTo(destroyer)
+    }
+
+    private fun showEditDialogForStringParameter(parameterId: String, key: String, value: String) {
+        KeyValueDialog(
+            variablePlaceholderProvider = variablePlaceholderProvider,
+            title = getString(R.string.title_post_param_edit),
+            keyLabel = getString(R.string.label_post_param_key),
+            valueLabel = getString(R.string.label_post_param_value),
+            data = key to value,
+            isMultiLine = true,
+        )
+            .show(context)
+            .subscribe { event ->
+                when (event) {
+                    is KeyValueDialog.Event.DataChangedEvent -> {
+                        viewModel.onEditParameterDialogConfirmed(parameterId, event.data.first, value = event.data.second)
+                    }
+                    is KeyValueDialog.Event.DataRemovedEvent -> {
+                        viewModel.onRemoveParameterButtonClicked(parameterId)
+                    }
+                }
+            }
+            .attachTo(destroyer)
+    }
+
+    private fun showEditDialogForFileParameter(
+        parameterId: String,
+        key: String,
+        showFileNameOption: Boolean,
+        fileName: String,
+    ) {
+        FileParameterDialog(
+            variablePlaceholderProvider = variablePlaceholderProvider,
+            title = getString(R.string.title_post_param_edit_file),
+            showRemoveOption = true,
+            showFileNameOption = showFileNameOption,
+            keyName = key,
+            fileName = fileName,
+        )
+            .show(context)
+            .subscribe { event ->
+                when (event) {
+                    is FileParameterDialog.Event.DataChangedEvent -> {
+                        viewModel.onEditParameterDialogConfirmed(parameterId, event.keyName, fileName = event.fileName)
+                    }
+                    is FileParameterDialog.Event.DataRemovedEvent -> {
+                        viewModel.onRemoveParameterButtonClicked(parameterId)
+                    }
+                }
+            }
             .attachTo(destroyer)
     }
 
     override fun onBackPressed() {
-        updateViewModelFromViews()
-            .subscribe {
-                finish()
-            }
-            .attachTo(destroyer)
+        viewModel.onBackPressed()
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, RequestBodyActivity::class.java)
@@ -268,7 +271,7 @@ class RequestBodyActivity : BaseActivity() {
             Shortcut.REQUEST_BODY_TYPE_FORM_DATA to R.string.request_body_option_form_data,
             Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE to R.string.request_body_option_x_www_form_urlencoded,
             Shortcut.REQUEST_BODY_TYPE_CUSTOM_TEXT to R.string.request_body_option_custom_text,
-            Shortcut.REQUEST_BODY_TYPE_FILE to R.string.request_body_option_file
+            Shortcut.REQUEST_BODY_TYPE_FILE to R.string.request_body_option_file,
         )
 
         private val CONTENT_TYPE_SUGGESTIONS = listOf(

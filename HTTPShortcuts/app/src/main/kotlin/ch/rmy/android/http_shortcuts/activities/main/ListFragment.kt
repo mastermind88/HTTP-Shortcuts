@@ -16,7 +16,7 @@ import ch.rmy.android.http_shortcuts.activities.BaseFragment
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.Repository
+import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
@@ -465,10 +465,10 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private fun getVariableIdsRequiredForExport(shortcut: Shortcut) =
         // TODO: Recursively collect variables referenced by other variables
-        RealmFactory.withRealm { realm ->
+        RealmFactory.withRealmContext {
             VariableResolver.extractVariableIds(
                 shortcut,
-                variableLookup = VariableManager(Repository.getBase(realm)!!.variables),
+                variableLookup = VariableManager(getBase().findFirst()!!.variables),
             )
         }
 

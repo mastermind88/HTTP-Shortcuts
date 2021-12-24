@@ -3,7 +3,7 @@ package ch.rmy.android.http_shortcuts.variables.types
 import android.content.Context
 import android.graphics.Color
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.Commons
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.cancel
 import ch.rmy.android.http_shortcuts.extensions.mapIf
@@ -12,6 +12,8 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import io.reactivex.Single
 
 internal class ColorType : BaseVariableType() {
+
+    private val variablesRepository = VariableRepository()
 
     override fun resolveValue(context: Context, variable: Variable): Single<String> =
         Single.create<String> { emitter ->
@@ -43,7 +45,7 @@ internal class ColorType : BaseVariableType() {
         }
             .mapIf(variable.rememberValue) {
                 flatMap { variableValue ->
-                    Commons.setVariableValue(variable.id, variableValue)
+                    variablesRepository.setVariableValue(variable.id, variableValue)
                         .toSingle { variableValue }
                 }
             }

@@ -26,6 +26,7 @@ class Settings(context: Context) {
     val clickBehavior: String
         get() = preferences.getString(KEY_CLICK_BEHAVIOR, CLICK_BEHAVIOR_RUN)!!
 
+    @Suppress("unused")
     val isCrashReportingAllowed: Boolean
         get() = preferences.getString(KEY_CRASH_REPORTING, "true") != "false"
 

@@ -10,9 +10,6 @@ import android.view.View
 import android.widget.RemoteViews
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
-import ch.rmy.android.http_shortcuts.data.Controller
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Transactions
 import ch.rmy.android.http_shortcuts.data.models.Widget
 import ch.rmy.android.http_shortcuts.utils.IconUtil
 

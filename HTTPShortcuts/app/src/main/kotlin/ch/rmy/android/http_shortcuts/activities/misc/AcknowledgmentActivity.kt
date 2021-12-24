@@ -19,10 +19,11 @@ class AcknowledgmentActivity : BaseActivity() {
             binding = applyBinding(ActivityAcknowledgmentsBinding.inflate(layoutInflater))
             setTitle(R.string.title_licenses)
             binding.acknowledgmentsWebview.loadUrl(ACKNOWLEDGMENTS_ASSET_URL)
-        } ?: run {
-            showToast(R.string.error_generic)
-            finish()
         }
+            ?: run {
+                showToast(R.string.error_generic)
+                finish()
+            }
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, AcknowledgmentActivity::class.java)

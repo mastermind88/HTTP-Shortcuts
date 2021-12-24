@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.variables.ToggleVariableOptionsAdapter
+import ch.rmy.android.http_shortcuts.activities.variables.editor.ToggleVariableOptionsAdapter
 import ch.rmy.android.http_shortcuts.data.models.Option
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.databinding.VariableEditorToggleBinding

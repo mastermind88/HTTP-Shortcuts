@@ -1,103 +1,255 @@
 package ch.rmy.android.http_shortcuts.activities.editor
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.app.Application
+import android.content.Intent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Transactions
+import ch.rmy.android.http_shortcuts.activities.BaseViewModel
+import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity.Companion.RESULT_SHORTCUT_ID
+import ch.rmy.android.http_shortcuts.activities.editor.advancedsettings.AdvancedSettingsActivity
+import ch.rmy.android.http_shortcuts.activities.editor.authentication.AuthenticationActivity
+import ch.rmy.android.http_shortcuts.activities.editor.basicsettings.BasicRequestSettingsActivity
+import ch.rmy.android.http_shortcuts.activities.editor.body.RequestBodyActivity
+import ch.rmy.android.http_shortcuts.activities.editor.executionsettings.ExecutionSettingsActivity
+import ch.rmy.android.http_shortcuts.activities.editor.headers.RequestHeadersActivity
+import ch.rmy.android.http_shortcuts.activities.editor.response.ResponseActivity
+import ch.rmy.android.http_shortcuts.activities.editor.scripting.ScriptingActivity
+import ch.rmy.android.http_shortcuts.activities.editor.shortcuts.TriggerShortcutsActivity
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
-import ch.rmy.android.http_shortcuts.data.models.Header
-import ch.rmy.android.http_shortcuts.data.models.Parameter
-import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Shortcut.Companion.TEMPORARY_ID
-import ch.rmy.android.http_shortcuts.extensions.getCaseInsensitive
-import ch.rmy.android.http_shortcuts.extensions.getQuantityString
-import ch.rmy.android.http_shortcuts.extensions.getString
+import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
+import ch.rmy.android.http_shortcuts.extensions.attachTo
+import ch.rmy.android.http_shortcuts.extensions.color
+import ch.rmy.android.http_shortcuts.extensions.context
+import ch.rmy.android.http_shortcuts.extensions.mapIfNotNull
+import ch.rmy.android.http_shortcuts.extensions.toLocalizable
 import ch.rmy.android.http_shortcuts.extensions.type
-import ch.rmy.android.http_shortcuts.http.HttpHeaders
 import ch.rmy.android.http_shortcuts.icons.Icons
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager
-import ch.rmy.android.http_shortcuts.utils.RxUtils
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
-import ch.rmy.android.http_shortcuts.utils.Validation
+import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
+import ch.rmy.android.http_shortcuts.utils.Validation.isAcceptableHttpUrl
+import ch.rmy.android.http_shortcuts.utils.Validation.isAcceptableUrl
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import ch.rmy.android.http_shortcuts.utils.text.QuantityStringLocalizable
+import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
+import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
+import ch.rmy.android.http_shortcuts.variables.Variables
+import ch.rmy.android.http_shortcuts.widget.WidgetManager
 import ch.rmy.curlcommand.CurlCommand
-import io.reactivex.Completable
-import io.reactivex.Single
-import io.realm.Realm
-import java.net.URLDecoder
 
-class ShortcutEditorViewModel(application: Application) : BasicShortcutEditorViewModel(application) {
+class ShortcutEditorViewModel(application: Application) : BaseViewModel<ShortcutEditorViewState>(application) {
 
-    var isInitialized: Boolean = false
-        private set
+    private val shortcutRepository = ShortcutRepository()
+    private val temporaryShortcutRepository = TemporaryShortcutRepository()
+    private val variableRepository = VariableRepository()
 
-    var isSaving: Boolean = false
+    private val variablePlaceholderProvider = VariablePlaceholderProvider()
+
+    private val variablePlaceholderColor by lazy {
+        color(context, R.color.variable)
+    }
+
+    private var isInitialized = false
+    private var isSaving = false
 
     private var categoryId: String? = null
     private var shortcutId: String? = null
-    private var initialIcon: ShortcutIcon = ShortcutIcon.NoIcon
-    private var executionType: String? = null
+    private var oldShortcut: Shortcut? = null
+    private lateinit var shortcut: Shortcut
 
-    fun init(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: String): Completable {
+    override fun initViewState() = ShortcutEditorViewState()
+
+    fun initialize(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: ShortcutExecutionType) {
         if (isInitialized) {
-            return Completable.complete()
+            return
         }
+        isInitialized = true
+
         this.categoryId = categoryId
         this.shortcutId = shortcutId
-        this.executionType = executionType
-        return Transactions
-            .commit { realm ->
-                val shortcut = if (shortcutId == null) {
-                    initialIcon = Icons.getRandomInitialIcon(getApplication())
-                    realm.copyToRealmOrUpdate(createNewShortcut())
-                } else {
-                    Repository.copyShortcut(realm, Repository.getShortcutById(realm, shortcutId)!!, TEMPORARY_ID)
-                }
 
-                curlCommand?.let { curlCommand ->
-                    importFromCurl(realm, shortcut, curlCommand)
+        if (shortcutId == null) {
+            temporaryShortcutRepository.createNewTemporaryShortcut(
+                initialIcon = Icons.getRandomInitialIcon(context),
+                executionType = executionType,
+            )
+        } else {
+            shortcutRepository.createTemporaryShortcutFromShortcut(shortcutId)
+        }
+            .mapIfNotNull(curlCommand) {
+                andThen(temporaryShortcutRepository.importFromCurl(it))
+            }
+            .subscribe(
+                {
+                    initialize()
+                },
+                {
+                    finish()
+                    // TODO: Make sure that the snackbar is displayed even after the activity is finished
+                    showSnackbar(R.string.error_generic)
                 }
-            }
-            .doOnComplete {
-                isInitialized = true
-            }
+            )
+            .attachTo(destroyer)
     }
 
-    private fun createNewShortcut(): Shortcut =
-        Shortcut(
-            id = TEMPORARY_ID,
-            icon = initialIcon,
-            executionType = executionType,
-            responseHandling = if (executionType == ShortcutExecutionType.APP.type) {
-                ResponseHandling()
+    override fun onInitialized() {
+        observeTemporaryShortcut()
+        variableRepository.getObservableVariables()
+            .subscribe { variables ->
+                variablePlaceholderProvider.variables = variables
+            }
+            .attachTo(destroyer)
+    }
+
+    private fun observeTemporaryShortcut() {
+        temporaryShortcutRepository.getObservableTemporaryShortcut()
+            .subscribe { shortcut ->
+                if (oldShortcut == null) {
+                    oldShortcut = shortcut
+                }
+                this.shortcut = shortcut
+                updateViewState {
+                    copy(
+                        toolbarSubtitle = getToolbarSubtitle(),
+                        shortcutExecutionType = shortcut.type,
+                        shortcutIcon = shortcut.icon,
+                        shortcutName = shortcut.name,
+                        shortcutDescription = shortcut.description,
+                        testButtonVisible = canExecute(),
+                        saveButtonVisible = hasChanges(),
+                        requestBodyButtonEnabled = shortcut.allowsBody(),
+                        basicSettingsSubtitle = getBasicSettingsSubtitle(),
+                        headersSubtitle = getHeadersSubtitle(),
+                        requestBodySubtitle = getRequestBodySubtitle(),
+                        requestBodySettingsSubtitle = getRequestBodySubtitle(),
+                        authenticationSettingsSubtitle = getAuthenticationSubtitle(),
+                        scriptingSubtitle = getScriptingSubtitle(),
+                        triggerShortcutsSubtitle = getTriggerShortcutsSubtitle(),
+                    )
+                }
+            }
+            .attachTo(destroyer)
+    }
+
+    private fun hasChanges() =
+        oldShortcut?.isSameAs(shortcut) ?: false
+
+    private fun canExecute() =
+        !shortcut.type.usesUrl ||
+            (shortcut.type.requiresHttpUrl && isAcceptableHttpUrl(shortcut.url)) ||
+            (!shortcut.type.requiresHttpUrl && isAcceptableUrl(shortcut.url))
+
+    private fun getToolbarSubtitle() =
+        when (shortcut.type) {
+            ShortcutExecutionType.BROWSER -> StringResLocalizable(R.string.subtitle_editor_toolbar_browser_shortcut)
+            ShortcutExecutionType.SCRIPTING -> StringResLocalizable(R.string.subtitle_editor_toolbar_scripting_shortcut)
+            ShortcutExecutionType.TRIGGER -> StringResLocalizable(R.string.subtitle_editor_toolbar_trigger_shortcut)
+            else -> null
+        }
+
+    private fun getBasicSettingsSubtitle(): Localizable =
+        enhancedWithVariables(
+            if (shortcut.type == ShortcutExecutionType.BROWSER) {
+                if (shortcut.url.isEmpty() || shortcut.url == "http://") {
+                    StringResLocalizable(R.string.subtitle_basic_request_settings_url_only_prompt)
+                } else {
+                    shortcut.url.toLocalizable()
+                }
             } else {
-                null
+                if (shortcut.url.isEmpty() || shortcut.url == "http://") {
+                    StringResLocalizable(R.string.subtitle_basic_request_settings_prompt)
+                } else {
+                    StringResLocalizable(
+                        R.string.subtitle_basic_request_settings_pattern,
+                        shortcut.method,
+                        shortcut.url,
+                    )
+                }
             }
         )
 
-    fun hasChanges(): Boolean {
-        val oldShortcut = shortcutId
-            ?.let { Repository.getShortcutById(persistedRealm, it) ?: return false }
-            ?: createNewShortcut()
-        val newShortcut = getShortcut(persistedRealm) ?: return false
-        return !newShortcut.isSameAs(oldShortcut)
+    private fun getHeadersSubtitle(): Localizable {
+        val count = shortcut.headers.size
+        return if (count == 0) {
+            StringResLocalizable(R.string.subtitle_request_headers_none)
+        } else {
+            QuantityStringLocalizable(R.plurals.subtitle_request_headers_pattern, count)
+        }
     }
 
-    fun setNameAndDescription(name: String, description: String): Completable =
-        Transactions.commit { realm ->
-            getShortcut(realm)?.apply {
-                this.name = name.trim()
-                this.description = description
+    private fun getRequestBodySubtitle(): Localizable =
+        if (shortcut.allowsBody()) {
+            when (shortcut.requestBodyType) {
+                Shortcut.REQUEST_BODY_TYPE_FORM_DATA,
+                Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE,
+                -> {
+                    val count = shortcut.parameters.size
+                    if (count == 0) {
+                        StringResLocalizable(R.string.subtitle_request_body_params_none)
+                    } else {
+                        QuantityStringLocalizable(R.plurals.subtitle_request_body_params_pattern, count)
+                    }
+                }
+                Shortcut.REQUEST_BODY_TYPE_FILE -> StringResLocalizable(R.string.subtitle_request_body_file)
+                else -> if (shortcut.bodyContent.isBlank()) {
+                    StringResLocalizable(R.string.subtitle_request_body_none)
+                } else {
+                    StringResLocalizable(R.string.subtitle_request_body_custom, shortcut.contentType)
+                }
             }
+        } else {
+            StringResLocalizable(R.string.subtitle_request_body_not_available, shortcut.method)
         }
 
-    fun setIcon(icon: ShortcutIcon): Completable =
-        Transactions.commit { realm ->
-            getShortcut(realm)?.apply {
-                this.icon = icon
+    private fun getAuthenticationSubtitle(): Localizable =
+        StringResLocalizable(
+            when (shortcut.authentication) {
+                Shortcut.AUTHENTICATION_BASIC -> R.string.subtitle_authentication_basic
+                Shortcut.AUTHENTICATION_DIGEST -> R.string.subtitle_authentication_digest
+                Shortcut.AUTHENTICATION_BEARER -> R.string.subtitle_authentication_bearer
+                else -> R.string.subtitle_authentication_none
             }
+        )
+
+    private fun getScriptingSubtitle(): Localizable =
+        StringResLocalizable(
+            when (shortcut.type) {
+                ShortcutExecutionType.SCRIPTING -> R.string.label_scripting_scripting_shortcuts_subtitle
+                ShortcutExecutionType.BROWSER -> R.string.label_scripting_browser_shortcuts_subtitle
+                else -> R.string.label_scripting_subtitle
+            }
+        )
+
+    private fun getTriggerShortcutsSubtitle(): Localizable {
+        if (shortcut.type != ShortcutExecutionType.TRIGGER) {
+            return Localizable.EMPTY
         }
+        val count = TriggerShortcutManager.getTriggeredShortcutIdsFromCode(shortcut.codeOnPrepare).size
+        return if (count == 0) {
+            StringResLocalizable(R.string.label_trigger_shortcuts_subtitle_none)
+        } else {
+            QuantityStringLocalizable(R.plurals.label_trigger_shortcuts_subtitle, count)
+        }
+    }
+
+    private fun enhancedWithVariables(localizable: Localizable): Localizable =
+        Localizable.create { context ->
+            Variables.rawPlaceholdersToVariableSpans(
+                localizable.localize(context),
+                variablePlaceholderProvider,
+                variablePlaceholderColor,
+            )
+        }
+
+    /*
 
     fun trySave(): Single<SaveResult> {
         val id = shortcutId ?: newUUID()
@@ -119,185 +271,158 @@ class ShortcutEditorViewModel(application: Application) : BasicShortcutEditorVie
 
                 Repository.deleteShortcut(realm, TEMPORARY_ID)
             }
-            .andThen(
-                RxUtils.single {
-                    SaveResult(
-                        id = id,
-                        name = name,
-                        icon = icon,
-                    )
-                }
-            )
-            .doOnSubscribe {
-                isSaving = true
-            }
-            .doOnEvent { _, _ ->
-                isSaving = false
-            }
+    }
+     */
+
+    fun onShortcutIconChanged(icon: ShortcutIcon) {
+        updateViewState {
+            copy(shortcutIcon = icon)
+        }
+        performOperation(
+            temporaryShortcutRepository.setIcon(icon)
+        )
     }
 
-    private fun validateShortcut(shortcut: Shortcut) {
+    fun onShortcutNameChanged(name: String) {
+        updateViewState {
+            copy(shortcutName = name)
+        }
+        performOperation(
+            temporaryShortcutRepository.setName(name)
+        )
+    }
+
+    fun onShortcutDescriptionChanged(description: String) {
+        updateViewState {
+            copy(shortcutDescription = description)
+        }
+        performOperation(
+            temporaryShortcutRepository.setDescription(description)
+        )
+    }
+
+    fun onTestButtonClicked() {
+        if (!currentViewState.testButtonVisible) {
+            return
+        }
+        waitForOperationsToFinish {
+            emitEvent(ViewModelEvent.OpenActivity { context ->
+                ExecuteActivity.IntentBuilder(context, TEMPORARY_ID)
+            })
+        }
+    }
+
+    fun onSaveButtonClicked() {
+        if (!currentViewState.saveButtonVisible || isSaving) {
+            return
+        }
+        isSaving = true
+        waitForOperationsToFinish {
+            trySave()
+        }
+    }
+
+    private fun trySave() {
         if (shortcut.name.isBlank()) {
-            throw ShortcutValidationError(VALIDATION_ERROR_EMPTY_NAME)
+            showSnackbar(R.string.validation_name_not_empty, long = true)
+            emitEvent(ShortcutEditorEvent.FocusNameInputField)
+            return
         }
         if (
-            (shortcut.type.requiresHttpUrl && !Validation.isAcceptableHttpUrl(shortcut.url)) ||
-            (shortcut.type.usesUrl && !shortcut.type.requiresHttpUrl && !Validation.isAcceptableUrl(shortcut.url))
+            (shortcut.type.requiresHttpUrl && !isAcceptableHttpUrl(shortcut.url)) ||
+            (shortcut.type.usesUrl && !shortcut.type.requiresHttpUrl && !isAcceptableUrl(shortcut.url))
         ) {
-            throw ShortcutValidationError(VALIDATION_ERROR_INVALID_URL)
+            showSnackbar(R.string.validation_url_invalid, long = true)
+            return
+        }
+
+        // TODO
+        // onSaveSuccessful
+    }
+
+    private fun onSaveSuccessful(shortcutId: String) {
+        LauncherShortcutManager.updatePinnedShortcut(context, shortcutId, shortcut.name, shortcut.icon)
+        WidgetManager.updateWidgets(context, shortcutId)
+        finish(result = RESULT_OK, intent = Intent().putExtra(RESULT_SHORTCUT_ID, shortcutId))
+    }
+
+    fun onBackPressed() {
+        waitForOperationsToFinish {
+            if (hasChanges()) {
+                showDiscardDialog()
+            } else {
+                onDiscardDialogConfirmed()
+            }
         }
     }
 
-    fun getToolbarSubtitle(shortcut: Shortcut): CharSequence? =
-        when (shortcut.type) {
-            ShortcutExecutionType.BROWSER -> getString(R.string.subtitle_editor_toolbar_browser_shortcut)
-            ShortcutExecutionType.SCRIPTING -> getString(R.string.subtitle_editor_toolbar_scripting_shortcut)
-            ShortcutExecutionType.TRIGGER -> getString(R.string.subtitle_editor_toolbar_trigger_shortcut)
-            else -> null
-        }
-
-    fun getBasicSettingsSubtitle(shortcut: Shortcut): CharSequence =
-        if (shortcut.type == ShortcutExecutionType.BROWSER) {
-            if (shortcut.url.isEmpty() || shortcut.url == "http://") {
-                getString(R.string.subtitle_basic_request_settings_url_only_prompt)
-            } else {
-                shortcut.url
-            }
-        } else {
-            if (shortcut.url.isEmpty() || shortcut.url == "http://") {
-                getString(R.string.subtitle_basic_request_settings_prompt)
-            } else {
-                getString(
-                    R.string.subtitle_basic_request_settings_pattern,
-                    shortcut.method,
-                    shortcut.url,
-                )
-            }
-        }
-
-    fun getHeadersSettingsSubtitle(shortcut: Shortcut): CharSequence =
-        getQuantityString(
-            shortcut.headers.size,
-            R.string.subtitle_request_headers_none,
-            R.plurals.subtitle_request_headers_pattern,
-        )
-
-    fun getRequestBodySettingsSubtitle(shortcut: Shortcut): CharSequence =
-        if (shortcut.allowsBody()) {
-            when (shortcut.requestBodyType) {
-                Shortcut.REQUEST_BODY_TYPE_FORM_DATA,
-                Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE,
-                -> getQuantityString(
-                    shortcut.parameters.size,
-                    R.string.subtitle_request_body_params_none,
-                    R.plurals.subtitle_request_body_params_pattern,
-                )
-                Shortcut.REQUEST_BODY_TYPE_FILE -> getString(R.string.subtitle_request_body_file)
-                else -> if (shortcut.bodyContent.isBlank()) {
-                    getString(R.string.subtitle_request_body_none)
-                } else {
-                    getString(R.string.subtitle_request_body_custom, shortcut.contentType)
-                }
-            }
-        } else {
-            getString(R.string.subtitle_request_body_not_available, shortcut.method)
-        }
-
-    fun getAuthenticationSettingsSubtitle(shortcut: Shortcut): CharSequence =
-        when (shortcut.authentication) {
-            Shortcut.AUTHENTICATION_BASIC -> getString(R.string.subtitle_authentication_basic)
-            Shortcut.AUTHENTICATION_DIGEST -> getString(R.string.subtitle_authentication_digest)
-            Shortcut.AUTHENTICATION_BEARER -> getString(R.string.subtitle_authentication_bearer)
-            else -> getString(R.string.subtitle_authentication_none)
-        }
-
-    fun getScriptingSubtitle(shortcut: Shortcut): CharSequence =
-        getString(
-            when (shortcut.type) {
-                ShortcutExecutionType.SCRIPTING -> R.string.label_scripting_scripting_shortcuts_subtitle
-                ShortcutExecutionType.BROWSER -> R.string.label_scripting_browser_shortcuts_subtitle
-                else -> R.string.label_scripting_subtitle
-            }
-        )
-
-    fun getTriggerShortcutsSubtitle(shortcut: Shortcut): CharSequence {
-        val count = TriggerShortcutManager.getTriggeredShortcutsFromCode(shortcut.codeOnPrepare).size
-        return getQuantityString(
-            count,
-            R.string.label_trigger_shortcuts_subtitle_none,
-            R.plurals.label_trigger_shortcuts_subtitle
-        )
+    private fun showDiscardDialog() {
+        emitEvent(ViewModelEvent.ShowDialog { context ->
+            DialogBuilder(context)
+                .message(R.string.confirm_discard_changes_message)
+                .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
+                .negative(R.string.dialog_cancel)
+                .showIfPossible()
+        })
     }
 
-    data class SaveResult(val id: String, val name: String?, val icon: ShortcutIcon?)
+    private fun onDiscardDialogConfirmed() {
+        finish(result = Activity.RESULT_CANCELED)
+    }
 
-    companion object {
+    fun onBasicRequestSettingsButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            BasicRequestSettingsActivity.IntentBuilder(context)
+        })
+    }
 
-        const val VALIDATION_ERROR_EMPTY_NAME = 1
-        const val VALIDATION_ERROR_INVALID_URL = 2
+    fun onHeadersButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            RequestHeadersActivity.IntentBuilder(context)
+        })
+    }
 
-        private fun importFromCurl(realm: Realm, shortcut: Shortcut, curlCommand: CurlCommand) {
-            shortcut.method = curlCommand.method
-            shortcut.url = curlCommand.url
-            shortcut.username = curlCommand.username
-            shortcut.password = curlCommand.password
-            if (curlCommand.username.isNotEmpty() || curlCommand.password.isNotEmpty()) {
-                shortcut.authentication = Shortcut.AUTHENTICATION_BASIC
-            }
-            shortcut.timeout = curlCommand.timeout
+    fun onRequestBodyButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            RequestBodyActivity.IntentBuilder(context)
+        })
+    }
 
-            if (curlCommand.usesBinaryData) {
-                shortcut.requestBodyType = Shortcut.REQUEST_BODY_TYPE_FILE
-            } else if (curlCommand.isFormData || curlCommand.data.all { data -> data.count { it == '=' } == 1 }) {
-                shortcut.requestBodyType = if (curlCommand.isFormData) {
-                    Shortcut.REQUEST_BODY_TYPE_FORM_DATA
-                } else {
-                    Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE
-                }
-                prepareParameters(realm, curlCommand, shortcut)
-            } else {
-                shortcut.bodyContent = curlCommand.data.joinToString(separator = "&")
-                shortcut.requestBodyType = Shortcut.REQUEST_BODY_TYPE_CUSTOM_TEXT
-            }
-            curlCommand.headers.getCaseInsensitive(HttpHeaders.CONTENT_TYPE)
-                ?.let {
-                    shortcut.contentType = it
-                }
-            curlCommand.headers.forEach { (key, value) ->
-                if (!key.equals(HttpHeaders.CONTENT_TYPE, ignoreCase = true)) {
-                    shortcut.headers.add(realm.copyToRealm(Header(key = key, value = value)))
-                }
-            }
-        }
+    fun onAuthenticationButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            AuthenticationActivity.IntentBuilder(context)
+        })
+    }
 
-        private fun prepareParameters(realm: Realm, curlCommand: CurlCommand, shortcut: Shortcut) {
-            curlCommand.data.forEach { potentialParameter ->
-                potentialParameter.split("=")
-                    .takeIf { it.size == 2 }
-                    ?.let { parameterParts ->
-                        val key = parameterParts[0]
-                        val value = parameterParts[1]
-                        val parameter = if (value.startsWith("@") && curlCommand.isFormData) {
-                            Parameter(
-                                key = decode(key),
-                                type = Parameter.TYPE_FILE,
-                            )
-                        } else {
-                            Parameter(
-                                key = decode(key),
-                                value = decode(value),
-                            )
-                        }
-                        shortcut.parameters.add(realm.copyToRealm(parameter))
-                    }
-            }
-        }
+    fun onResponseHandlingButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            ResponseActivity.IntentBuilder(context)
+        })
+    }
 
-        private fun decode(text: String): String =
-            try {
-                URLDecoder.decode(text, "utf-8")
-            } catch (e: IllegalArgumentException) {
-                text
-            }
+    fun onScriptingButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            ScriptingActivity.IntentBuilder(context)
+                .shortcutId(shortcutId)
+        })
+    }
+
+    fun onTriggerShortcutsButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            TriggerShortcutsActivity.IntentBuilder(context)
+                .shortcutId(shortcutId)
+        })
+    }
+
+    fun onExecutionSettingsButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            ExecutionSettingsActivity.IntentBuilder(context)
+        })
+    }
+
+    fun onAdvancedSettingsButtonClicked() {
+        emitEvent(ViewModelEvent.OpenActivity { context ->
+            AdvancedSettingsActivity.IntentBuilder(context)
+        })
     }
 }

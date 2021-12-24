@@ -3,7 +3,7 @@ package ch.rmy.android.http_shortcuts.import_export
 import android.content.Context
 import android.net.Uri
 import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.Repository
+import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.ClientCertParams
@@ -81,8 +81,8 @@ class Exporter(private val context: Context) {
     }
 
     private fun getDetachedBase(shortcutId: String?, variableIds: Collection<String>?): Base =
-        RealmFactory.withRealm { realm ->
-            Repository.getBase(realm)!!.detachFromRealm()
+        RealmFactory.withRealmContext {
+            getBase().findFirst()!!.detachFromRealm()
         }
             .also { base ->
                 if (shortcutId != null) {

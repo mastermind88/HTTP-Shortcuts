@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -17,7 +18,12 @@ import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.color
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.drawable
+import ch.rmy.android.http_shortcuts.extensions.finishWithoutAnimation
+import ch.rmy.android.http_shortcuts.extensions.logInfo
+import ch.rmy.android.http_shortcuts.extensions.openURL
 import ch.rmy.android.http_shortcuts.extensions.setTintCompat
+import ch.rmy.android.http_shortcuts.extensions.showSnackbar
+import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.utils.Destroyer
 import ch.rmy.android.http_shortcuts.utils.LocaleHelper
 import ch.rmy.android.http_shortcuts.utils.ThemeHelper
@@ -120,6 +126,42 @@ abstract class BaseActivity : AppCompatActivity() {
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             statusBarColor = themeHelper.statusBarColor
+        }
+    }
+
+    open fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is ViewModelEvent.OpenActivity -> {
+                try {
+                    event.intentBuilder(context).startActivity(this)
+                } catch (e: ActivityNotFoundException) {
+                    showToast(R.string.error_not_supported)
+                }
+            }
+            is ViewModelEvent.OpenURL -> {
+                openURL(event.url)
+            }
+            is ViewModelEvent.Finish -> {
+                if (event.result != null) {
+                    if (event.intent != null) {
+                        setResult(event.result, event.intent)
+                    } else {
+                        setResult(event.result)
+                    }
+                }
+                if (event.skipAnimation) {
+                    finishWithoutAnimation()
+                } else {
+                    finish()
+                }
+            }
+            is ViewModelEvent.ShowDialog -> {
+                event.dialogBuilder(context)
+            }
+            is ViewModelEvent.ShowSnackbar -> {
+                showSnackbar(event.message.localize(context), long = event.long)
+            }
+            else -> logInfo("Unhandled event: $event")
         }
     }
 

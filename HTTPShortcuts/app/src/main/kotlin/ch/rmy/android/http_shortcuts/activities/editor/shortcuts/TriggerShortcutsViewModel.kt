@@ -1,71 +1,130 @@
 package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
 import android.app.Application
-import androidx.lifecycle.Observer
-import ch.rmy.android.http_shortcuts.activities.editor.BasicShortcutEditorViewModel
-import ch.rmy.android.http_shortcuts.data.Repository
-import ch.rmy.android.http_shortcuts.data.Transactions
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
+import ch.rmy.android.http_shortcuts.R
+import ch.rmy.android.http_shortcuts.activities.BaseViewModel
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.safeRemoveIf
+import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
+import ch.rmy.android.http_shortcuts.extensions.attachTo
+import ch.rmy.android.http_shortcuts.extensions.logException
+import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
-import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager
-import io.reactivex.Completable
+import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getCodeFromTriggeredShortcutIds
+import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getTriggeredShortcutIdsFromCode
 
-class TriggerShortcutsViewModel(application: Application) : BasicShortcutEditorViewModel(application) {
+class TriggerShortcutsViewModel(application: Application) : BaseViewModel<TriggerShortcutsViewState>(application) {
 
-    val triggerShortcuts: ListLiveData<ShortcutPlaceholder> = object : ListLiveData<ShortcutPlaceholder>() {
+    private var currentShortcutId: String? = null
 
-        private val shortcuts = Repository.getShortcuts(persistedRealm)
+    private var shortcutInitialized = false
+    private lateinit var shortcutPlaceholders: List<ShortcutPlaceholder>
 
-        private val observer = Observer<Shortcut?> { onChange() }
+    private val temporaryShortcutRepository = TemporaryShortcutRepository()
+    private val shortcutRepository = ShortcutRepository()
 
-        override fun onActive() {
-            shortcut.observeForever(observer)
-        }
+    override fun initViewState() = TriggerShortcutsViewState()
 
-        override fun onInactive() {
-            shortcut.removeObserver(observer)
-        }
-
-        override fun getValue(): List<ShortcutPlaceholder> =
-            getTriggeredShortcuts()
-                .map {
-                    shortcuts.firstOrNull { shortcut -> shortcut.id == it.shortcutId }
-                        ?.let(ShortcutPlaceholder::fromShortcut)
-                        ?: ShortcutPlaceholder.deletedShortcut(it.shortcutId)
-                }
+    fun initialize(shortcutId: String?) {
+        currentShortcutId = shortcutId
+        initialize()
     }
 
-    private fun getTriggeredShortcuts(): List<TriggerShortcutManager.TriggeredShortcut> =
-        shortcut.value
-            ?.codeOnPrepare
-            ?.let {
-                TriggerShortcutManager.getTriggeredShortcutsFromCode(it)
+    override fun onInitialized() {
+        shortcutRepository.getObservableShortcuts()
+            .subscribe { shortcuts ->
+                shortcutPlaceholders = shortcuts.map { ShortcutPlaceholder.fromShortcut(it) }
+                if (!shortcutInitialized) {
+                    shortcutInitialized = true
+                    temporaryShortcutRepository.getTemporaryShortcut()
+                        .subscribe(
+                            ::initViewStateFromShortcut,
+                            ::onInitializationError,
+                        )
+                        .attachTo(destroyer)
+                }
             }
-            ?: emptyList()
+            .attachTo(destroyer)
+    }
 
-    fun changeShortcutPosition(oldPosition: Int, newPosition: Int): Completable =
-        mutateShortcutList { shortcuts ->
-            shortcuts.add(newPosition, shortcuts.removeAt(oldPosition))
-        }
+    private fun initViewStateFromShortcut(shortcut: Shortcut) {
+        val triggerShortcuts = getTriggeredShortcutIdsFromCode(shortcut.codeOnPrepare)
+            .map(::getShortcutPlaceholder)
 
-    fun addShortcut(shortcutId: String): Completable =
-        mutateShortcutList { shortcuts ->
-            shortcuts.add(TriggerShortcutManager.TriggeredShortcut(shortcutId))
+        updateViewState {
+            copy(
+                triggerShortcuts = triggerShortcuts,
+            )
         }
+    }
 
-    fun removeShortcut(shortcutId: String): Completable =
-        mutateShortcutList { shortcuts ->
-            shortcuts.safeRemoveIf { it.shortcutId == shortcutId }
-        }
+    private fun getShortcutPlaceholder(shortcutId: String) =
+        shortcutPlaceholders
+            .firstOrNull { shortcut -> shortcut.id == shortcutId }
+            ?: ShortcutPlaceholder.deletedShortcut(shortcutId)
 
-    private fun mutateShortcutList(action: (MutableList<TriggerShortcutManager.TriggeredShortcut>) -> Unit): Completable {
-        val shortcuts = getTriggeredShortcuts().toMutableList()
-        return Transactions.commit { realm ->
-            action.invoke(shortcuts)
-            getShortcut(realm)?.codeOnPrepare =
-                TriggerShortcutManager.getCodeFromTriggeredShortcuts(shortcuts)
+    private fun onInitializationError(error: Throwable) {
+        // TODO: Handle error better
+        logException(error)
+        finish()
+    }
+
+    fun onShortcutMoved(oldPosition: Int, newPosition: Int) {
+        val newTriggerShortcuts = currentViewState.triggerShortcuts
+            .move(oldPosition, newPosition)
+        updateTriggerShortcuts(newTriggerShortcuts)
+    }
+
+    private fun updateTriggerShortcuts(newTriggerShortcuts: List<ShortcutPlaceholder>) {
+        updateViewState {
+            copy(triggerShortcuts = newTriggerShortcuts)
         }
+        performOperation(
+            temporaryShortcutRepository.setCodeOnPrepare(
+                getCodeFromTriggeredShortcutIds(newTriggerShortcuts.map { it.id })
+            )
+        )
+    }
+
+    fun onAddButtonClicked() {
+        val shortcutIdsInUse = currentViewState.triggerShortcuts.map { it.id }
+        val placeholders = shortcutPlaceholders
+            .filter { it.id != currentShortcutId && it.id !in shortcutIdsInUse }
+
+        if (placeholders.isEmpty()) {
+            showNoShortcutsError()
+        } else {
+            emitEvent(TriggerShortcutsEvent.ShowShortcutPickerForAdding(placeholders))
+        }
+    }
+
+    private fun showNoShortcutsError() {
+        emitEvent(ViewModelEvent.ShowDialog { context ->
+            DialogBuilder(context)
+                .title(R.string.title_add_trigger_shortcut)
+                .message(R.string.error_add_trigger_shortcut_no_shortcuts)
+                .positive(R.string.dialog_ok)
+                .showIfPossible()
+        })
+    }
+
+    fun onAddShortcutDialogConfirmed(shortcutId: String) {
+        val newTriggerShortcuts = currentViewState.triggerShortcuts
+            .plus(getShortcutPlaceholder(shortcutId))
+        updateTriggerShortcuts(newTriggerShortcuts)
+    }
+
+    fun onRemoveShortcutDialogConfirmed(shortcutId: String) {
+        val newTriggerShortcuts = currentViewState.triggerShortcuts.filter { it.id != shortcutId }
+        updateTriggerShortcuts(newTriggerShortcuts)
+    }
+
+    fun onShortcutClicked(shortcutId: String) {
+        val shortcutPlaceholder = shortcutPlaceholders
+            .firstOrNull { it.id == shortcutId }
+            ?: return
+        emitEvent(TriggerShortcutsEvent.ShowRemoveShortcutDialog(shortcutId, shortcutPlaceholder.name))
     }
 }

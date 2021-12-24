@@ -2,58 +2,51 @@ package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
+import ch.rmy.android.http_shortcuts.activities.BaseAdapter
 import ch.rmy.android.http_shortcuts.databinding.ListItemShortcutTriggerBinding
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
 import ch.rmy.android.http_shortcuts.utils.HTMLUtil
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 
-class ShortcutsAdapter(lifecycleOwner: LifecycleOwner, private val shortcuts: ListLiveData<ShortcutPlaceholder>) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ShortcutsAdapter : BaseAdapter<ShortcutPlaceholder>() {
 
-    init {
-        shortcuts.observe(lifecycleOwner, {
-            notifyDataSetChanged()
-        })
-        setHasStableIds(true)
+    sealed interface UserEvent {
+        data class ShortcutClicked(val id: String) : UserEvent
     }
 
-    var itemClickListener: ((ShortcutPlaceholder) -> Unit)? = null
+    private val userEventSubject = PublishSubject.create<UserEvent>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
-        ShortcutViewHolder(ListItemShortcutTriggerBinding.inflate(LayoutInflater.from(parent.context), parent, false), this)
+    val userEvents: Observable<UserEvent>
+        get() = userEventSubject
 
-    override fun getItemCount() = shortcuts.size
+    override fun areItemsTheSame(oldItem: ShortcutPlaceholder, newItem: ShortcutPlaceholder): Boolean =
+        oldItem.id == newItem.id
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as ShortcutViewHolder).setItem(getItem(position))
+    override fun createViewHolder(viewType: Int, parent: ViewGroup, layoutInflater: LayoutInflater): RecyclerView.ViewHolder =
+        ShortcutViewHolder(ListItemShortcutTriggerBinding.inflate(layoutInflater, parent, false))
+
+    override fun bindViewHolder(holder: RecyclerView.ViewHolder, position: Int, item: ShortcutPlaceholder) {
+        (holder as ShortcutViewHolder).setItem(item)
     }
 
-    private fun getItem(position: Int): ShortcutPlaceholder =
-        shortcuts[position]!!
-
-    override fun getItemId(position: Int): Long =
-        UUIDUtils.toLong(getItem(position).id)
-
-    class ShortcutViewHolder(
+    inner class ShortcutViewHolder(
         private val binding: ListItemShortcutTriggerBinding,
-        adapter: ShortcutsAdapter,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private lateinit var item: ShortcutPlaceholder
+        private lateinit var shortcutId: String
 
         init {
-            itemView.setOnClickListener {
-                adapter.itemClickListener?.invoke(item)
+            binding.root.setOnClickListener {
+                userEventSubject.onNext(ShortcutsAdapter.UserEvent.ShortcutClicked(shortcutId))
             }
         }
 
         fun setItem(shortcut: ShortcutPlaceholder) {
-            this.item = shortcut
+            this.shortcutId = shortcut.id
             if (shortcut.isDeleted()) {
                 val deleted = itemView.context.getString(R.string.placeholder_deleted_shortcut)
                 binding.name.text = HTMLUtil.format("<i>$deleted</i>")

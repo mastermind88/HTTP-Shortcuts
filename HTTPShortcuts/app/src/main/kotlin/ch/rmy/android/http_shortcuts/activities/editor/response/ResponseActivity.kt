@@ -2,39 +2,24 @@ package ch.rmy.android.http_shortcuts.activities.editor.response
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.EditText
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.databinding.ActivityResponseBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observeChecked
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.toLiveData
+import ch.rmy.android.http_shortcuts.extensions.setHint
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils
-import ch.rmy.android.http_shortcuts.views.LabelledSpinner
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 
 class ResponseActivity : BaseActivity() {
 
     private val viewModel: ResponseViewModel by bindViewModel()
-    private val shortcutData by lazy {
-        viewModel.shortcut
-    }
-    private val variablesData by lazy {
-        viewModel.variables
-    }
-    private val variablePlaceholderProvider by lazy {
-        VariablePlaceholderProvider(variablesData)
-    }
-
-    private var responseHandlingBound = false
-    private var successMessageInitialized = false
+    private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
     private lateinit var binding: ActivityResponseBinding
 
@@ -44,7 +29,9 @@ class ResponseActivity : BaseActivity() {
         setTitle(R.string.label_response_handling)
 
         initViews()
-        bindViewsToViewModel()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize()
     }
 
     private fun initViews() {
@@ -64,83 +51,65 @@ class ResponseActivity : BaseActivity() {
             }
         )
 
-        VariableViewUtils.bindVariableViews(binding.inputSuccessMessage, binding.variableButtonSuccessMessage, variablePlaceholderProvider)
-
         binding.instructionsScriptingHint.text = getString(R.string.message_response_handling_scripting_hint, getString(R.string.label_scripting))
     }
 
-    private fun bindViewsToViewModel() {
-        shortcutData.observe(this) {
-            updateShortcutViews()
-            if (!responseHandlingBound && shortcutData.value?.responseHandling != null) {
-                shortcutData.value!!.responseHandling!!.toLiveData().observe(this) {
-                    updateShortcutViews()
-                }
-                responseHandlingBound = true
+    private fun initUserInputBindings() {
+        binding.inputResponseUiType.selectionChanges
+            .subscribe { responseUiType ->
+                viewModel.onResponseUiTypeChanged(responseUiType)
             }
-        }
+            .attachTo(destroyer)
+        binding.inputResponseSuccessOutput
+            .selectionChanges
+            .subscribe { responseSuccessOutput ->
+                viewModel.onResponseSuccessOutputChanged(responseSuccessOutput)
+            }
+            .attachTo(destroyer)
+        binding.inputResponseFailureOutput
+            .selectionChanges
+            .subscribe { responseFailureOutput ->
+                viewModel.onResponseFailureOutputChanged(responseFailureOutput)
+            }
+            .attachTo(destroyer)
+        binding.inputSuccessMessage
+            .observeTextChanges()
+            .subscribe {
+                viewModel.onSuccessMessageChanged(binding.inputSuccessMessage.rawString)
+            }
+            .attachTo(destroyer)
+        binding.inputIncludeMetaInformation
+            .observeChecked()
+            .subscribe { isChecked ->
+                viewModel.onIncludeMetaInformationChanged(isChecked)
+            }
+            .attachTo(destroyer)
 
-        bindSpinner(binding.inputResponseUiType)
-        bindSpinner(binding.inputResponseSuccessOutput)
-        bindSpinner(binding.inputResponseFailureOutput)
-
-        bindTextChangeListener(binding.inputSuccessMessage) { shortcutData.value?.bodyContent }
-
-        binding.inputIncludeMetaInformation.setOnCheckedChangeListener { _, _ ->
-            updateViewModelFromViews()
-                .subscribe()
-                .attachTo(destroyer)
-        }
+        VariableViewUtils.bindVariableViews(binding.inputSuccessMessage, binding.variableButtonSuccessMessage, variablePlaceholderProvider)
     }
 
-    private fun bindSpinner(spinner: LabelledSpinner) {
-        spinner.selectionChanges
-            .concatMapCompletable { updateViewModelFromViews() }
-            .subscribe()
+    private fun initViewModelBindings() {
+        viewModel.viewState
+            .subscribe { viewState ->
+                binding.inputSuccessMessage.setHint(viewState.successMessageHint)
+                binding.inputResponseUiType.selectedItem = viewState.responseUiType
+                binding.inputResponseSuccessOutput.selectedItem = viewState.responseSuccessOutput
+                binding.inputResponseFailureOutput.selectedItem = viewState.responseFailureOutput
+                binding.inputIncludeMetaInformation.isChecked = viewState.includeMetaInformation
+                binding.inputSuccessMessage.rawString = viewState.successMessage
+                binding.inputResponseUiType.visible = viewState.responseUiTypeVisible
+                binding.containerInputSuccessMessage.visible = viewState.successMessageVisible
+                binding.inputIncludeMetaInformation.visible = viewState.includeMetaInformationVisible
+                variablePlaceholderProvider.variables = viewState.variables
+            }
+            .attachTo(destroyer)
+        viewModel.events
+            .subscribe(::handleEvent)
             .attachTo(destroyer)
     }
 
-    private fun bindTextChangeListener(textView: EditText, currentValueProvider: () -> String?) {
-        textView.observeTextChanges()
-            .debounce(300, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .filter { it.toString() != currentValueProvider.invoke() }
-            .concatMapCompletable { updateViewModelFromViews() }
-            .subscribe()
-            .attachTo(destroyer)
-    }
-
-    private fun updateViewModelFromViews(): Completable =
-        viewModel.setResponseHandling(
-            uiType = binding.inputResponseUiType.selectedItem,
-            successOutput = binding.inputResponseSuccessOutput.selectedItem,
-            failureOutput = binding.inputResponseFailureOutput.selectedItem,
-            successMessage = binding.inputSuccessMessage.rawString,
-            includeMetaInfo = binding.inputIncludeMetaInformation.isChecked,
-        )
-
-    private fun updateShortcutViews() {
-        val shortcut = shortcutData.value ?: return
-        val responseHandling = shortcut.responseHandling ?: return
-
-        binding.inputSuccessMessage.hint =
-            String.format(getString(R.string.executed), shortcut.name.ifEmpty { getString(R.string.shortcut_safe_name) })
-
-        binding.inputResponseUiType.selectedItem = responseHandling.uiType
-        binding.inputResponseSuccessOutput.selectedItem = responseHandling.successOutput
-        binding.inputResponseFailureOutput.selectedItem = responseHandling.failureOutput
-        binding.inputIncludeMetaInformation.isChecked = responseHandling.includeMetaInfo
-
-        if (!successMessageInitialized) {
-            binding.inputSuccessMessage.rawString = responseHandling.successMessage
-            successMessageInitialized = true
-        }
-
-        val hasOutput = responseHandling.successOutput != ResponseHandling.SUCCESS_OUTPUT_NONE ||
-            responseHandling.failureOutput != ResponseHandling.FAILURE_OUTPUT_NONE
-        binding.inputResponseUiType.visible = hasOutput
-        binding.containerInputSuccessMessage.visible = responseHandling.successOutput == ResponseHandling.SUCCESS_OUTPUT_MESSAGE
-        binding.inputIncludeMetaInformation.visible = responseHandling.uiType == ResponseHandling.UI_TYPE_WINDOW && hasOutput
+    override fun onBackPressed() {
+        viewModel.onBackPressed()
     }
 
     class IntentBuilder(context: Context) : BaseIntentBuilder(context, ResponseActivity::class.java)
