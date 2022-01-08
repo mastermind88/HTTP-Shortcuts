@@ -6,21 +6,15 @@ import android.content.Context
 
 class WidgetProvider : AppWidgetProvider() {
 
+    private val widgetManager = WidgetManager()
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, widgetIds: IntArray) {
-        WidgetManager.updateWidgets(context, widgetIds.toTypedArray())
+        widgetManager.updateWidgets(context, widgetIds.toList())
+            .blockingAwait() // TODO: Handle with a worker instead of blocking
     }
 
     override fun onDeleted(context: Context, widgetIds: IntArray) {
-        Transactions.commit { realm ->
-            Repository.getDeadWidgets(realm)
-                .forEach { widget ->
-                    widget.deleteFromRealm()
-                }
-            Repository.getWidgetsByIds(realm, widgetIds.toTypedArray())
-                .forEach { widget ->
-                    widget.deleteFromRealm()
-                }
-        }
-            .subscribe()
+        widgetManager.deleteWidgets(widgetIds.toList())
+            .blockingAwait() // TODO: Handle with a worker instead of blocking
     }
 }

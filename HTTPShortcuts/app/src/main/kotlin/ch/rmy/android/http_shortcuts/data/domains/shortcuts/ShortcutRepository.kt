@@ -8,7 +8,9 @@ import ch.rmy.android.http_shortcuts.data.domains.getShortcutById
 import ch.rmy.android.http_shortcuts.data.domains.getShortcutByNameOrId
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
+import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
@@ -105,6 +107,20 @@ class ShortcutRepository : BaseRepository() {
                     responseHandling?.deleteFromRealm()
                     deleteFromRealm()
                 }
+        }
+
+    fun setIcon(shortcutId: String, icon: ShortcutIcon): Completable =
+        commitTransaction {
+            getShortcutById(shortcutId)
+                .findFirst()
+                ?.icon = icon
+        }
+
+    fun setName(shortcutId: String, name: String): Completable =
+        commitTransaction {
+            getShortcutById(shortcutId)
+                .findFirst()
+                ?.name = name
         }
 
 }

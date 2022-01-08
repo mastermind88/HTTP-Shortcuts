@@ -6,14 +6,18 @@ import android.os.Bundle
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.main.MainActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.extensions.startActivity
-import ch.rmy.android.http_shortcuts.plugin.VariableHelper.getTaskerInputInfos
 import com.joaomgcd.taskerpluginlibrary.config.TaskerPluginConfig
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInput
+import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfo
+import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfos
 
 class PluginEditActivity : BaseActivity(), TaskerPluginConfig<Input> {
 
     private var input: Input? = null
+
+    private val variableRepository = VariableRepository()
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +55,27 @@ class PluginEditActivity : BaseActivity(), TaskerPluginConfig<Input> {
             ),
             getTaskerInputInfos(),
         )
+
+    private fun getTaskerInputInfos() =
+        TaskerInputInfos().apply {
+            getVariableKeys()
+                .forEach { variableKey ->
+                    add(
+                        TaskerInputInfo(
+                            key = variableKey,
+                            label = variableKey,
+                            description = null,
+                            ignoreInStringBlurb = false,
+                            value = "%$variableKey",
+                        )
+                    )
+                }
+        }
+
+    private fun getVariableKeys() =
+        variableRepository.getVariables()
+            .blockingGet() // TODO: Find a way to avoid using blockingGet
+            .map { it.key }
 
     override fun assignFromInput(input: TaskerInput<Input>) {
         this.input = input.regular

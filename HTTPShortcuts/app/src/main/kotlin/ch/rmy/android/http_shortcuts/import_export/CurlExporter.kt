@@ -1,6 +1,7 @@
 package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.mapFor
@@ -22,10 +23,11 @@ object CurlExporter {
     }
 
     private fun resolveVariables(context: Context, shortcut: Shortcut) =
-        Controller().use { controller ->
-            VariableResolver(context)
-                .resolve(controller.getVariables().detachFromRealm(), shortcut)
-        }
+        VariableRepository().getVariables()
+            .flatMap { variables ->
+                VariableResolver(context)
+                    .resolve(variables, shortcut)
+            }
 
     private fun generateCommand(shortcut: Shortcut, variableValues: Map<String, String>): CurlCommand =
         CurlCommand.Builder()

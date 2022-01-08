@@ -30,18 +30,19 @@ class VariableRepository : BaseRepository() {
         }
 
     fun getObservableVariables(): Observable<List<Variable>> =
-        observeList {
+        observeItem {
             getBase()
-                .findFirst()!! // FIXME
-                .variables
         }
+            .map { base ->
+                base.variables
+            }
 
     fun getVariables(): Single<List<Variable>> =
         queryItem {
             getBase()
         }
-            .map {
-                it.variables
+            .map { base ->
+                base.variables
             }
 
     fun saveVariable(variable: Variable) =

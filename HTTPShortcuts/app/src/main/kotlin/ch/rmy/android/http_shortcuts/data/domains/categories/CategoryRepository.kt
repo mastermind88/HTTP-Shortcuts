@@ -11,11 +11,12 @@ import io.reactivex.Observable
 class CategoryRepository : BaseRepository() {
 
     fun getObservableCategories(): Observable<List<Category>> =
-        observeList {
+        observeItem {
             getBase()
-                .findFirstAsync()
-                .categories
         }
+            .map { base ->
+                base.categories
+            }
 
     fun createCategory(name: String): Completable =
         commitTransaction {

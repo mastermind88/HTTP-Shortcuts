@@ -14,8 +14,11 @@ import androidx.core.net.toUri
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.execute.ProgressIndicator
 import ch.rmy.android.http_shortcuts.activities.response.DisplayResponseActivity
+import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
+import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExecutionsRepository
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
-import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -26,6 +29,7 @@ import ch.rmy.android.http_shortcuts.exceptions.ResponseTooLargeException
 import ch.rmy.android.http_shortcuts.exceptions.ResumeLaterException
 import ch.rmy.android.http_shortcuts.exceptions.UnsupportedFeatureException
 import ch.rmy.android.http_shortcuts.exceptions.UserException
+import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.cancel
 import ch.rmy.android.http_shortcuts.extensions.finishWithoutAnimation
 import ch.rmy.android.http_shortcuts.extensions.loadImage
@@ -78,11 +82,13 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
     override val initializeWithTheme: Boolean
         get() = false
 
-    private val controller by lazy {
-        destroyer.own(Controller())
-    }
-    private lateinit var base: Base
+    private val shortcutRepository = ShortcutRepository()
+    private val variableRepository = VariableRepository()
+    private val appRepository = AppRepository()
+    private val pendingExecutionsRepository = PendingExecutionsRepository()
+
     private lateinit var shortcut: Shortcut
+    private lateinit var globalCode: String
 
     private val progressIndicator: ProgressIndicator by lazy {
         ProgressIndicator(this)
@@ -111,9 +117,6 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
     private val shortcutName by lazy {
         shortcut.name.ifEmpty { getString(R.string.shortcut_safe_name) }
     }
-    private val globalCode: String by lazy {
-        base.globalCode ?: ""
-    }
 
     /* Caches / State */
     private var fileUploadManager: FileUploadManager? = null
@@ -125,13 +128,14 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        Commons
+        pendingExecutionsRepository
             .createPendingExecution(
                 shortcutId = IntentUtil.getShortcutId(intent),
                 resolvedVariables = IntentUtil.getVariableValues(intent),
                 tryNumber = 0,
             )
             .subscribe()
+            .attachTo(destroyer)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,15 +143,43 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         if (!isRealmAvailable) {
             return
         }
-
         SessionMonitor.onSessionStarted()
 
-        shortcut = controller.getShortcutById(shortcutId)?.detachFromRealm() ?: run {
-            showToast(getString(R.string.shortcut_not_found), long = true)
-            finishWithoutAnimation()
+        appRepository.getGlobalCode()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { globalCode ->
+                    this.globalCode = globalCode
+                    onDataLoaded()
+                },
+                { error ->
+                    logException(error)
+                    showToast(getString(R.string.error_generic), long = true)
+                    finishWithoutAnimation()
+                },
+            )
+            .attachTo(destroyer)
+
+        shortcutRepository.getShortcutById(shortcutId)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { shortcut ->
+                    this.shortcut = shortcut
+                    onDataLoaded()
+                },
+                { error ->
+                    logException(error)
+                    showToast(getString(R.string.shortcut_not_found), long = true)
+                    finishWithoutAnimation()
+                },
+            )
+            .attachTo(destroyer)
+    }
+
+    private fun onDataLoaded() {
+        if (!(::shortcut).isInitialized || !(::globalCode).isInitialized) {
             return
         }
-        base = controller.getBase().detachFromRealm()
         setTheme(themeHelper.transparentTheme)
 
         destroyer.own {
@@ -283,18 +315,21 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
             }
 
     private fun resolveVariablesAndExecute(): Completable =
-        VariableResolver(context)
-            .resolve(
-                controller.getVariables().detachFromRealm(),
-                shortcut,
-                globalCode,
-                variableValues,
-            )
+        variableRepository.getVariables()
+            .flatMap { variables ->
+                VariableResolver(context)
+                    .resolve(
+                        variables,
+                        shortcut,
+                        globalCode,
+                        variableValues,
+                    )
+            }
             .flatMapCompletable { variableManager ->
                 this.variableManager = variableManager
                 if (shouldDelayExecution()) {
                     val waitUntil = DateUtil.calculateDate(shortcut.delay)
-                    Commons.createPendingExecution(
+                    pendingExecutionsRepository.createPendingExecution(
                         shortcutId = shortcut.id,
                         resolvedVariables = variableManager.getVariableValuesByKeys(),
                         waitUntil = waitUntil,
@@ -524,7 +559,7 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
     private fun rescheduleExecution(): Completable =
         if (tryNumber < MAX_RETRY) {
             val waitUntil = DateUtil.calculateDate(calculateDelay())
-            Commons
+            pendingExecutionsRepository
                 .createPendingExecution(
                     shortcutId = shortcut.id,
                     resolvedVariables = variableManager.getVariableValuesByKeys(),

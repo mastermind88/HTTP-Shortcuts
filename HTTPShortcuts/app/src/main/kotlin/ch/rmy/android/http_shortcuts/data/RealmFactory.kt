@@ -12,7 +12,7 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmList
 
-internal class RealmFactory {
+class RealmFactory {
 
     fun createRealm(): Realm = Realm.getInstance(configuration)
 

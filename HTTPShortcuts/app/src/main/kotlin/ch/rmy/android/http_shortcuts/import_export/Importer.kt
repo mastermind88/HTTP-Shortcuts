@@ -111,7 +111,7 @@ class Importer(private val context: Context) {
 
     private fun importBase(base: Base, importMode: ImportMode) {
         RealmFactory.withRealmContext {
-            realmInstance.executeTransaction {
+            realmInstance.executeTransaction { realm ->
                 val oldBase = getBase().findFirst()!!
                 if (base.title != null) {
                     oldBase.title = base.title

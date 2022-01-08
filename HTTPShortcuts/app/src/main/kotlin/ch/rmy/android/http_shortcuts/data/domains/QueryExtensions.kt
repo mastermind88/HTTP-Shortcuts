@@ -80,10 +80,10 @@ fun RealmContext.getAppLock(): RealmQuery<AppLock> =
     realmInstance
         .where<AppLock>()
 
-fun RealmContext.getWidgetsByIds(widgetIds: Array<Int>): RealmQuery<Widget> =
+fun RealmContext.getWidgetsByIds(widgetIds: List<Int>): RealmQuery<Widget> =
     realmInstance
         .where<Widget>()
-        .`in`(Widget.FIELD_WIDGET_ID, widgetIds)
+        .`in`(Widget.FIELD_WIDGET_ID, widgetIds.toTypedArray())
 
 fun RealmContext.getDeadWidgets(): RealmQuery<Widget> =
     realmInstance
