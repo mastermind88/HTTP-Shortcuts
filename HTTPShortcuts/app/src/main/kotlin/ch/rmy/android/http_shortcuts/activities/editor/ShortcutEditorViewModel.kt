@@ -35,6 +35,7 @@ import ch.rmy.android.http_shortcuts.icons.Icons
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
+import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import ch.rmy.android.http_shortcuts.utils.Validation.isAcceptableHttpUrl
 import ch.rmy.android.http_shortcuts.utils.Validation.isAcceptableUrl
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
@@ -50,6 +51,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     private val shortcutRepository = ShortcutRepository()
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
     private val variableRepository = VariableRepository()
+    private val widgetManager = WidgetManager()
 
     private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
@@ -93,9 +95,8 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
                 },
                 {
                     finish()
-                    // TODO: Make sure that the snackbar is displayed even after the activity is finished
                     showSnackbar(R.string.error_generic)
-                }
+                },
             )
             .attachTo(destroyer)
     }
@@ -249,31 +250,6 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             )
         }
 
-    /*
-
-    fun trySave(): Single<SaveResult> {
-        val id = shortcutId ?: newUUID()
-        var name: String? = null
-        var icon: ShortcutIcon? = null
-        return Transactions
-            .commit { realm ->
-                val shortcut = Repository.getShortcutById(realm, TEMPORARY_ID) ?: return@commit
-                name = shortcut.name
-                icon = shortcut.icon
-                validateShortcut(shortcut)
-
-                val newShortcut = Repository.copyShortcut(realm, shortcut, id)
-                if (shortcutId == null && categoryId != null) {
-                    Repository.getCategoryById(realm, categoryId!!)
-                        ?.shortcuts
-                        ?.add(newShortcut)
-                }
-
-                Repository.deleteShortcut(realm, TEMPORARY_ID)
-            }
-    }
-     */
-
     fun onShortcutIconChanged(icon: ShortcutIcon) {
         updateViewState {
             copy(shortcutIcon = icon)
@@ -336,14 +312,26 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             return
         }
 
-        // TODO
-        // onSaveSuccessful
+        save()
+    }
+
+    private fun save() {
+        val isNewShortcut = shortcutId == null
+        val shortcutId = shortcutId ?: newUUID()
+        performOperation(
+            shortcutRepository.copyTemporaryShortcutToShortcut(shortcutId, categoryId?.takeIf { isNewShortcut })
+                .andThen(temporaryShortcutRepository.deleteTemporaryShortcut()),
+        ) {
+            onSaveSuccessful(shortcutId)
+        }
     }
 
     private fun onSaveSuccessful(shortcutId: String) {
         LauncherShortcutManager.updatePinnedShortcut(context, shortcutId, shortcut.name, shortcut.icon)
-        WidgetManager.updateWidgets(context, shortcutId)
-        finish(result = RESULT_OK, intent = Intent().putExtra(RESULT_SHORTCUT_ID, shortcutId))
+        performOperation(widgetManager.updateWidgets(context, shortcutId))
+        waitForOperationsToFinish {
+            finish(result = RESULT_OK, intent = Intent().putExtra(RESULT_SHORTCUT_ID, shortcutId))
+        }
     }
 
     fun onBackPressed() {
@@ -367,7 +355,10 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     }
 
     private fun onDiscardDialogConfirmed() {
-        finish(result = Activity.RESULT_CANCELED)
+        performOperation(temporaryShortcutRepository.deleteTemporaryShortcut())
+        waitForOperationsToFinish {
+            finish(result = Activity.RESULT_CANCELED)
+        }
     }
 
     fun onBasicRequestSettingsButtonClicked() {

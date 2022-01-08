@@ -356,7 +356,7 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
     }
 
     private fun returnForHomeScreenWidgetPlacement(shortcutId: String, showLabel: Boolean, labelColor: String?) {
-        WidgetManager.createWidget(widgetId, shortcutId, showLabel, labelColor)
+        WidgetManager().createWidget(widgetId, shortcutId, showLabel, labelColor)
             .subscribe {
                 WidgetManager.updateWidgets(context, shortcutId)
                 setResult(Activity.RESULT_OK, WidgetManager.getIntent(widgetId))

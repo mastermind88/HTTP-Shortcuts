@@ -21,16 +21,9 @@ class ScriptingViewModel(application: Application) : BaseViewModel<ScriptingView
     private val shortcutRepository = ShortcutRepository()
     private val variableRepository = VariableRepository()
 
-    protected var shortcutId: String? = null
-
     private lateinit var shortcut: Shortcut
 
     override fun initViewState() = ScriptingViewState()
-
-    fun initialize(shortcutId: String?) {
-        this.shortcutId = shortcutId
-        initialize()
-    }
 
     override fun onInitialized() {
         temporaryShortcutRepository.getTemporaryShortcut()

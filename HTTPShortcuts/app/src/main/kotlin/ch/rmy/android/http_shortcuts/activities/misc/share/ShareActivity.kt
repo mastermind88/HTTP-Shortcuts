@@ -11,6 +11,7 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.finishWithoutAnimation
 import ch.rmy.android.http_shortcuts.extensions.logException
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.utils.FileUtil
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils
@@ -37,9 +38,7 @@ class ShareActivity : BaseActivity(), Entrypoint {
     }
 
     private fun initViewModelBindings() {
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     private fun getFileUris(): List<Uri> =

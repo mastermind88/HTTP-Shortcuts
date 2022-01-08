@@ -6,6 +6,7 @@ import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getCategoryById
 import ch.rmy.android.http_shortcuts.data.domains.getShortcutById
 import ch.rmy.android.http_shortcuts.data.domains.getShortcutByNameOrId
+import ch.rmy.android.http_shortcuts.data.domains.getTemporaryShortcut
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
@@ -79,6 +80,19 @@ class ShortcutRepository : BaseRepository() {
             val shortcut = getShortcutById(shortcutId)
                 .findFirst()!!
             copyShortcut(shortcut, Shortcut.TEMPORARY_ID)
+        }
+
+    fun copyTemporaryShortcutToShortcut(shortcutId: String, categoryId: String?) =
+        commitTransaction {
+            val temporaryShortcut = getTemporaryShortcut()
+                .findFirst() ?: return@commitTransaction
+            val shortcut = copyShortcut(temporaryShortcut, shortcutId)
+            if (categoryId != null) {
+                val category = getCategoryById(categoryId)
+                    .findFirst()
+                    ?: return@commitTransaction
+                category.shortcuts.add(shortcut)
+            }
         }
 
     private fun RealmTransactionContext.copyShortcut(sourceShortcut: Shortcut, targetShortcutId: String): Shortcut =

@@ -16,6 +16,7 @@ import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.focus
 import ch.rmy.android.http_shortcuts.extensions.logInfo
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setMaxLength
 import ch.rmy.android.http_shortcuts.extensions.setSubtitle
@@ -123,40 +124,36 @@ class ShortcutEditorActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                val type = viewState.shortcutExecutionType
-                toolbar?.setSubtitle(viewState.toolbarSubtitle)
-                binding.inputIcon.setIcon(viewState.shortcutIcon, animated = true)
-                binding.inputShortcutName.setTextSafely(viewState.shortcutName)
-                binding.inputDescription.setTextSafely(viewState.shortcutDescription)
-                binding.buttonBasicRequestSettings.visible = type.usesUrl
-                binding.dividerBelowBasicRequestSettings.visible = type.usesUrl
-                binding.buttonHeaders.visible = type.usesRequestOptions
-                binding.dividerBelowHeaders.visible = type.usesRequestOptions
-                binding.buttonRequestBody.visible = type.usesRequestOptions
-                binding.dividerBelowRequestBody.visible = type.usesRequestOptions
-                binding.buttonAuthentication.visible = type.usesRequestOptions
-                binding.dividerBelowAuthentication.visible = type.usesRequestOptions
-                binding.buttonResponseHandling.visible = type.usesResponse
-                binding.buttonAdvancedTechnicalSettings.visible = type.usesRequestOptions
-                binding.buttonScripting.visible = type.usesScriptingEditor
-                binding.buttonTriggerShortcuts.visible = type == ShortcutExecutionType.TRIGGER
-                binding.dividerBelowScripting.visible = type.usesScriptingEditor || type == ShortcutExecutionType.TRIGGER
-                binding.buttonBasicRequestSettings.setSubtitle(viewState.basicSettingsSubtitle)
-                binding.buttonHeaders.setSubtitle(viewState.headersSubtitle)
-                binding.buttonRequestBody.setSubtitle(viewState.requestBodySettingsSubtitle)
-                binding.buttonAuthentication.setSubtitle(viewState.authenticationSettingsSubtitle)
-                binding.buttonScripting.setSubtitle(viewState.scriptingSubtitle)
-                binding.buttonTriggerShortcuts.setSubtitle(viewState.triggerShortcutsSubtitle)
-                binding.buttonRequestBody.isEnabled = viewState.requestBodyButtonEnabled
-                testMenuItem?.isVisible = viewState.testButtonVisible
-                saveMenuItem?.isVisible = viewState.saveButtonVisible
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            val type = viewState.shortcutExecutionType
+            toolbar?.setSubtitle(viewState.toolbarSubtitle)
+            binding.inputIcon.setIcon(viewState.shortcutIcon, animated = true)
+            binding.inputShortcutName.setTextSafely(viewState.shortcutName)
+            binding.inputDescription.setTextSafely(viewState.shortcutDescription)
+            binding.buttonBasicRequestSettings.visible = type.usesUrl
+            binding.dividerBelowBasicRequestSettings.visible = type.usesUrl
+            binding.buttonHeaders.visible = type.usesRequestOptions
+            binding.dividerBelowHeaders.visible = type.usesRequestOptions
+            binding.buttonRequestBody.visible = type.usesRequestOptions
+            binding.dividerBelowRequestBody.visible = type.usesRequestOptions
+            binding.buttonAuthentication.visible = type.usesRequestOptions
+            binding.dividerBelowAuthentication.visible = type.usesRequestOptions
+            binding.buttonResponseHandling.visible = type.usesResponse
+            binding.buttonAdvancedTechnicalSettings.visible = type.usesRequestOptions
+            binding.buttonScripting.visible = type.usesScriptingEditor
+            binding.buttonTriggerShortcuts.visible = type == ShortcutExecutionType.TRIGGER
+            binding.dividerBelowScripting.visible = type.usesScriptingEditor || type == ShortcutExecutionType.TRIGGER
+            binding.buttonBasicRequestSettings.setSubtitle(viewState.basicSettingsSubtitle)
+            binding.buttonHeaders.setSubtitle(viewState.headersSubtitle)
+            binding.buttonRequestBody.setSubtitle(viewState.requestBodySettingsSubtitle)
+            binding.buttonAuthentication.setSubtitle(viewState.authenticationSettingsSubtitle)
+            binding.buttonScripting.setSubtitle(viewState.scriptingSubtitle)
+            binding.buttonTriggerShortcuts.setSubtitle(viewState.triggerShortcutsSubtitle)
+            binding.buttonRequestBody.isEnabled = viewState.requestBodyButtonEnabled
+            testMenuItem?.isVisible = viewState.testButtonVisible
+            saveMenuItem?.isVisible = viewState.saveButtonVisible
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override val navigateUpIcon = R.drawable.ic_clear

@@ -383,6 +383,11 @@ class TemporaryShortcutRepository : BaseRepository() {
                 }
         }
 
+    fun deleteTemporaryShortcut(): Completable =
+        commitTransactionForShortcut { shortcut ->
+            shortcut.deleteFromRealm()
+        }
+
     companion object {
         private fun decode(text: String): String =
             try {

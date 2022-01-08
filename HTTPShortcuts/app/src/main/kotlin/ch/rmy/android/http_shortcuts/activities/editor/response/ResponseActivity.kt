@@ -8,6 +8,7 @@ import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.databinding.ActivityResponseBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeChecked
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setHint
@@ -89,23 +90,19 @@ class ResponseActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputSuccessMessage.setHint(viewState.successMessageHint)
-                binding.inputResponseUiType.selectedItem = viewState.responseUiType
-                binding.inputResponseSuccessOutput.selectedItem = viewState.responseSuccessOutput
-                binding.inputResponseFailureOutput.selectedItem = viewState.responseFailureOutput
-                binding.inputIncludeMetaInformation.isChecked = viewState.includeMetaInformation
-                binding.inputSuccessMessage.rawString = viewState.successMessage
-                binding.inputResponseUiType.visible = viewState.responseUiTypeVisible
-                binding.containerInputSuccessMessage.visible = viewState.successMessageVisible
-                binding.inputIncludeMetaInformation.visible = viewState.includeMetaInformationVisible
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputSuccessMessage.setHint(viewState.successMessageHint)
+            binding.inputResponseUiType.selectedItem = viewState.responseUiType
+            binding.inputResponseSuccessOutput.selectedItem = viewState.responseSuccessOutput
+            binding.inputResponseFailureOutput.selectedItem = viewState.responseFailureOutput
+            binding.inputIncludeMetaInformation.isChecked = viewState.includeMetaInformation
+            binding.inputSuccessMessage.rawString = viewState.successMessage
+            binding.inputResponseUiType.visible = viewState.responseUiTypeVisible
+            binding.containerInputSuccessMessage.visible = viewState.successMessageVisible
+            binding.inputIncludeMetaInformation.visible = viewState.includeMetaInformationVisible
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun onBackPressed() {

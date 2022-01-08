@@ -19,6 +19,7 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.cancel
 import ch.rmy.android.http_shortcuts.extensions.logException
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeChecked
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setSubtitle
@@ -107,23 +108,19 @@ class AdvancedSettingsActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputFollowRedirects.isChecked = viewState.followRedirects
-                binding.inputAcceptCertificates.isChecked = viewState.acceptAllCertificates
-                binding.buttonClientCert.isEnabled = viewState.isClientCertButtonEnabled
-                binding.buttonClientCert.setSubtitle(viewState.clientCertSubtitle)
-                binding.inputAcceptCookies.isChecked = viewState.acceptCookies
-                binding.inputTimeout.setSubtitle(viewState.timeoutSubtitle)
-                binding.inputProxyHost.rawString = viewState.proxyHost
-                binding.inputProxyPort.setText(viewState.proxyPort)
-                binding.inputSsid.setText(viewState.wifiSsid)
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputFollowRedirects.isChecked = viewState.followRedirects
+            binding.inputAcceptCertificates.isChecked = viewState.acceptAllCertificates
+            binding.buttonClientCert.isEnabled = viewState.isClientCertButtonEnabled
+            binding.buttonClientCert.setSubtitle(viewState.clientCertSubtitle)
+            binding.inputAcceptCookies.isChecked = viewState.acceptCookies
+            binding.inputTimeout.setSubtitle(viewState.timeoutSubtitle)
+            binding.inputProxyHost.rawString = viewState.proxyHost
+            binding.inputProxyPort.setText(viewState.proxyPort)
+            binding.inputSsid.setText(viewState.wifiSsid)
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {

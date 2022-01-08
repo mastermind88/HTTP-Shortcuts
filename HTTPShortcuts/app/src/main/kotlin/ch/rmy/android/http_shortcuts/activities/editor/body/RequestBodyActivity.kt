@@ -14,6 +14,7 @@ import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setTextSafely
 import ch.rmy.android.http_shortcuts.extensions.visible
@@ -117,25 +118,21 @@ class RequestBodyActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                adapter.items = viewState.parameters
-                isDraggingEnabled = viewState.isDraggingEnabled
+        viewModel.viewState.observe(this) { viewState ->
+            adapter.items = viewState.parameters
+            isDraggingEnabled = viewState.isDraggingEnabled
 
-                binding.inputRequestBodyType.selectedItem = viewState.requestBodyType
-                binding.inputContentType.setTextSafely(viewState.contentType)
-                binding.inputBodyContent.rawString = viewState.bodyContent
-                binding.parameterList.visible = viewState.parameterListVisible
-                binding.buttonAddParameter.visible = viewState.addParameterButtonVisible
-                binding.containerInputContentType.visible = viewState.contentTypeVisible
-                binding.containerInputBodyContent.visible = viewState.bodyContentVisible
+            binding.inputRequestBodyType.selectedItem = viewState.requestBodyType
+            binding.inputContentType.setTextSafely(viewState.contentType)
+            binding.inputBodyContent.rawString = viewState.bodyContent
+            binding.parameterList.visible = viewState.parameterListVisible
+            binding.buttonAddParameter.visible = viewState.addParameterButtonVisible
+            binding.containerInputContentType.visible = viewState.contentTypeVisible
+            binding.containerInputBodyContent.visible = viewState.bodyContentVisible
 
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {
@@ -201,7 +198,9 @@ class RequestBodyActivity : BaseActivity() {
             .show(context)
             .subscribe { event ->
                 when (event) {
-                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.onAddFileParameterDialogConfirmed(event.keyName, event.fileName, multiple)
+                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.onAddFileParameterDialogConfirmed(event.keyName,
+                        event.fileName,
+                        multiple)
                     else -> Completable.complete()
                 }
             }

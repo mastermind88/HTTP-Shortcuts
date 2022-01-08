@@ -26,6 +26,7 @@ import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.utils.Destroyer
 import ch.rmy.android.http_shortcuts.utils.LocaleHelper
+import ch.rmy.android.http_shortcuts.utils.SnackbarManager
 import ch.rmy.android.http_shortcuts.utils.ThemeHelper
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -61,6 +62,11 @@ abstract class BaseActivity : AppCompatActivity() {
                 throw e
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        SnackbarManager.showEnqueuedSnackbars(this)
     }
 
     override fun attachBaseContext(base: Context) {

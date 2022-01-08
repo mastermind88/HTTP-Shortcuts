@@ -17,6 +17,7 @@ import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.mapFor
 import ch.rmy.android.http_shortcuts.extensions.mapIf
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
@@ -77,16 +78,12 @@ class VariablesActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                // TODO
-                adapter.items = viewState.variables
-                isDraggingEnabled = viewState.isDraggingEnabled
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            // TODO
+            adapter.items = viewState.variables
+            isDraggingEnabled = viewState.isDraggingEnabled
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {

@@ -12,6 +12,7 @@ import ch.rmy.android.http_shortcuts.databinding.ActivityExecutionSettingsBindin
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeChecked
 import ch.rmy.android.http_shortcuts.extensions.setSubtitle
 import ch.rmy.android.http_shortcuts.extensions.visible
@@ -71,20 +72,16 @@ class ExecutionSettingsActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputRequireConfirmation.isChecked = viewState.requireConfirmation
-                binding.inputLauncherShortcut.visible = viewState.launcherShortcutOptionVisible
-                binding.inputLauncherShortcut.isChecked = viewState.launcherShortcut
-                binding.inputQuickTileShortcut.visible = viewState.quickSettingsTileShortcutOptionVisible
-                binding.inputQuickTileShortcut.isChecked = viewState.quickSettingsTileShortcut
-                binding.inputWaitForConnection.isChecked = viewState.isWaitForNetwork
-                binding.inputDelay.setSubtitle(viewState.delaySubtitle)
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputRequireConfirmation.isChecked = viewState.requireConfirmation
+            binding.inputLauncherShortcut.visible = viewState.launcherShortcutOptionVisible
+            binding.inputLauncherShortcut.isChecked = viewState.launcherShortcut
+            binding.inputQuickTileShortcut.visible = viewState.quickSettingsTileShortcutOptionVisible
+            binding.inputQuickTileShortcut.isChecked = viewState.quickSettingsTileShortcut
+            binding.inputWaitForConnection.isChecked = viewState.isWaitForNetwork
+            binding.inputDelay.setSubtitle(viewState.delaySubtitle)
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {

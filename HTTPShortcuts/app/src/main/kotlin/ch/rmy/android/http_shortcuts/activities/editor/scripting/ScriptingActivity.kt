@@ -17,6 +17,7 @@ import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.color
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.insertAroundCursor
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setHint
 import ch.rmy.android.http_shortcuts.extensions.setTextSafely
@@ -79,7 +80,7 @@ class ScriptingActivity : BaseActivity() {
 
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize(currentShortcutId)
+        viewModel.initialize()
     }
 
     private fun initUserInputBindings() {
@@ -140,23 +141,19 @@ class ScriptingActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputCodePrepare.minLines = viewState.codePrepareMinLines
-                binding.inputCodePrepare.setHint(viewState.codePrepareHint)
-                binding.labelCodePrepare.visible = viewState.codePrepareVisible
-                binding.containerPostRequestScripting.visible = viewState.postRequestScriptingVisible
-                binding.inputCodeSuccess.setTextSafely(processTextForView(viewState.codeOnSuccess))
-                binding.inputCodeFailure.setTextSafely(processTextForView(viewState.codeOnFailure))
-                binding.inputCodePrepare.setTextSafely(processTextForView(viewState.codeOnPrepare))
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputCodePrepare.minLines = viewState.codePrepareMinLines
+            binding.inputCodePrepare.setHint(viewState.codePrepareHint)
+            binding.labelCodePrepare.visible = viewState.codePrepareVisible
+            binding.containerPostRequestScripting.visible = viewState.postRequestScriptingVisible
+            binding.inputCodeSuccess.setTextSafely(processTextForView(viewState.codeOnSuccess))
+            binding.inputCodeFailure.setTextSafely(processTextForView(viewState.codeOnFailure))
+            binding.inputCodePrepare.setTextSafely(processTextForView(viewState.codeOnPrepare))
 
-                shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+            shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {

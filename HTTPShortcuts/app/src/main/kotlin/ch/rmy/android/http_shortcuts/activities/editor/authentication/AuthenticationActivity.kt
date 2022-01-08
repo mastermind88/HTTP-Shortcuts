@@ -8,6 +8,7 @@ import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityAuthenticationBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
@@ -75,23 +76,19 @@ class AuthenticationActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.containerUsername.visible = viewState.isUsernameAndPasswordVisible
-                binding.containerPassword.visible = viewState.isUsernameAndPasswordVisible
-                binding.containerToken.visible = viewState.isTokenVisible
+        viewModel.viewState.observe(this) { viewState ->
+            binding.containerUsername.visible = viewState.isUsernameAndPasswordVisible
+            binding.containerPassword.visible = viewState.isUsernameAndPasswordVisible
+            binding.containerToken.visible = viewState.isTokenVisible
 
-                binding.inputAuthenticationMethod.selectedItem = viewState.authenticationMethod
-                binding.inputUsername.rawString = viewState.username
-                binding.inputPassword.rawString = viewState.password
-                binding.inputToken.rawString = viewState.token
+            binding.inputAuthenticationMethod.selectedItem = viewState.authenticationMethod
+            binding.inputUsername.rawString = viewState.username
+            binding.inputPassword.rawString = viewState.password
+            binding.inputToken.rawString = viewState.token
 
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun onBackPressed() {

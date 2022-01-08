@@ -11,6 +11,7 @@ import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
@@ -75,15 +76,12 @@ class RequestHeadersActivity : BaseActivity() {
 
     private fun initViewModelBindings() {
         viewModel.viewState
-            .subscribe { viewState ->
-                adapter.items = viewState.headerItems
-                isDraggingEnabled = viewState.isDraggingEnabled
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+        viewModel.viewState.observe(this) { viewState ->
+            adapter.items = viewState.headerItems
+            isDraggingEnabled = viewState.isDraggingEnabled
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun handleEvent(event: ViewModelEvent) {

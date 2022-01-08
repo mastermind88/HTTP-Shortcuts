@@ -23,6 +23,8 @@ class ShareViewModel(application: Application) : BaseViewModel<Unit>(application
     private val shortcutRepository = ShortcutRepository()
     private val variableRepository = VariableRepository()
 
+    private var initialized = false
+
     private lateinit var shortcuts: List<Shortcut>
     private lateinit var variables: List<Variable>
     private lateinit var text: String
@@ -31,6 +33,10 @@ class ShareViewModel(application: Application) : BaseViewModel<Unit>(application
     override fun initViewState() = Unit
 
     fun initialize(text: String?, fileUris: List<Uri>) {
+        if (initialized) {
+            return
+        }
+        initialized = true
         this.text = text ?: ""
         this.fileUris = fileUris
         shortcutRepository.getShortcuts()

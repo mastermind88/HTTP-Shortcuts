@@ -8,6 +8,7 @@ import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityBasicRequestSettingsBinding
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
@@ -50,7 +51,7 @@ class BasicRequestSettingsActivity : BaseActivity() {
             .subscribe { method ->
                 viewModel.onMethodChanged(method)
             }
-            .attachTo(destroyer            )
+            .attachTo(destroyer)
 
         binding.inputUrl.observeTextChanges()
             .debounce(300, TimeUnit.MILLISECONDS)
@@ -62,18 +63,14 @@ class BasicRequestSettingsActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputMethod.visible = viewState.methodVisible
-                binding.inputMethod.selectedItem = viewState.method
-                binding.inputUrl.rawString = viewState.url
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputMethod.visible = viewState.methodVisible
+            binding.inputMethod.selectedItem = viewState.method
+            binding.inputUrl.rawString = viewState.url
 
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     override fun onBackPressed() {

@@ -16,6 +16,7 @@ import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.color
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.insertAroundCursor
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setTextSafely
 import ch.rmy.android.http_shortcuts.icons.IconPicker
@@ -91,18 +92,14 @@ class GlobalScriptingActivity : BaseActivity() {
     }
 
     private fun initViewModelBindings() {
-        viewModel.viewState
-            .subscribe { viewState ->
-                binding.inputCode.setTextSafely(viewState.globalCode)
-                saveButton?.isVisible = viewState.saveButtonVisible
+        viewModel.viewState.observe(this) { viewState ->
+            binding.inputCode.setTextSafely(viewState.globalCode)
+            saveButton?.isVisible = viewState.saveButtonVisible
 
-                shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
-                variablePlaceholderProvider.variables = viewState.variables
-            }
-            .attachTo(destroyer)
-        viewModel.events
-            .subscribe(::handleEvent)
-            .attachTo(destroyer)
+            shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
+            variablePlaceholderProvider.variables = viewState.variables
+        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     private fun bindTextChangeListener(textView: EditText) {
