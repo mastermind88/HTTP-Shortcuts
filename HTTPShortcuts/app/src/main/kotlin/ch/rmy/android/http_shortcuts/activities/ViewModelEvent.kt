@@ -17,7 +17,10 @@ abstract class ViewModelEvent {
 
     data class OpenURL(val url: String) : ViewModelEvent()
 
-    data class OpenActivity(val intentBuilder: (context: Context) -> BaseIntentBuilder) : ViewModelEvent()
+    data class OpenActivity(
+        val intentBuilder: BaseIntentBuilder,
+        val requestCode: Int? = null,
+    ) : ViewModelEvent()
 
     // TODO: Refactor this so that it does not depend on actual view classes, and only contains data
     class ShowDialog(val dialogBuilder: (context: Context) -> Dialog?) : ViewModelEvent()

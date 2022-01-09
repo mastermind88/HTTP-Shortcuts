@@ -107,12 +107,10 @@ class ShareViewModel(application: Application) : BaseViewModel<Unit>(application
     }
 
     private fun executeShortcut(shortcutId: String, variableValues: Map<String, String> = emptyMap()) {
-        emitEvent(
-            ViewModelEvent.OpenActivity { context ->
-                ExecuteActivity.IntentBuilder(context, shortcutId)
-                    .variableValues(variableValues)
-                    .files(fileUris)
-            }
+        openActivity(
+            ExecuteActivity.IntentBuilder(shortcutId)
+                .variableValues(variableValues)
+                .files(fileUris)
         )
     }
 

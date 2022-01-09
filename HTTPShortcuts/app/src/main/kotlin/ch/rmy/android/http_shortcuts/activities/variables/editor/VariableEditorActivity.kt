@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.variables.editor
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
@@ -167,7 +166,7 @@ class VariableEditorActivity : BaseActivity() {
         compileVariable()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, VariableEditorActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(VariableEditorActivity::class.java) {
 
         fun variableType(type: String) = also {
             intent.putExtra(EXTRA_VARIABLE_TYPE, type)

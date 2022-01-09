@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.settings
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -115,7 +114,7 @@ class ContactActivity : BaseActivity() {
             userId = Settings(context).userId,
         )
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ContactActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(ContactActivity::class.java)
 
     companion object {
         private const val CAPTCHA_CODE = "HTTP Shortcuts"

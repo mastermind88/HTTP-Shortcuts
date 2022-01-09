@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -64,7 +63,6 @@ class ShortcutEditorActivity : BaseActivity() {
                 R.string.create_shortcut
             }
         )
-        setContentView(R.layout.activity_loading)
 
         initViews()
         initUserInputBindings()
@@ -196,7 +194,7 @@ class ShortcutEditorActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ShortcutEditorActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(ShortcutEditorActivity::class.java) {
 
         fun shortcutId(shortcutId: String) = also {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcutId)

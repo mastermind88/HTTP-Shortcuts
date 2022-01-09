@@ -60,10 +60,6 @@ class VoiceViewModel(application: Application) : BaseViewModel<Unit>(application
     }
 
     private fun executeShortcut(shortcutId: String) {
-        emitEvent(
-            ViewModelEvent.OpenActivity { context ->
-                ExecuteActivity.IntentBuilder(context, shortcutId)
-            }
-        )
+        openActivity(ExecuteActivity.IntentBuilder(shortcutId))
     }
 }

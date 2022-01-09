@@ -9,8 +9,8 @@ import ch.rmy.android.http_shortcuts.extensions.startActivity
 class ExecutionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        ExecuteActivity.IntentBuilder(context)
-            .build()
+        ExecuteActivity.IntentBuilder()
+            .build(context)
             .apply {
                 action = intent.action
                 data = intent.data

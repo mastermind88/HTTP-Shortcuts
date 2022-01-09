@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.activities.variables
 import android.app.Application
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.activities.variables.editor.VariableEditorActivity
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
@@ -63,7 +62,7 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
     }
 
     fun onHelpButtonClicked() {
-        emitEvent(ViewModelEvent.OpenURL(ExternalURLs.VARIABLES_DOCUMENTATION))
+        openURL(ExternalURLs.VARIABLES_DOCUMENTATION)
     }
 
     fun onVariableClicked(variableId: String) {
@@ -75,20 +74,16 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
         variables.firstOrNull { it.id == variableId }
 
     fun onCreationDialogVariableTypeSelected(variableType: String) {
-        emitEvent(
-            ViewModelEvent.OpenActivity { context ->
-                VariableEditorActivity.IntentBuilder(context)
-                    .variableType(variableType)
-            }
+        openActivity(
+            VariableEditorActivity.IntentBuilder()
+                .variableType(variableType)
         )
     }
 
     fun onEditOptionSelected(variableId: String) {
-        emitEvent(
-            ViewModelEvent.OpenActivity { context ->
-                VariableEditorActivity.IntentBuilder(context)
-                    .variableId(variableId)
-            }
+        openActivity(
+            VariableEditorActivity.IntentBuilder()
+                .variableId(variableId)
         )
     }
 

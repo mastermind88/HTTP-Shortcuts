@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.categories
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -222,7 +221,7 @@ class CategoriesActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, CategoriesActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(CategoriesActivity::class.java)
 
     companion object {
 

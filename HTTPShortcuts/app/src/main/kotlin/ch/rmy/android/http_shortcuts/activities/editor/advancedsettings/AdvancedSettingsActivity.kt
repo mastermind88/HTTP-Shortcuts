@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.editor.advancedsettings
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -253,7 +252,7 @@ class AdvancedSettingsActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, AdvancedSettingsActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(AdvancedSettingsActivity::class.java)
 
     companion object {
 

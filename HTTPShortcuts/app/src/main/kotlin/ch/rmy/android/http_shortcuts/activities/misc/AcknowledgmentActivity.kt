@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.misc
 
-import android.content.Context
 import android.os.Bundle
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
@@ -26,7 +25,7 @@ class AcknowledgmentActivity : BaseActivity() {
             }
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, AcknowledgmentActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(AcknowledgmentActivity::class.java)
 
     companion object {
 

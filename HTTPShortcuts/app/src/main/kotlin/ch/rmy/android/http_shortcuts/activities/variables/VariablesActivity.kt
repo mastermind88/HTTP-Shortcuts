@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.variables
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -154,5 +153,5 @@ class VariablesActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, VariablesActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(VariablesActivity::class.java)
 }

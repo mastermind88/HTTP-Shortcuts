@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.executionsettings
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.SeekBar
@@ -123,7 +122,7 @@ class ExecutionSettingsActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ExecutionSettingsActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(ExecutionSettingsActivity::class.java)
 
     companion object {
 

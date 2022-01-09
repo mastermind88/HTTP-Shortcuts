@@ -2,7 +2,6 @@ package ch.rmy.android.http_shortcuts.activities.response
 
 import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
@@ -218,7 +217,7 @@ class DisplayResponseActivity : BaseActivity() {
     }
 
     private fun rerunShortcut() {
-        ExecuteActivity.IntentBuilder(context, shortcutId)
+        ExecuteActivity.IntentBuilder(shortcutId)
             .startActivity(context)
         finishWithoutAnimation()
     }
@@ -301,7 +300,7 @@ class DisplayResponseActivity : BaseActivity() {
 
     override val navigateUpIcon = R.drawable.ic_clear
 
-    class IntentBuilder(context: Context, shortcutId: String) : BaseIntentBuilder(context, DisplayResponseActivity::class.java) {
+    class IntentBuilder(shortcutId: String) : BaseIntentBuilder(DisplayResponseActivity::class.java) {
 
         init {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcutId)

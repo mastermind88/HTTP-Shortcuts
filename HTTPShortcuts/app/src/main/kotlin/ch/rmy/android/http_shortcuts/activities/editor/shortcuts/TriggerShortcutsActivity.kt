@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
-import android.content.Context
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
@@ -121,7 +120,7 @@ class TriggerShortcutsActivity : BaseActivity() {
             .showIfPossible()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, TriggerShortcutsActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(TriggerShortcutsActivity::class.java) {
 
         fun shortcutId(shortcutId: String?) = also {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcutId)

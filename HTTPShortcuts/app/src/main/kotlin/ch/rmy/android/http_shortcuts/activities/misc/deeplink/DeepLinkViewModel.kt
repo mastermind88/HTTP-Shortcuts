@@ -66,11 +66,9 @@ class DeepLinkViewModel(application: Application) : BaseViewModel<Unit>(applicat
     }
 
     private fun executeShortcut(shortcutId: String, variableValues: Map<String, String>) {
-        emitEvent(
-            ViewModelEvent.OpenActivity { context ->
-                ExecuteActivity.IntentBuilder(context, shortcutId)
-                    .variableValues(variableValues)
-            }
+        openActivity(
+            ExecuteActivity.IntentBuilder(shortcutId)
+                .variableValues(variableValues)
         )
     }
 

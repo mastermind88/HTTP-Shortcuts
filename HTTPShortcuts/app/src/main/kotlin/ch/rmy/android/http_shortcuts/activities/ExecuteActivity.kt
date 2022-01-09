@@ -673,15 +673,19 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         SessionMonitor.onSessionComplete()
     }
 
-    class IntentBuilder(context: Context, shortcutId: String? = null) :
-        BaseIntentBuilder(context, ExecuteActivity::class.java) {
+    class IntentBuilder(private val shortcutId: String? = null) :
+        BaseIntentBuilder(ExecuteActivity::class.java) {
 
         init {
             intent.action = ACTION_EXECUTE_SHORTCUT
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+        }
+
+        override fun build(context: Context): Intent {
             if (shortcutId != null) {
                 shortcut(shortcutId, context)
             }
+            return super.build(context)
         }
 
         private fun shortcut(shortcutId: String, context: Context) = also {

@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.logException
+import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.Destroyer
 import ch.rmy.android.http_shortcuts.utils.ProgressMonitor
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
@@ -102,6 +103,14 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
 
     protected fun finish(result: Int? = null, intent: Intent? = null, skipAnimation: Boolean = false) {
         emitEvent(ViewModelEvent.Finish(result, intent, skipAnimation))
+    }
+
+    protected fun openURL(url: String) {
+        emitEvent(ViewModelEvent.OpenURL(url))
+    }
+
+    protected fun openActivity(intentBuilder: BaseIntentBuilder, requestCode: Int? = null) {
+        emitEvent(ViewModelEvent.OpenActivity(intentBuilder, requestCode))
     }
 
     final override fun onCleared() {

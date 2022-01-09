@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.basicsettings
 
-import android.content.Context
 import android.os.Bundle
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
@@ -77,7 +76,7 @@ class BasicRequestSettingsActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, BasicRequestSettingsActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(BasicRequestSettingsActivity::class.java)
 
     companion object {
 

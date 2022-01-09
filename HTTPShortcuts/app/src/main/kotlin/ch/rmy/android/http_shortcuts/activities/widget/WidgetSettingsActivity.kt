@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.widget
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -114,7 +113,7 @@ class WidgetSettingsActivity : BaseActivity() {
 
     override val navigateUpIcon = R.drawable.ic_clear
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, WidgetSettingsActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(WidgetSettingsActivity::class.java) {
 
         fun shortcut(shortcut: Shortcut) = also {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcut.id)

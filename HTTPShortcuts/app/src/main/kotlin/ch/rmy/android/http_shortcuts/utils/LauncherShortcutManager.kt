@@ -93,8 +93,8 @@ object LauncherShortcutManager {
             .setLongLabel(label)
             .setRank(rank)
             .setIntent(
-                ExecuteActivity.IntentBuilder(context, shortcutId)
-                    .build()
+                ExecuteActivity.IntentBuilder(shortcutId)
+                    .build(context)
             )
             .mapIfNotNull(icon) {
                 setIcon(it)
@@ -168,9 +168,9 @@ object LauncherShortcutManager {
             .setLongLabel(categoryName)
             .setRank(0)
             .setIntent(
-                MainActivity.IntentBuilder(context)
+                MainActivity.IntentBuilder()
                     .categoryId(categoryId)
-                    .build()
+                    .build(context)
             )
             .setIcon(IconUtil.getIcon(context, ShortcutIcon.BuiltInIcon("flat_grey_folder"))) // TODO
             .build()

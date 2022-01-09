@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.body
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -262,7 +261,7 @@ class RequestBodyActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, RequestBodyActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(RequestBodyActivity::class.java)
 
     companion object {
 

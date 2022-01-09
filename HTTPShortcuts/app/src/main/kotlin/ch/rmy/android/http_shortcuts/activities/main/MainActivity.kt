@@ -2,7 +2,6 @@ package ch.rmy.android.http_shortcuts.activities.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -12,13 +11,12 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.BaseFragment
 import ch.rmy.android.http_shortcuts.activities.Entrypoint
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.activities.categories.CategoriesActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
 import ch.rmy.android.http_shortcuts.activities.misc.CurlImportActivity
-import ch.rmy.android.http_shortcuts.activities.settings.AboutActivity
 import ch.rmy.android.http_shortcuts.activities.settings.ImportExportActivity
 import ch.rmy.android.http_shortcuts.activities.settings.SettingsActivity
-import ch.rmy.android.http_shortcuts.activities.variables.VariablesActivity
 import ch.rmy.android.http_shortcuts.activities.widget.WidgetSettingsActivity
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
@@ -31,7 +29,7 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.openURL
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.restartWithoutAnimation
 import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.extensions.showToast
@@ -39,7 +37,6 @@ import ch.rmy.android.http_shortcuts.extensions.titleView
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.IntentUtil
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
@@ -51,33 +48,15 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
 
     private val viewModel: MainViewModel by bindViewModel()
 
+    private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: CategoryPagerAdapter
 
-    private val selectionMode by lazy {
-        SelectionMode.determineMode(intent.action)
-    }
-    private val widgetId by lazy {
-        WidgetManager.getWidgetIdFromIntent(intent)
-    }
-
-    private val categories by lazy {
-        viewModel.getCategories()
-    }
-    private val showHiddenCategories: Boolean by lazy {
-        selectionMode != SelectionMode.NORMAL
-    }
-    private val initialCategoryId: String? by lazy {
-        intent?.extras?.getString(EXTRA_CATEGORY_ID)
-    }
-
-    override var isInMovingMode: Boolean = false
-        set(value) {
-            field = value
-            invalidateOptionsMenu()
-            updateFloatingActionButton()
-        }
-
-    private lateinit var binding: ActivityMainBinding
+    private var menuItemSettings: MenuItem? = null
+    private var menuItemImportExport: MenuItem? = null
+    private var menuItemAbout: MenuItem? = null
+    private var menuItemCategories: MenuItem? = null
+    private var menuItemVariables: MenuItem? = null
+    private var menuItemUnlock: MenuItem? = null
 
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,12 +64,16 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         if (!isRealmAvailable) {
             return
         }
-        binding = applyBinding(ActivityMainBinding.inflate(layoutInflater))
-        if (categories.count { !it.hidden || showHiddenCategories } <= 1) {
-            (toolbar?.layoutParams as? AppBarLayout.LayoutParams?)?.scrollFlags = 0
-        }
 
         initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+
+        viewModel.initialize(
+            selectionMode = SelectionMode.determineMode(intent.action),
+            initialCategoryId = intent?.extras?.getString(EXTRA_CATEGORY_ID),
+            widgetId = WidgetManager.getWidgetIdFromIntent(intent),
+        )
 
         if (selectionMode === SelectionMode.NORMAL) {
             showChangeLogIfNeeded()
@@ -99,9 +82,9 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
                 setResult(Activity.RESULT_CANCELED, WidgetManager.getIntent(widgetId))
             }
             if ((
-                selectionMode == SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT ||
-                    selectionMode == SelectionMode.HOME_SCREEN_SHORTCUT_PLACEMENT
-                ) && savedInstanceState == null
+                    selectionMode == SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT ||
+                        selectionMode == SelectionMode.HOME_SCREEN_SHORTCUT_PLACEMENT
+                    ) && savedInstanceState == null
             ) {
                 showToast(R.string.instructions_select_shortcut_for_home_screen, long = true)
             }
@@ -112,20 +95,96 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
     }
 
     private fun initViews() {
-        binding.buttonCreateShortcut.setOnClickListener { showCreateOptions() }
+        binding = applyBinding(ActivityMainBinding.inflate(layoutInflater))
+
         setupViewPager()
-        setupTitleBar()
+
         binding.tabs.applyTheme(themeHelper)
         binding.buttonCreateShortcut.applyTheme(themeHelper)
-        bindViewsToViewModel()
+    }
+
+    private fun initUserInputBindings() {
+        binding.buttonCreateShortcut.setOnClickListener { showCreateOptions() }
+
+        toolbar!!.titleView?.setOnClickListener {
+            viewModel.onToolbarTitleClicked()
+        }
+    }
+
+    private fun initViewModelBindings() {
+        viewModel.viewState.observe(this) { viewState ->
+            // TODO
+            binding.tabs.visible = viewState.isTabBarVisible
+            binding.buttonCreateShortcut.visible = viewState.isCreateButtonVisible
+            menuItemSettings?.isVisible = viewState.isRegularMenuButtonVisible
+            menuItemImportExport?.isVisible = viewState.isRegularMenuButtonVisible
+            menuItemAbout?.isVisible = viewState.isRegularMenuButtonVisible
+            menuItemCategories?.isVisible = viewState.isRegularMenuButtonVisible
+            menuItemVariables?.isVisible = viewState.isRegularMenuButtonVisible
+            menuItemUnlock?.isVisible = viewState.isUnlockButtonVisible
+            setToolbarScrolling(viewState.isToolbarScrollable)
+        }
+        viewModel.events.observe(this, ::handleEvent)
+    }
+
+    private fun setToolbarScrolling(isScrollable: Boolean) {
+        (toolbar?.layoutParams as? AppBarLayout.LayoutParams?)?.scrollFlags =
+            if (isScrollable) {
+                AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+            } else 0
+    }
+
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is MainEvent.ShowCreationDialog -> showCreationDialog()
+            else -> super.handleEvent(event)
+        }
+    }
+
+    private fun showCreationDialog() {
+        DialogBuilder(context)
+            .title(R.string.title_create_new_shortcut_options_dialog)
+            .item(R.string.button_create_new) {
+                viewModel.onCreationDialogOptionSelected(ShortcutExecutionType.APP)
+            }
+            .item(R.string.button_curl_import, action = ::openCurlImport)
+            .separator()
+            .item(
+                nameRes = R.string.button_create_trigger_shortcut,
+                descriptionRes = R.string.button_description_create_trigger_shortcut,
+            ) {
+                viewModel.onCreationDialogOptionSelected(ShortcutExecutionType.TRIGGER)
+            }
+            .item(
+                nameRes = R.string.button_create_browser_shortcut,
+                descriptionRes = R.string.button_description_create_browser_shortcut,
+            ) {
+                viewModel.onCreationDialogOptionSelected(ShortcutExecutionType.BROWSER)
+            }
+            .item(
+                nameRes = R.string.button_create_scripting_shortcut,
+                descriptionRes = R.string.button_description_create_scripting_shortcut,
+            ) {
+                viewModel.onCreationDialogOptionSelected(ShortcutExecutionType.SCRIPTING)
+            }
+            .positive(R.string.dialog_help) {
+                viewModel.onCreationDialogHelpButtonClicked()
+            }
+            .showIfPossible()
+    }
+
+    private fun setupViewPager() {
+        adapter = CategoryPagerAdapter(supportFragmentManager, selectionMode)
+        binding.viewPager.adapter = adapter
+        binding.tabs.setupWithViewPager(binding.viewPager)
+        viewModel.getCategories().observe(this) { categories ->
+            adapter.setCategories(categories.filter { !it.hidden || showHiddenCategories })
+        }
     }
 
     private fun bindViewsToViewModel() {
-        viewModel.appLockedSource.observe(this) {
-            updateFloatingActionButton()
-            invalidateOptionsMenu()
-        }
-
         viewModel.getCategories().observe(this) { categories ->
             val visibleCategoryCount = categories.count { !it.hidden || showHiddenCategories }
             binding.tabs.visible = visibleCategoryCount > 1
@@ -142,83 +201,6 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             }
             if (binding.viewPager.currentItem >= visibleCategoryCount) {
                 binding.viewPager.currentItem = 0
-            }
-        }
-    }
-
-    private fun updateFloatingActionButton() {
-        binding.buttonCreateShortcut.visible = viewModel.appLockedSource.value != true && !isInMovingMode
-    }
-
-    private fun showCreateOptions() {
-        DialogBuilder(context)
-            .title(R.string.title_create_new_shortcut_options_dialog)
-            .item(R.string.button_create_new, action = ::openEditorForCreation)
-            .item(R.string.button_curl_import, action = ::openCurlImport)
-            .separator()
-            .item(
-                nameRes = R.string.button_create_trigger_shortcut,
-                descriptionRes = R.string.button_description_create_trigger_shortcut,
-                action = ::openEditorForTriggerShortcutCreation
-            )
-            .item(
-                nameRes = R.string.button_create_browser_shortcut,
-                descriptionRes = R.string.button_description_create_browser_shortcut,
-                action = ::openEditorForBrowserShortcutCreation
-            )
-            .item(
-                nameRes = R.string.button_create_scripting_shortcut,
-                descriptionRes = R.string.button_description_create_scripting_shortcut,
-                action = ::openEditorForScriptingShortcutCreation
-            )
-            .positive(R.string.dialog_help) {
-                openURL(ExternalURLs.SHORTCUTS_DOCUMENTATION)
-            }
-            .showIfPossible()
-    }
-
-    private fun openEditorForCreation() {
-        openEditorForShortcutCreation(ShortcutExecutionType.APP)
-    }
-
-    private fun openEditorForBrowserShortcutCreation() {
-        openEditorForShortcutCreation(ShortcutExecutionType.BROWSER)
-    }
-
-    private fun openEditorForTriggerShortcutCreation() {
-        openEditorForShortcutCreation(ShortcutExecutionType.TRIGGER)
-    }
-
-    private fun openEditorForScriptingShortcutCreation() {
-        openEditorForShortcutCreation(ShortcutExecutionType.SCRIPTING)
-    }
-
-    private fun openEditorForShortcutCreation(type: ShortcutExecutionType) {
-        val categoryId = adapter.getItem(binding.viewPager.currentItem).categoryId
-        ShortcutEditorActivity.IntentBuilder(context)
-            .categoryId(categoryId)
-            .executionType(type)
-            .startActivity(this, REQUEST_CREATE_SHORTCUT)
-    }
-
-    private fun setupViewPager() {
-        adapter = CategoryPagerAdapter(supportFragmentManager, selectionMode)
-        binding.viewPager.adapter = adapter
-        binding.tabs.setupWithViewPager(binding.viewPager)
-        viewModel.getCategories().observe(this) { categories ->
-            adapter.setCategories(categories.filter { !it.hidden || showHiddenCategories })
-        }
-    }
-
-    private fun setupTitleBar() {
-        viewModel.getLiveToolbarTitle().observe(this) { title ->
-            setTitle(title.ifEmpty { context.getString(R.string.app_name) })
-        }
-        if (selectionMode === SelectionMode.NORMAL) {
-            toolbar!!.titleView?.setOnClickListener {
-                if (!viewModel.isAppLocked()) {
-                    showToolbarTitleChangeDialog()
-                }
             }
         }
     }
@@ -383,42 +365,23 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
                 menuInflater.inflate(R.menu.main_activity_menu, menu)
             }
         }
+        menuItemSettings = menu.findItem(R.id.action_settings)
+        menuItemImportExport = menu.findItem(R.id.action_import_export)
+        menuItemAbout = menu.findItem(R.id.action_about)
+        menuItemCategories = menu.findItem(R.id.action_categories)
+        menuItemVariables = menu.findItem(R.id.action_variables)
+        menuItemUnlock = menu.findItem(R.id.action_unlock)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.action_settings -> consume { openSettings() }
-        R.id.action_import_export -> consume { openImportExport() }
-        R.id.action_about -> consume { openAbout() }
-        R.id.action_categories -> consume { openCategoriesEditor() }
-        R.id.action_variables -> consume { openVariablesEditor() }
+        R.id.action_settings -> consume { viewModel.onSettingsButtonClicked() }
+        R.id.action_import_export -> consume { viewModel.onImportExportButtonClicked() }
+        R.id.action_about -> consume { viewModel.onAboutButtonClicked() }
+        R.id.action_categories -> consume { viewModel.onCategoriesButtonClicked() }
+        R.id.action_variables -> consume { viewModel.onVariablesButtonClicked() }
         R.id.action_unlock -> consume { openAppUnlockDialog() }
         else -> super.onOptionsItemSelected(item)
-    }
-
-    private fun openSettings() {
-        SettingsActivity.IntentBuilder(context)
-            .startActivity(this, REQUEST_SETTINGS)
-    }
-
-    private fun openImportExport() {
-        ImportExportActivity.IntentBuilder(context)
-            .startActivity(this, REQUEST_IMPORT_EXPORT)
-    }
-
-    private fun openAbout() {
-        AboutActivity.IntentBuilder(context)
-            .startActivity(this)
-    }
-
-    private fun openCategoriesEditor() {
-        CategoriesActivity.IntentBuilder(context)
-            .startActivity(this, REQUEST_CATEGORIES)
-    }
-
-    private fun openVariablesEditor() {
-        VariablesActivity.IntentBuilder(context)
-            .startActivity(this)
     }
 
     private fun openAppUnlockDialog(showError: Boolean = false) {
@@ -495,13 +458,13 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             .forEach {
                 it.setOnLongClickListener {
                     consume {
-                        openCategoriesEditor()
+                        viewModel.onTabLongClicked()
                     }
                 }
             }
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, MainActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(MainActivity::class.java) {
         init {
             intent.action = Intent.ACTION_VIEW
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -519,12 +482,12 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         const val EXTRA_SELECTION_NAME = "ch.rmy.android.http_shortcuts.shortcut_name"
         private const val EXTRA_CATEGORY_ID = "ch.rmy.android.http_shortcuts.category_id"
 
-        private const val REQUEST_CREATE_SHORTCUT = 1
-        private const val REQUEST_CREATE_SHORTCUT_FROM_CURL = 2
-        private const val REQUEST_SETTINGS = 3
-        private const val REQUEST_CATEGORIES = 4
-        private const val REQUEST_WIDGET_SETTINGS = 5
-        private const val REQUEST_IMPORT_EXPORT = 6
+        const val REQUEST_CREATE_SHORTCUT = 1
+        const val REQUEST_CREATE_SHORTCUT_FROM_CURL = 2
+        const val REQUEST_SETTINGS = 3
+        const val REQUEST_CATEGORIES = 4
+        const val REQUEST_WIDGET_SETTINGS = 5
+        const val REQUEST_IMPORT_EXPORT = 6
 
         private const val TITLE_MAX_LENGTH = 50
     }

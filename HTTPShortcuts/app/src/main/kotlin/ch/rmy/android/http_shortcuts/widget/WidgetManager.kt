@@ -51,8 +51,8 @@ class WidgetManager {
         RemoteViews(context.packageName, R.layout.widget).also { views ->
             views.setOnClickPendingIntent(
                 R.id.widget_base,
-                ExecuteActivity.IntentBuilder(context, shortcut.id)
-                    .build()
+                ExecuteActivity.IntentBuilder(shortcut.id)
+                    .build(context)
                     .let { intent ->
                         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             PendingIntent.FLAG_IMMUTABLE
@@ -78,18 +78,25 @@ class WidgetManager {
         }
     }
 
-    fun getIntent(widgetId: Int) =
-        Intent().apply {
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-        }
-
-    fun getWidgetIdFromIntent(intent: Intent): Int =
-        intent.extras?.getInt(
-            AppWidgetManager.EXTRA_APPWIDGET_ID,
-            AppWidgetManager.INVALID_APPWIDGET_ID,
-        ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
-
     fun deleteWidgets(widgetIds: List<Int>): Completable =
         widgetsRepository.deleteDeadWidgets()
             .andThen(widgetsRepository.deleteWidgets(widgetIds))
+
+    companion object {
+
+        fun getIntent(widgetId: Int) =
+            Intent().apply {
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            }
+
+        fun getWidgetIdFromIntent(intent: Intent): Int? =
+            intent.extras?.getInt(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID,
+            )
+                ?.takeUnless {
+                    it == AppWidgetManager.INVALID_APPWIDGET_ID
+                }
+
+    }
 }

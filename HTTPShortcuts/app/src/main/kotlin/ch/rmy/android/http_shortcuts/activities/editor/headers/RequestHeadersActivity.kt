@@ -147,7 +147,7 @@ class RequestHeadersActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, RequestHeadersActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(RequestHeadersActivity::class.java)
 
     companion object {
 

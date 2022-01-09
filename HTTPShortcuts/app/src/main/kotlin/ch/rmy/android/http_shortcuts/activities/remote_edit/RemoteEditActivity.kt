@@ -2,7 +2,6 @@ package ch.rmy.android.http_shortcuts.activities.remote_edit
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -180,7 +179,7 @@ class RemoteEditActivity : BaseActivity() {
         updateInstructions()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, RemoteEditActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(RemoteEditActivity::class.java)
 
     companion object {
         const val EXTRA_CHANGES_IMPORTED = "changes_imported"

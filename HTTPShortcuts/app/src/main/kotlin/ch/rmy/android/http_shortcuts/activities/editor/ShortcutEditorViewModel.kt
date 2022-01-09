@@ -282,9 +282,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             return
         }
         waitForOperationsToFinish {
-            emitEvent(ViewModelEvent.OpenActivity { context ->
-                ExecuteActivity.IntentBuilder(context, TEMPORARY_ID)
-            })
+            openActivity(ExecuteActivity.IntentBuilder(TEMPORARY_ID))
         }
     }
 
@@ -362,58 +360,40 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     }
 
     fun onBasicRequestSettingsButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            BasicRequestSettingsActivity.IntentBuilder(context)
-        })
+        openActivity(BasicRequestSettingsActivity.IntentBuilder())
     }
 
     fun onHeadersButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            RequestHeadersActivity.IntentBuilder(context)
-        })
+        openActivity(RequestHeadersActivity.IntentBuilder())
     }
 
     fun onRequestBodyButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            RequestBodyActivity.IntentBuilder(context)
-        })
+        openActivity(RequestBodyActivity.IntentBuilder())
     }
 
     fun onAuthenticationButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            AuthenticationActivity.IntentBuilder(context)
-        })
+        openActivity(AuthenticationActivity.IntentBuilder())
     }
 
     fun onResponseHandlingButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            ResponseActivity.IntentBuilder(context)
-        })
+        openActivity(ResponseActivity.IntentBuilder())
     }
 
     fun onScriptingButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            ScriptingActivity.IntentBuilder(context)
-                .shortcutId(shortcutId)
-        })
+        openActivity(ScriptingActivity.IntentBuilder()
+            .shortcutId(shortcutId))
     }
 
     fun onTriggerShortcutsButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            TriggerShortcutsActivity.IntentBuilder(context)
-                .shortcutId(shortcutId)
-        })
+        openActivity(TriggerShortcutsActivity.IntentBuilder()
+            .shortcutId(shortcutId))
     }
 
     fun onExecutionSettingsButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            ExecutionSettingsActivity.IntentBuilder(context)
-        })
+        openActivity(ExecutionSettingsActivity.IntentBuilder())
     }
 
     fun onAdvancedSettingsButtonClicked() {
-        emitEvent(ViewModelEvent.OpenActivity { context ->
-            AdvancedSettingsActivity.IntentBuilder(context)
-        })
+        openActivity(AdvancedSettingsActivity.IntentBuilder())
     }
 }

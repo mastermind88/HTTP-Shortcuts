@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Intent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.extensions.attachTo
@@ -85,7 +84,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
     }
 
     fun onHelpButtonClicked() {
-        emitEvent(ViewModelEvent.OpenURL(ExternalURLs.CATEGORIES_DOCUMENTATION))
+        openURL(ExternalURLs.CATEGORIES_DOCUMENTATION)
     }
 
     fun onCreateCategoryButtonClicked() {

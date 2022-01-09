@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.misc
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -62,7 +61,7 @@ class CurlImportActivity : BaseActivity() {
 
     override val navigateUpIcon = R.drawable.ic_clear
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, CurlImportActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(CurlImportActivity::class.java)
 
     companion object {
 

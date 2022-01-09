@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.editor.scripting
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -219,7 +218,7 @@ class ScriptingActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ScriptingActivity::class.java) {
+    class IntentBuilder : BaseIntentBuilder(ScriptingActivity::class.java) {
 
         fun shortcutId(shortcutId: String?) = also {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcutId)

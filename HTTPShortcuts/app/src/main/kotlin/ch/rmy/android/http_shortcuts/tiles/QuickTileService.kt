@@ -10,6 +10,7 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getShortcuts
+import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.context
@@ -21,8 +22,11 @@ import ch.rmy.android.http_shortcuts.utils.ThemeHelper
 @RequiresApi(Build.VERSION_CODES.N)
 class QuickTileService : TileService() {
 
+    private val shortcutRepository = ShortcutRepository()
+
     override fun onClick() {
-        val shortcuts = getShortcuts()
+        val shortcuts = shortcutRepository.getShortcuts()
+            .blockingGet() // TODO: Avoid blocking
 
         when (shortcuts.size) {
             0 -> {
@@ -87,8 +91,8 @@ class QuickTileService : TileService() {
     }
 
     private fun executeShortcut(shortcutId: String) {
-        ExecuteActivity.IntentBuilder(context, shortcutId)
-            .build()
+        ExecuteActivity.IntentBuilder(shortcutId)
+            .build(context)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             .let { intent ->
                 startActivityAndCollapse(intent)

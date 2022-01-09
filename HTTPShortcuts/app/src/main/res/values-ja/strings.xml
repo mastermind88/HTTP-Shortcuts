@@ -1018,7 +1018,7 @@
     <!-- Instructions: Shown in dialog to instruct user on how to enable shortcuts for use in the Quick Settings Tile -->
     <string name="instructions_quick_settings_tile">"「クイック設定タイル」でトリガーできるショートカットはまだありません。
 
-この機能を有効にするには、ショートカットの編集で、「％2 $ s」にある「％1 $ s」チェックボックスを選択してください。"</string>
+この機能を有効にするには、ショートカットの編集で、「%2$ s」にある「%1$ s」チェックボックスを選択してください。"</string>
 
     <!-- Label: Status code, shows the HTTP status code of the response -->
     <string name="label_status_code">"ステータスコード"</string>

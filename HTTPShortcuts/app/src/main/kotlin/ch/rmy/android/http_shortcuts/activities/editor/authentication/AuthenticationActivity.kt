@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.authentication
 
-import android.content.Context
 import android.os.Bundle
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
@@ -95,7 +94,7 @@ class AuthenticationActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, AuthenticationActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(AuthenticationActivity::class.java)
 
     companion object {
 

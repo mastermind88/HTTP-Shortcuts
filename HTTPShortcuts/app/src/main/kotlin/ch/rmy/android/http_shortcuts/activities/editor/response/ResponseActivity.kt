@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.editor.response
 
-import android.content.Context
 import android.os.Bundle
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
@@ -109,7 +108,7 @@ class ResponseActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ResponseActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(ResponseActivity::class.java)
 
     companion object {
 

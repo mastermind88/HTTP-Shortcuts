@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -106,7 +105,7 @@ class ImportExportActivity : BaseActivity() {
         }
 
         private fun openRemoteEditor() {
-            RemoteEditActivity.IntentBuilder(requireContext())
+            RemoteEditActivity.IntentBuilder()
                 .startActivity(this, REQUEST_REMOTE_EDIT)
         }
 
@@ -185,7 +184,7 @@ class ImportExportActivity : BaseActivity() {
         }
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, ImportExportActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(ImportExportActivity::class.java)
 
     companion object {
 

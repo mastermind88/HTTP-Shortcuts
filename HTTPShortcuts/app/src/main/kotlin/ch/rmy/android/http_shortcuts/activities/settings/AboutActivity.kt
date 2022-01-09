@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.settings
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager.NameNotFoundException
 import android.os.Bundle
 import androidx.preference.Preference
@@ -89,15 +88,15 @@ class AboutActivity : BaseActivity() {
             }
 
         private fun contactDeveloper() {
-            ContactActivity.IntentBuilder(requireContext())
+            ContactActivity.IntentBuilder()
                 .startActivity(this)
         }
 
         private fun showAcknowledgments() {
-            AcknowledgmentActivity.IntentBuilder(requireContext())
+            AcknowledgmentActivity.IntentBuilder()
                 .startActivity(this)
         }
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, AboutActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(AboutActivity::class.java)
 }

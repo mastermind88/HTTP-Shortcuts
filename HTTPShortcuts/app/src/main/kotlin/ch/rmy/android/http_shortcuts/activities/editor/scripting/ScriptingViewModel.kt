@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.activities.editor.scripting
 import android.app.Application
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
@@ -139,7 +138,7 @@ class ScriptingViewModel(application: Application) : BaseViewModel<ScriptingView
     }
 
     fun onHelpButtonClicked() {
-        emitEvent(ViewModelEvent.OpenURL(ExternalURLs.SCRIPTING_DOCUMENTATION))
+        openURL(ExternalURLs.SCRIPTING_DOCUMENTATION)
     }
 
     fun onBackPressed() {

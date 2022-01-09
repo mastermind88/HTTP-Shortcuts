@@ -97,7 +97,7 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<GlobalS
     }
 
     fun onHelpButtonClicked() {
-        emitEvent(ViewModelEvent.OpenURL(ExternalURLs.SCRIPTING_DOCUMENTATION))
+        openURL(ExternalURLs.SCRIPTING_DOCUMENTATION)
     }
 
     fun onBackPressed() {

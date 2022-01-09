@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.activities.settings
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -160,7 +159,7 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    class IntentBuilder(context: Context) : BaseIntentBuilder(context, SettingsActivity::class.java)
+    class IntentBuilder : BaseIntentBuilder(SettingsActivity::class.java)
 
     companion object {
 

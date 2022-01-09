@@ -139,7 +139,7 @@ abstract class BaseActivity : AppCompatActivity() {
         when (event) {
             is ViewModelEvent.OpenActivity -> {
                 try {
-                    event.intentBuilder(context).startActivity(this)
+                    event.intentBuilder.startActivity(this, event.requestCode)
                 } catch (e: ActivityNotFoundException) {
                     showToast(R.string.error_not_supported)
                 }
