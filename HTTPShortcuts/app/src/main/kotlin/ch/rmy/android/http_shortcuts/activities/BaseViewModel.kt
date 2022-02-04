@@ -101,6 +101,10 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
         emitEvent(ViewModelEvent.ShowSnackbar(message, long = long))
     }
 
+    protected fun showToast(@StringRes stringRes: Int, long: Boolean = false) {
+        emitEvent(ViewModelEvent.ShowToast(stringRes, long = long))
+    }
+
     protected fun finish(result: Int? = null, intent: Intent? = null, skipAnimation: Boolean = false) {
         emitEvent(ViewModelEvent.Finish(result, intent, skipAnimation))
     }

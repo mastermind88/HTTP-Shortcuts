@@ -7,13 +7,13 @@ import android.view.Menu
 import android.view.MenuItem
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityWidgetSettingsBinding
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
+import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 
@@ -115,7 +115,7 @@ class WidgetSettingsActivity : BaseActivity() {
 
     class IntentBuilder : BaseIntentBuilder(WidgetSettingsActivity::class.java) {
 
-        fun shortcut(shortcut: Shortcut) = also {
+        fun shortcut(shortcut: LauncherShortcut) = also {
             intent.putExtra(EXTRA_SHORTCUT_ID, shortcut.id)
             intent.putExtra(EXTRA_SHORTCUT_NAME, shortcut.name)
             intent.putExtra(EXTRA_SHORTCUT_ICON, shortcut.icon.toString())

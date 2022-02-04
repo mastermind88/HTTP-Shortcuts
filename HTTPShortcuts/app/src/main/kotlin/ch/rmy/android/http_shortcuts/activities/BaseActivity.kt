@@ -149,11 +149,7 @@ abstract class BaseActivity : AppCompatActivity() {
             }
             is ViewModelEvent.Finish -> {
                 if (event.result != null) {
-                    if (event.intent != null) {
-                        setResult(event.result, event.intent)
-                    } else {
-                        setResult(event.result)
-                    }
+                    setResult(event.result, event.intent)
                 }
                 if (event.skipAnimation) {
                     finishWithoutAnimation()
@@ -161,11 +157,17 @@ abstract class BaseActivity : AppCompatActivity() {
                     finish()
                 }
             }
+            is ViewModelEvent.SetResult -> {
+                setResult(event.result, event.intent)
+            }
             is ViewModelEvent.ShowDialog -> {
                 event.dialogBuilder(context)
             }
             is ViewModelEvent.ShowSnackbar -> {
                 showSnackbar(event.message.localize(context), long = event.long)
+            }
+            is ViewModelEvent.ShowToast -> {
+                showToast(event.message.localize(context).toString(), long = event.long)
             }
             else -> logInfo("Unhandled event: $event")
         }

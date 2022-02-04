@@ -17,9 +17,7 @@ import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getBase
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.FragmentListBinding
 import ch.rmy.android.http_shortcuts.dialogs.CurlExportDialog
@@ -29,9 +27,11 @@ import ch.rmy.android.http_shortcuts.exceptions.CanceledByUserException
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.color
+import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.mapFor
 import ch.rmy.android.http_shortcuts.extensions.mapIf
+import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.extensions.startActivity
@@ -40,6 +40,7 @@ import ch.rmy.android.http_shortcuts.import_export.CurlExporter
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.import_export.ExportUI
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
@@ -54,22 +55,15 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         args.getString(ARG_CATEGORY_ID) ?: ""
     }
 
-    private val selectionMode by lazy {
+    val layoutType: CategoryLayoutType by lazy {
+        CategoryLayoutType.parse(args.getString(ARG_CATEGORY_LAYOUT_TYPE))
+    }
+
+    val selectionMode by lazy {
         args.getSerializable(ARG_SELECTION_MODE) as SelectionMode
     }
 
-    private var isInMovingMode = false
-        set(value) {
-            if (field != value) {
-                field = value
-                tabHost?.isInMovingMode = value
-                if (value) {
-                    showSnackbar(R.string.message_moving_enabled, long = true)
-                }
-
-                binding.shortcutList.alpha = if (value) 0.7f else 1f
-            }
-        }
+    private var isDraggingEnabled = false
 
     private val exportUI by lazy {
         destroyer.own(ExportUI(requireActivity()))
@@ -77,13 +71,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private val viewModel: ShortcutListViewModel by bindViewModel()
 
-    private lateinit var categories: ListLiveData<Category>
-    private lateinit var categoryData: LiveData<Category?>
-    private lateinit var shortcuts: ListLiveData<Shortcut>
-    private lateinit var pendingShortcuts: ListLiveData<PendingExecution>
-
-    private var layoutType: String? = null
-    private var adapter: BaseShortcutAdapter? = null
+    private lateinit var adapter: BaseShortcutAdapter
 
     private val wallpaper: Drawable? by lazy {
         try {
@@ -97,31 +85,44 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         FragmentListBinding.inflate(inflater, container, false)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel.categoryId = categoryId
-
-        categories = viewModel.getCategories()
-        categoryData = viewModel.getCategory()
-        shortcuts = viewModel.getShortcuts()
-        pendingShortcuts = viewModel.getPendingShortcuts()
-    }
-
     override fun setupViews() {
-        binding.shortcutList.setHasFixedSize(true)
-        bindViewsToViewModel()
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+
+        viewModel.initialize(categoryId, selectionMode)
     }
 
-    private fun bindViewsToViewModel() {
-        categoryData.observe(this) {
-            updateViews()
+    private fun initViews() {
+        adapter = when (layoutType) {
+            CategoryLayoutType.LINEAR_LIST -> ShortcutListAdapter()
+            CategoryLayoutType.GRID -> ShortcutGridAdapter()
         }
-        pendingShortcuts.observe(this) { pendingShortcuts ->
-            adapter?.setPendingShortcuts(pendingShortcuts)
+
+        binding.shortcutList.setHasFixedSize(true)
+    }
+
+    private fun initUserInputBindings() {
+        initDragOrdering()
+    }
+
+    private fun initDragOrdering() {
+        val dragOrderingHelper = DragOrderingHelper(allowHorizontalDragging = layoutType == CategoryLayoutType.GRID) { isDraggingEnabled }
+        dragOrderingHelper.attachTo(binding.shortcutList)
+        dragOrderingHelper.positionChangeSource
+            .subscribe { (oldPosition, newPosition) ->
+                viewModel.onShortcutMoved(oldPosition, newPosition)
+            }
+            .attachTo(destroyer)
+    }
+
+    private fun initViewModelBindings() {
+        viewModel.viewState.observe(this) { viewState ->
+            binding.shortcutList.alpha = if (viewState.inMovingMode) 0.7f else 1f
+            isDraggingEnabled = viewState.isDraggingEnabled
+            // TODO
         }
-        shortcuts.observe(this) {
-            updateEmptyState()
-        }
+        viewModel.events.observe(this, ::handleEvent)
     }
 
     private fun updateViews() {
@@ -129,7 +130,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
         if (layoutType != this.layoutType || adapter == null) {
             this.layoutType = layoutType
-            initDragOrdering(layoutType)
+
             adapter?.destroy()
 
             val adapter = when (layoutType) {
@@ -161,18 +162,6 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
             }
             updateBackground(it)
         }
-    }
-
-    private fun initDragOrdering(layoutType: String) {
-        val dragOrderingHelper = DragOrderingHelper(allowHorizontalDragging = layoutType == Category.LAYOUT_GRID) { isInMovingMode }
-        dragOrderingHelper.attachTo(binding.shortcutList)
-        dragOrderingHelper.positionChangeSource
-            .concatMapCompletable { (oldPosition, newPosition) ->
-                val shortcut = shortcuts[oldPosition]!!
-                viewModel.moveShortcut(shortcut.id, newPosition)
-            }
-            .subscribe()
-            .attachTo(destroyer)
     }
 
     private fun updateBackground(background: String) {
@@ -300,7 +289,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         DialogBuilder(requireContext())
             .mapIf(shortcuts.size > 1) {
                 item(R.string.action_enable_moving) {
-                    isInMovingMode = true
+                    viewModel.onMoveModeOptionSelected()
                 }
             }
             .mapIf(categories.size > 1) {
@@ -474,43 +463,22 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     override fun onPause() {
         super.onPause()
-        isInMovingMode = false
+        viewModel.onPaused()
     }
 
-    override fun onBackPressed(): Boolean {
-        if (isInMovingMode) {
-            isInMovingMode = false
-            return true
-        }
-        return false
-    }
-
-    private val tabHost: TabHost?
-        get() = activity as? TabHost
-
-    internal interface TabHost {
-
-        fun selectShortcut(shortcut: Shortcut)
-
-        fun placeShortcutOnHomeScreen(shortcut: Shortcut)
-
-        fun removeShortcutFromHomeScreen(shortcut: Shortcut)
-
-        fun isAppLocked(): Boolean
-
-        fun updateLauncherShortcuts()
-
-        var isInMovingMode: Boolean
+    override fun onBackPressed() = consume {
+        viewModel.onBackPressed()
     }
 
     companion object {
 
-        fun create(categoryId: String, selectionMode: SelectionMode): ListFragment =
+        fun create(categoryId: String, layoutType: CategoryLayoutType, selectionMode: SelectionMode): ListFragment =
             ListFragment()
                 .apply {
                     arguments = Bundle()
                         .apply {
                             putString(ARG_CATEGORY_ID, categoryId)
+                            putString(ARG_CATEGORY_LAYOUT_TYPE, layoutType.toString())
                             putSerializable(ARG_SELECTION_MODE, selectionMode)
                         }
                 }
@@ -519,6 +487,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         private const val REQUEST_EXPORT = 3
 
         private const val ARG_CATEGORY_ID = "categoryId"
+        private const val ARG_CATEGORY_LAYOUT_TYPE = "categoryLayoutType"
         private const val ARG_SELECTION_MODE = "selectionMode"
     }
 }

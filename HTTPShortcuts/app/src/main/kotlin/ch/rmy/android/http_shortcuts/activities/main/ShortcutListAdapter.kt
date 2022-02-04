@@ -1,15 +1,13 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import ch.rmy.android.http_shortcuts.activities.LegacyBaseViewHolder
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ListItemShortcutBinding
 import ch.rmy.android.http_shortcuts.extensions.visible
 
-class ShortcutListAdapter(context: Context, shortcuts: ListLiveData<Shortcut>) : BaseShortcutAdapter(context, shortcuts) {
+class ShortcutListAdapter : BaseShortcutAdapter() {
 
     override fun createViewHolder(parentView: ViewGroup) =
         ShortcutViewHolder(ListItemShortcutBinding.inflate(LayoutInflater.from(parentView.context), parentView, false))

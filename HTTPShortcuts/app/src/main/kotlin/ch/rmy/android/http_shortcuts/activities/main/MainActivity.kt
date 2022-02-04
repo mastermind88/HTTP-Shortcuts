@@ -19,7 +19,6 @@ import ch.rmy.android.http_shortcuts.activities.settings.ImportExportActivity
 import ch.rmy.android.http_shortcuts.activities.settings.SettingsActivity
 import ch.rmy.android.http_shortcuts.activities.widget.WidgetSettingsActivity
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityMainBinding
 import ch.rmy.android.http_shortcuts.dialogs.ChangeLogDialog
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -28,23 +27,21 @@ import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
-import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.extensions.restartWithoutAnimation
-import ch.rmy.android.http_shortcuts.extensions.showSnackbar
-import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.extensions.titleView
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.utils.IntentUtil
+import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import ch.rmy.android.http_shortcuts.widget.WidgetManager
 import ch.rmy.curlcommand.CurlCommand
 import com.google.android.material.appbar.AppBarLayout
 
-class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
+class MainActivity : BaseActivity(), Entrypoint {
 
     private val viewModel: MainViewModel by bindViewModel()
 
@@ -74,24 +71,6 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             initialCategoryId = intent?.extras?.getString(EXTRA_CATEGORY_ID),
             widgetId = WidgetManager.getWidgetIdFromIntent(intent),
         )
-
-        if (selectionMode === SelectionMode.NORMAL) {
-            showChangeLogIfNeeded()
-        } else {
-            if (selectionMode == SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT) {
-                setResult(Activity.RESULT_CANCELED, WidgetManager.getIntent(widgetId))
-            }
-            if ((
-                    selectionMode == SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT ||
-                        selectionMode == SelectionMode.HOME_SCREEN_SHORTCUT_PLACEMENT
-                    ) && savedInstanceState == null
-            ) {
-                showToast(R.string.instructions_select_shortcut_for_home_screen, long = true)
-            }
-        }
-
-        ExecutionScheduler.schedule(context)
-        updateLauncherShortcuts()
     }
 
     private fun initViews() {
@@ -103,8 +82,16 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         binding.buttonCreateShortcut.applyTheme(themeHelper)
     }
 
+    private fun setupViewPager() {
+        adapter = CategoryPagerAdapter(supportFragmentManager)
+        binding.viewPager.adapter = adapter
+        binding.tabs.setupWithViewPager(binding.viewPager)
+    }
+
     private fun initUserInputBindings() {
-        binding.buttonCreateShortcut.setOnClickListener { showCreateOptions() }
+        binding.buttonCreateShortcut.setOnClickListener {
+            viewModel.onCreateShortcutButtonClicked()
+        }
 
         toolbar!!.titleView?.setOnClickListener {
             viewModel.onToolbarTitleClicked()
@@ -113,7 +100,9 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
-            // TODO
+            adapter.setCategories(viewState.categoryTabItems, viewState.selectionMode)
+            binding.viewPager.currentItem = viewState.activeCategoryIndex
+            toolbar?.title = viewState.toolbarTitleLocalizable.localize(context)
             binding.tabs.visible = viewState.isTabBarVisible
             binding.buttonCreateShortcut.visible = viewState.isCreateButtonVisible
             menuItemSettings?.isVisible = viewState.isRegularMenuButtonVisible
@@ -139,6 +128,12 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
     override fun handleEvent(event: ViewModelEvent) {
         when (event) {
             is MainEvent.ShowCreationDialog -> showCreationDialog()
+            is MainEvent.ShowToolbarTitleChangeDialog -> showToolbarTitleChangeDialog(event.oldTitle)
+            is MainEvent.ScheduleExecutions -> ExecutionScheduler.schedule(context)
+            is MainEvent.UpdateLauncherShortcuts -> updateLauncherShortcuts(event.shortcuts)
+            is MainEvent.ShowChangeLogDialogIfNeeded -> showChangeLogDialogIfNeeded()
+            is MainEvent.ShowUnlockDialog -> showUnlockDialog(event.message)
+            is MainEvent.ShowShortcutPlacementDialog -> showShortcutPlacementDialog(event.shortcutId)
             else -> super.handleEvent(event)
         }
     }
@@ -149,7 +144,9 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             .item(R.string.button_create_new) {
                 viewModel.onCreationDialogOptionSelected(ShortcutExecutionType.APP)
             }
-            .item(R.string.button_curl_import, action = ::openCurlImport)
+            .item(R.string.button_curl_import) {
+                viewModel.onCurlImportOptionSelected()
+            }
             .separator()
             .item(
                 nameRes = R.string.button_create_trigger_shortcut,
@@ -175,57 +172,24 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             .showIfPossible()
     }
 
-    private fun setupViewPager() {
-        adapter = CategoryPagerAdapter(supportFragmentManager, selectionMode)
-        binding.viewPager.adapter = adapter
-        binding.tabs.setupWithViewPager(binding.viewPager)
-        viewModel.getCategories().observe(this) { categories ->
-            adapter.setCategories(categories.filter { !it.hidden || showHiddenCategories })
-        }
-    }
-
-    private fun bindViewsToViewModel() {
-        viewModel.getCategories().observe(this) { categories ->
-            val visibleCategoryCount = categories.count { !it.hidden || showHiddenCategories }
-            binding.tabs.visible = visibleCategoryCount > 1
-            if (initialCategoryId != null && !viewModel.hasMovedToInitialCategory) {
-                val categoryIndex = categories
-                    .mapIndexed { index, category -> Pair(index, category) }
-                    .firstOrNull { (_, category) -> category.id == initialCategoryId }
-                    ?.takeUnless { (_, category) -> category.hidden }
-                    ?.first
-                if (categoryIndex != null) {
-                    binding.viewPager.currentItem = categoryIndex
-                }
-                viewModel.hasMovedToInitialCategory = true
-            }
-            if (binding.viewPager.currentItem >= visibleCategoryCount) {
-                binding.viewPager.currentItem = 0
-            }
-        }
-    }
-
-    private fun showToolbarTitleChangeDialog() {
-        val oldTitle = viewModel.getToolbarTitle() ?: ""
+    private fun showToolbarTitleChangeDialog(oldTitle: String) {
         DialogBuilder(context)
             .title(R.string.title_set_title)
             .textInput(
                 prefill = oldTitle,
                 allowEmpty = true,
-                maxLength = TITLE_MAX_LENGTH
+                maxLength = TITLE_MAX_LENGTH,
             ) { newTitle ->
-                if (newTitle != oldTitle) {
-                    viewModel.setToolbarTitle(newTitle)
-                        .subscribe {
-                            showSnackbar(R.string.message_title_changed)
-                        }
-                        .attachTo(destroyer)
-                }
+                viewModel.onToolbarTitleChangeSubmitted(newTitle)
             }
             .showIfPossible()
     }
 
-    private fun showChangeLogIfNeeded() {
+    private fun updateLauncherShortcuts(shortcuts: List<LauncherShortcut>) {
+        LauncherShortcutManager.updateAppShortcuts(context, shortcuts)
+    }
+
+    private fun showChangeLogDialogIfNeeded() {
         ChangeLogDialog(context, whatsNew = true)
             .showIfNeeded()
             .ignoreElement()
@@ -235,6 +199,31 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
             )
             .subscribe({}, {})
             .attachTo(destroyer)
+    }
+
+    private fun showUnlockDialog(message: Localizable) {
+        DialogBuilder(context)
+            .title(R.string.dialog_title_unlock_app)
+            .message(message)
+            .positive(R.string.button_unlock_app)
+            .textInput(inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD) { input ->
+                viewModel.onUnlockDialogSubmitted(input)
+            }
+            .negative(R.string.dialog_cancel)
+            .showIfPossible()
+    }
+
+    private fun showShortcutPlacementDialog(shortcutId: String) {
+        DialogBuilder(context)
+            .title(R.string.title_select_placement_method)
+            .message(R.string.description_select_placement_method)
+            .positive(R.string.label_placement_method_default) {
+                viewModel.onShortcutPlacementConfirmed(shortcutId, useLegacyMethod = false)
+            }
+            .negative(R.string.label_placement_method_legacy) {
+                viewModel.onShortcutPlacementConfirmed(shortcutId, useLegacyMethod = true)
+            }
+            .showIfPossible()
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
@@ -250,12 +239,10 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         when (requestCode) {
             REQUEST_CREATE_SHORTCUT_FROM_CURL -> {
                 val curlCommand = intent.getSerializableExtra(CurlImportActivity.EXTRA_CURL_COMMAND) as CurlCommand
-                openEditorWithCurlCommand(curlCommand)
+                viewModel.onCurlCommandSubmitted(curlCommand)
             }
             REQUEST_CREATE_SHORTCUT -> {
-                updateLauncherShortcuts()
-                val shortcutId = intent.getStringExtra(ShortcutEditorActivity.RESULT_SHORTCUT_ID)!!
-                selectShortcut(shortcutId)
+                viewModel.onShortcutCreated(intent.getStringExtra(ShortcutEditorActivity.RESULT_SHORTCUT_ID)!!)
             }
             REQUEST_SETTINGS -> {
                 if (intent.getBooleanExtra(SettingsActivity.EXTRA_THEME_CHANGED, false)) {
@@ -263,7 +250,7 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
                     openSettings()
                     overridePendingTransition(0, 0)
                 } else if (intent.getBooleanExtra(SettingsActivity.EXTRA_APP_LOCKED, false)) {
-                    showSnackbar(R.string.message_app_locked)
+                    viewModel.onAppLocked()
                 }
             }
             REQUEST_IMPORT_EXPORT -> {
@@ -277,7 +264,7 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
                 }
             }
             REQUEST_WIDGET_SETTINGS -> {
-                returnForHomeScreenWidgetPlacement(
+                viewModel.onWidgetSettingsSubmitted(
                     shortcutId = WidgetSettingsActivity.getShortcutId(intent) ?: return,
                     showLabel = WidgetSettingsActivity.shouldShowLabel(intent),
                     labelColor = WidgetSettingsActivity.getLabelColor(intent),
@@ -286,85 +273,14 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         }
     }
 
-    private fun openEditorWithCurlCommand(curlCommand: CurlCommand) {
-        val categoryId = adapter.getItem(binding.viewPager.currentItem).categoryId
-        ShortcutEditorActivity.IntentBuilder(context)
-            .categoryId(categoryId)
-            .curlCommand(curlCommand)
-            .startActivity(this, REQUEST_CREATE_SHORTCUT)
-    }
-
-    private fun selectShortcut(shortcutId: String) {
-        selectShortcut(viewModel.getShortcutById(shortcutId) ?: return)
-    }
-
-    override fun selectShortcut(shortcut: Shortcut) {
-        when (selectionMode) {
-            SelectionMode.HOME_SCREEN_SHORTCUT_PLACEMENT -> returnForHomeScreenShortcutPlacement(shortcut)
-            SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT -> openWidgetSettings(shortcut)
-            SelectionMode.PLUGIN -> returnForPlugin(shortcut)
-            SelectionMode.NORMAL -> Unit
-        }
-    }
-
-    private fun openWidgetSettings(shortcut: Shortcut) {
-        WidgetSettingsActivity.IntentBuilder(context)
-            .shortcut(shortcut)
-            .startActivity(this, REQUEST_WIDGET_SETTINGS)
-    }
-
-    private fun returnForHomeScreenShortcutPlacement(shortcut: Shortcut) {
-        if (LauncherShortcutManager.supportsPinning(context)) {
-            DialogBuilder(context)
-                .title(R.string.title_select_placement_method)
-                .message(R.string.description_select_placement_method)
-                .positive(R.string.label_placement_method_default) {
-                    finishWithPlacement(
-                        LauncherShortcutManager.createShortcutPinIntent(context, shortcut)
-                    )
-                }
-                .negative(R.string.label_placement_method_legacy) {
-                    finishWithPlacement(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, true))
-                }
-                .showIfPossible()
-        } else {
-            finishWithPlacement(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, true))
-        }
-    }
-
-    private fun finishWithPlacement(intent: Intent) {
-        setResult(Activity.RESULT_OK, intent)
-        finish()
-    }
-
-    private fun returnForHomeScreenWidgetPlacement(shortcutId: String, showLabel: Boolean, labelColor: String?) {
-        WidgetManager().createWidget(widgetId, shortcutId, showLabel, labelColor)
-            .subscribe {
-                WidgetManager.updateWidgets(context, shortcutId)
-                setResult(Activity.RESULT_OK, WidgetManager.getIntent(widgetId))
-                finish()
-            }
-            .attachTo(destroyer)
-    }
-
-    private fun returnForPlugin(shortcut: Shortcut) {
-        val intent = Intent()
-            .putExtra(EXTRA_SELECTION_ID, shortcut.id)
-            .putExtra(EXTRA_SELECTION_NAME, shortcut.name)
-        setResult(Activity.RESULT_OK, intent)
-        finish()
+    private fun openSettings() {
+        SettingsActivity.IntentBuilder()
+            .startActivity(this, REQUEST_SETTINGS)
     }
 
     override val navigateUpIcon = 0
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        if (isRealmAvailable && selectionMode === SelectionMode.NORMAL && !isInMovingMode) {
-            if (viewModel.isAppLocked()) {
-                menuInflater.inflate(R.menu.locked_main_activity_menu, menu)
-            } else {
-                menuInflater.inflate(R.menu.main_activity_menu, menu)
-            }
-        }
         menuItemSettings = menu.findItem(R.id.action_settings)
         menuItemImportExport = menu.findItem(R.id.action_import_export)
         menuItemAbout = menu.findItem(R.id.action_about)
@@ -380,43 +296,12 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         R.id.action_about -> consume { viewModel.onAboutButtonClicked() }
         R.id.action_categories -> consume { viewModel.onCategoriesButtonClicked() }
         R.id.action_variables -> consume { viewModel.onVariablesButtonClicked() }
-        R.id.action_unlock -> consume { openAppUnlockDialog() }
+        R.id.action_unlock -> consume { viewModel.onUnlockButtonClicked() }
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun openAppUnlockDialog(showError: Boolean = false) {
-        DialogBuilder(context)
-            .title(R.string.dialog_title_unlock_app)
-            .message(if (showError) R.string.dialog_text_unlock_app_retry else R.string.dialog_text_unlock_app)
-            .positive(R.string.button_unlock_app)
-            .textInput(inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD) { input ->
-                unlockApp(input)
-            }
-            .negative(R.string.dialog_cancel)
-            .showIfPossible()
-    }
-
-    private fun unlockApp(password: String) {
-        viewModel.removeAppLock(password)
-            .subscribe({ unlocked ->
-                if (unlocked) {
-                    showSnackbar(R.string.message_app_unlocked)
-                } else {
-                    openAppUnlockDialog(showError = true)
-                }
-            }, { e ->
-                showSnackbar(R.string.error_generic, long = true)
-                logException(e)
-            })
-            .attachTo(destroyer)
-    }
-
-    private fun openCurlImport() {
-        CurlImportActivity.IntentBuilder(context)
-            .startActivity(this, REQUEST_CREATE_SHORTCUT_FROM_CURL)
-    }
-
-    override fun placeShortcutOnHomeScreen(shortcut: Shortcut) {
+    /* TODO
+    private fun placeShortcutOnHomeScreen(shortcut: Shortcut) {
         if (LauncherShortcutManager.supportsPinning(context)) {
             LauncherShortcutManager.pinShortcut(context, shortcut)
         } else {
@@ -425,15 +310,10 @@ class MainActivity : BaseActivity(), ListFragment.TabHost, Entrypoint {
         }
     }
 
-    override fun removeShortcutFromHomeScreen(shortcut: Shortcut) {
+    private fun removeShortcutFromHomeScreen(shortcut: Shortcut) {
         sendBroadcast(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, false))
     }
-
-    override fun isAppLocked() = viewModel.isAppLocked()
-
-    override fun updateLauncherShortcuts() {
-        LauncherShortcutManager.updateAppShortcuts(context, categories)
-    }
+     */
 
     override fun onBackPressed() {
         supportFragmentManager.fragments

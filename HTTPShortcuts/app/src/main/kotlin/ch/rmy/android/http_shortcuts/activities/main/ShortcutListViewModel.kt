@@ -1,45 +1,55 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
 import android.app.Application
-import androidx.lifecycle.LiveData
+import ch.rmy.android.http_shortcuts.R
+import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExecutionsRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.widgets.WidgetsRepository
-import ch.rmy.android.http_shortcuts.data.livedata.ListLiveData
-import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.data.models.PendingExecution
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import io.reactivex.android.schedulers.AndroidSchedulers
+import ch.rmy.android.http_shortcuts.utils.SelectionMode
 
-class ShortcutListViewModel(application: Application) : MainViewModel(application) {
+class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutListViewState>(application) {
 
     private val shortcutRepository = ShortcutRepository()
     private val pendingExecutionsRepository = PendingExecutionsRepository()
     private val widgetsRepository = WidgetsRepository()
 
-    var categoryId: String = ""
+    fun initialize(categoryId: String, selectionMode: SelectionMode) {
+        initialize()
+    }
 
-    var exportedShortcutId: String? = null
+    override fun initViewState() = ShortcutListViewState()
 
-    fun getCategory(): LiveData<Category?> =
-        getCategoryById(categoryId)
-            .findFirstAsync()
-            .toLiveData()
+    fun onPaused() {
+        if (currentViewState.inMovingMode) {
+            updateViewState {
+                copy(inMovingMode = false)
+            }
+        }
+    }
 
-    fun getPendingShortcuts(): ListLiveData<PendingExecution> =
-        getPendingExecutions()
-            .findAll()
-            .toLiveData()
+    fun onBackPressed() {
+        if (currentViewState.inMovingMode) {
+            updateViewState {
+                copy(inMovingMode = false)
+            }
+        } else {
+            finish()
+        }
+    }
 
-    fun getShortcuts(): ListLiveData<Shortcut> =
-        getBase()
-            .findFirst()!!
-            .categories
-            .firstOrNull { category -> category.id == categoryId }
-            ?.shortcuts
-            ?.toLiveData()
-            ?: (object : ListLiveData<Shortcut>() {})
+    fun onMoveModeOptionSelected() {
+        updateViewState {
+            copy(inMovingMode = true)
+        }
+        showSnackbar(R.string.message_moving_enabled, long = true)
+    }
 
+    fun onShortcutMoved(oldPosition: Int, newPosition: Int) {
+        // TODO
+    }
+
+    /*
     fun deleteShortcut(shortcutId: String) =
         shortcutRepository.deleteShortcut(shortcutId)
             .mergeWith(pendingExecutionsRepository.removePendingExecution(shortcutId))
@@ -53,4 +63,5 @@ class ShortcutListViewModel(application: Application) : MainViewModel(applicatio
 
     fun duplicateShortcut(shortcutId: String, newName: String, newPosition: Int?, categoryId: String) =
         shortcutRepository.duplicateShortcut(shortcutId, newName, newPosition, categoryId)
+     */
 }

@@ -17,6 +17,7 @@ import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.PermissionManager
 
@@ -174,10 +175,10 @@ class CategoriesActivity : BaseActivity() {
     private fun showLayoutTypeDialog(categoryId: String) {
         DialogBuilder(context)
             .item(R.string.layout_type_linear_list) {
-                viewModel.onLayoutTypeChanged(categoryId, Category.LAYOUT_LINEAR_LIST)
+                viewModel.onLayoutTypeChanged(categoryId, CategoryLayoutType.LINEAR_LIST)
             }
             .item(R.string.layout_type_grid) {
-                viewModel.onLayoutTypeChanged(categoryId, Category.LAYOUT_GRID)
+                viewModel.onLayoutTypeChanged(categoryId, CategoryLayoutType.GRID)
             }
             .showIfPossible()
     }

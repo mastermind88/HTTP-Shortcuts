@@ -15,6 +15,11 @@ abstract class ViewModelEvent {
         val skipAnimation: Boolean = false,
     ) : ViewModelEvent()
 
+    data class SetResult(
+        val result: Int,
+        val intent: Intent? = null,
+    ) : ViewModelEvent()
+
     data class OpenURL(val url: String) : ViewModelEvent()
 
     data class OpenActivity(
@@ -26,6 +31,13 @@ abstract class ViewModelEvent {
     class ShowDialog(val dialogBuilder: (context: Context) -> Dialog?) : ViewModelEvent()
 
     class ShowSnackbar(
+        val message: Localizable,
+        val long: Boolean = false,
+    ) : ViewModelEvent() {
+        constructor(@StringRes message: Int, long: Boolean = false) : this(StringResLocalizable(message, long))
+    }
+
+    class ShowToast(
         val message: Localizable,
         val long: Boolean = false,
     ) : ViewModelEvent() {

@@ -11,6 +11,7 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.context
 import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.extensions.toLocalizable
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.text.QuantityStringLocalizable
@@ -147,9 +148,9 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
         LauncherShortcutManager.pinCategory(context, category)
     }
 
-    fun onLayoutTypeChanged(categoryId: String, layoutType: String) {
+    fun onLayoutTypeChanged(categoryId: String, layoutType: CategoryLayoutType) {
         performOperation(
-            categoryRepository.setLayoutType(categoryId, layoutType)
+            categoryRepository.setLayoutType(categoryId, layoutType.type)
                 .doOnComplete {
                     showSnackbar(R.string.message_layout_type_changed)
                 }

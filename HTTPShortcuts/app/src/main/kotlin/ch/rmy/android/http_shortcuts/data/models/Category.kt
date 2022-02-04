@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.data.models
 
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.isUUID
 import io.realm.RealmList
 import io.realm.RealmObject
@@ -16,17 +17,20 @@ open class Category(
     var shortcuts: RealmList<Shortcut> = RealmList()
 
     @Required
-    var layoutType: String = LAYOUT_LINEAR_LIST
+    var layoutType: String = CategoryLayoutType.LINEAR_LIST.type
 
     var background: String = BACKGROUND_TYPE_WHITE
     var hidden: Boolean = false
+
+    val categoryLayoutType
+        get() = CategoryLayoutType.parse(layoutType)
 
     fun validate() {
         if (!isUUID(id) && id.toIntOrNull() == null) {
             throw IllegalArgumentException("Invalid category ID found, must be UUID: $id")
         }
 
-        if (layoutType !in setOf(LAYOUT_GRID, LAYOUT_LINEAR_LIST)) {
+        if (CategoryLayoutType.values().none { it.type == layoutType }) {
             throw IllegalArgumentException("Invalid layout type: $layoutType")
         }
 
@@ -38,9 +42,6 @@ open class Category(
     }
 
     companion object {
-
-        const val LAYOUT_LINEAR_LIST = "linear_list"
-        const val LAYOUT_GRID = "grid"
 
         const val BACKGROUND_TYPE_WHITE = "white"
         const val BACKGROUND_TYPE_BLACK = "black"

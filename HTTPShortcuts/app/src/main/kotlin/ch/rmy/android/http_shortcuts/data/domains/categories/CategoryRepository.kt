@@ -7,8 +7,17 @@ import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
+import io.reactivex.Single
 
 class CategoryRepository : BaseRepository() {
+
+    fun getCategories(): Single<List<Category>> =
+        queryItem {
+            getBase()
+        }
+            .map { base ->
+                base.categories
+            }
 
     fun getObservableCategories(): Observable<List<Category>> =
         observeItem {
