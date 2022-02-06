@@ -6,24 +6,19 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseFragment
-import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
-import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.domains.getBase
-import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.FragmentListBinding
 import ch.rmy.android.http_shortcuts.dialogs.CurlExportDialog
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.dialogs.ShortcutInfoDialog
 import ch.rmy.android.http_shortcuts.exceptions.CanceledByUserException
+import ch.rmy.android.http_shortcuts.extensions.addArguments
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.color
@@ -40,11 +35,11 @@ import ch.rmy.android.http_shortcuts.import_export.CurlExporter
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.import_export.ExportUI
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
-import ch.rmy.android.http_shortcuts.utils.Settings
 import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.curlcommand.CurlConstructor
@@ -65,6 +60,8 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private var isDraggingEnabled = false
 
+    private var previousBackground: CategoryBackgroundType? = null
+
     private val exportUI by lazy {
         destroyer.own(ExportUI(requireActivity()))
     }
@@ -75,8 +72,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private val wallpaper: Drawable? by lazy {
         try {
-            val wallpaperManager = WallpaperManager.getInstance(context)
-            wallpaperManager.drawable
+            WallpaperManager.getInstance(context).drawable
         } catch (e: SecurityException) {
             null
         }
@@ -99,11 +95,23 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
             CategoryLayoutType.GRID -> ShortcutGridAdapter()
         }
 
+        binding.shortcutList.layoutManager = when (layoutType) {
+            CategoryLayoutType.GRID -> GridLayoutManager(requireContext())
+            CategoryLayoutType.LINEAR_LIST -> LinearLayoutManager(context)
+        }
+        binding.shortcutList.adapter = adapter
         binding.shortcutList.setHasFixedSize(true)
     }
 
     private fun initUserInputBindings() {
         initDragOrdering()
+
+        adapter.userEvents.observe(this) { event ->
+            when (event) {
+                is BaseShortcutAdapter.UserEvent.ShortcutClicked -> viewModel.onShortcutClicked(event.id)
+                is BaseShortcutAdapter.UserEvent.ShortcutLongClicked -> viewModel.onShortcutLongClicked(event.id)
+            }
+        }
     }
 
     private fun initDragOrdering() {
@@ -118,60 +126,30 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
-            binding.shortcutList.alpha = if (viewState.inMovingMode) 0.7f else 1f
+            binding.shortcutList.alpha = if (viewState.isInMovingMode) 0.7f else 1f
             isDraggingEnabled = viewState.isDraggingEnabled
-            // TODO
+            adapter.isLongClickingEnabled = viewState.isLongClickingEnabled
+            updateBackground(viewState.background)
         }
         viewModel.events.observe(this, ::handleEvent)
     }
 
-    private fun updateViews() {
-        val layoutType = categoryData.value?.layoutType ?: return
-
-        if (layoutType != this.layoutType || adapter == null) {
-            this.layoutType = layoutType
-
-            adapter?.destroy()
-
-            val adapter = when (layoutType) {
-                Category.LAYOUT_GRID -> ShortcutGridAdapter(requireContext(), shortcuts)
-                else -> ShortcutListAdapter(requireContext(), shortcuts)
-            }
-            val manager = when (layoutType) {
-                Category.LAYOUT_GRID -> GridLayoutManager(requireContext())
-                else -> LinearLayoutManager(context)
-            }
-            this.adapter = destroyer.own(adapter)
-            destroyer.own {
-                this.adapter = null
-            }
-
-            adapter.clickListener = ::onItemClicked
-            adapter.longClickListener = ::onItemLongClicked
-
-            binding.shortcutList.layoutManager = manager
-            binding.shortcutList.adapter = adapter
-            updateEmptyState()
+    private fun updateBackground(background: CategoryBackgroundType) {
+        if (background == previousBackground) {
+            return
         }
-
-        categoryData.value?.background?.let {
-            adapter?.textColor = if (it == Category.BACKGROUND_TYPE_WHITE) {
-                BaseShortcutAdapter.TextColor.DARK
-            } else {
-                BaseShortcutAdapter.TextColor.BRIGHT
-            }
-            updateBackground(it)
-        }
-    }
-
-    private fun updateBackground(background: String) {
+        previousBackground = background
         binding.background.apply {
             when (background) {
-                Category.BACKGROUND_TYPE_BLACK -> {
+                CategoryBackgroundType.WHITE -> {
+                    setImageDrawable(null)
+                    setBackgroundColor(color(requireContext(), R.color.activity_background))
+                }
+                CategoryBackgroundType.BLACK -> {
                     setImageDrawable(null)
                     setBackgroundColor(color(requireContext(), R.color.activity_background_dark))
                 }
-                Category.BACKGROUND_TYPE_WALLPAPER -> {
+                CategoryBackgroundType.WALLPAPER -> {
                     wallpaper
                         ?.also {
                             setImageDrawable(it)
@@ -179,150 +157,94 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
                         ?: run {
                             setImageDrawable(null)
                             setBackgroundColor(color(requireContext(), R.color.activity_background))
-                            adapter?.textColor = BaseShortcutAdapter.TextColor.DARK
                         }
                 }
-                else -> {
-                    setImageDrawable(null)
-                    setBackgroundColor(color(requireContext(), R.color.activity_background))
-                }
             }
         }
     }
 
-    private fun updateEmptyState() {
-        (binding.shortcutList.layoutManager as? GridLayoutManager)?.setEmpty(shortcuts.isEmpty())
-    }
-
-    private fun onItemClicked(shortcutData: LiveData<Shortcut?>) {
-        val shortcut = shortcutData.value ?: return
-        if (isInMovingMode) {
-            showSnackbar(R.string.message_moving_enabled)
-            return
-        }
-        when (selectionMode) {
-            SelectionMode.HOME_SCREEN_SHORTCUT_PLACEMENT,
-            SelectionMode.HOME_SCREEN_WIDGET_PLACEMENT,
-            SelectionMode.PLUGIN,
-            -> tabHost?.selectShortcut(shortcut)
-            else -> {
-                if (tabHost?.isAppLocked() == true) {
-                    executeShortcut(shortcut)
-                    return
-                }
-                when (Settings(requireContext()).clickBehavior) {
-                    Settings.CLICK_BEHAVIOR_RUN -> executeShortcut(shortcut)
-                    Settings.CLICK_BEHAVIOR_EDIT -> editShortcut(shortcut)
-                    Settings.CLICK_BEHAVIOR_MENU -> showContextMenu(shortcutData)
-                }
-            }
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is ShortcutListEvent.ShowContextMenu -> showContextMenu(
+                event.shortcutId,
+                event.title,
+                event.isPending,
+                event.isMovable,
+            )
+            is ShortcutListEvent.ShowMoveOptionsDialog -> showMoveDialog(event.shortcutId)
+            is ShortcutListEvent.ShowMoveToCategoryDialog -> showMoveToCategoryDialog(event.shortcutId, event.categoryOptions)
+            is ShortcutListEvent.ShowShortcutInfoDialog -> showShortcutInfoDialog(event.shortcutId, event.shortcutName)
+            else -> super.handleEvent(event)
         }
     }
 
-    private fun onItemLongClicked(shortcutData: LiveData<Shortcut?>): Boolean {
-        if (tabHost?.isAppLocked() != false || isInMovingMode) {
-            return false
-        }
-        showContextMenu(shortcutData)
-        return true
-    }
-
-    private fun showContextMenu(shortcutData: LiveData<Shortcut?>) {
-        val shortcut = shortcutData.value ?: return
+    private fun showContextMenu(shortcutId: String, title: String, isPending: Boolean, isMovable: Boolean) {
         DialogBuilder(requireContext())
-            .title(shortcut.name)
+            .title(title)
             .item(R.string.action_place) {
-                tabHost?.placeShortcutOnHomeScreen(shortcutData.value ?: return@item)
+                viewModel.onPlaceOnHomeScreenOptionSelected(shortcutId)
             }
             .item(R.string.action_run) {
-                executeShortcut(shortcutData.value ?: return@item)
+                viewModel.onExecuteOptionSelected(shortcutId)
             }
-            .mapIf(isPending(shortcut)) {
+            .mapIf(isPending) {
                 item(R.string.action_cancel_pending) {
-                    cancelPendingExecution(shortcutData.value ?: return@item)
+                    viewModel.onCancelPendingExecutionOptionSelected(shortcutId)
                 }
             }
             .separator()
             .item(R.string.action_edit) {
-                editShortcut(shortcutData.value ?: return@item)
+                viewModel.onEditOptionSelected(shortcutId)
             }
-            .mapIf(canMoveShortcuts()) {
+            .mapIf(isMovable) {
                 item(R.string.action_move) {
-                    openMoveDialog(shortcutData)
+                    viewModel.onMoveOptionSelected(shortcutId)
                 }
             }
             .item(R.string.action_duplicate) {
-                duplicateShortcut(shortcutData.value ?: return@item)
+                viewModel.onDuplicateOptionSelected(shortcutId)
             }
             .item(R.string.action_delete) {
-                showDeleteDialog(shortcutData)
+                viewModel.onDeleteOptionSelected(shortcutId)
             }
             .separator()
             .item(R.string.action_shortcut_information) {
-                showInfoDialog(shortcutData)
+                viewModel.onShowInfoOptionSelected(shortcutId)
             }
             .item(R.string.action_export) {
-                showExportChoiceDialog(shortcutData)
+                viewModel.onExportOptionSelected(shortcutId)
             }
             .showIfPossible()
     }
 
-    private fun isPending(shortcut: Shortcut) =
-        pendingShortcuts.any { it.shortcutId == shortcut.id }
-
-    private fun executeShortcut(shortcut: Shortcut) {
-        ExecuteActivity.IntentBuilder(requireContext(), shortcut.id)
-            .startActivity(this)
-    }
-
-    private fun editShortcut(shortcut: Shortcut) {
-        ShortcutEditorActivity.IntentBuilder(requireContext())
-            .categoryId(categoryId)
-            .shortcutId(shortcut.id)
-            .startActivity(this, REQUEST_EDIT_SHORTCUT)
-    }
-
-    private fun canMoveShortcuts() =
-        shortcuts.size > 1 || categories.size > 1
-
-    private fun openMoveDialog(shortcutData: LiveData<Shortcut?>) {
+    private fun showMoveDialog(shortcutId: String) {
         DialogBuilder(requireContext())
-            .mapIf(shortcuts.size > 1) {
-                item(R.string.action_enable_moving) {
-                    viewModel.onMoveModeOptionSelected()
-                }
+            .item(R.string.action_enable_moving) {
+                viewModel.onMoveModeOptionSelected()
             }
-            .mapIf(categories.size > 1) {
-                item(R.string.action_move_to_category) {
-                    showMoveToCategoryDialog(shortcutData)
+            .item(R.string.action_move_to_category) {
+                viewModel.onMoveToCategoryOptionSelected(shortcutId)
+            }
+            .showIfPossible()
+    }
+
+    private fun showMoveToCategoryDialog(shortcutId: String, categoryOptions: List<ShortcutListEvent.ShowMoveToCategoryDialog.CategoryOption>) {
+        DialogBuilder(requireContext())
+            .title(R.string.title_move_to_category)
+            .mapFor(categoryOptions) { categoryOption ->
+                item(name = categoryOption.name) {
+                    viewModel.onMoveTargetCategorySelected(shortcutId, categoryOption.categoryId)
                 }
             }
             .showIfPossible()
     }
 
-    private fun showMoveToCategoryDialog(shortcutData: LiveData<Shortcut?>) {
-        categoryData.value?.let { currentCategory ->
-            DialogBuilder(requireContext())
-                .title(R.string.title_move_to_category)
-                .mapFor(categories.filter { it.id != currentCategory.id }) { category ->
-                    val categoryId = category.id
-                    item(name = category.name) {
-                        moveShortcut(shortcutData.value ?: return@item, categoryId)
-                    }
-                }
-                .showIfPossible()
-        }
+    private fun showShortcutInfoDialog(shortcutId: String, shortcutName: String) {
+        ShortcutInfoDialog(requireContext(), shortcutId, shortcutName)
+            .show()
     }
 
-    private fun moveShortcut(shortcut: Shortcut, categoryId: String) {
-        val name = shortcut.name
-        viewModel.moveShortcut(shortcut.id, targetCategoryId = categoryId)
-            .subscribe {
-                activity?.showSnackbar(String.format(getString(R.string.shortcut_moved), name))
-            }
-            .attachTo(destroyer)
-    }
-
+    /*
     private fun duplicateShortcut(shortcut: Shortcut) {
         val name = shortcut.name
         val newName = String.format(getString(R.string.template_shortcut_name_copy), shortcut.name)
@@ -335,15 +257,6 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         viewModel.duplicateShortcut(shortcut.id, newName, newPosition, categoryId)
             .subscribe {
                 showSnackbar(String.format(getString(R.string.shortcut_duplicated), name))
-            }
-            .attachTo(destroyer)
-    }
-
-    private fun cancelPendingExecution(shortcut: Shortcut) {
-        viewModel.removePendingExecution(shortcut.id)
-            .subscribe {
-                showSnackbar(String.format(getString(R.string.pending_shortcut_execution_cancelled), shortcut.name))
-                ExecutionScheduler.schedule(requireContext())
             }
             .attachTo(destroyer)
     }
@@ -419,27 +332,23 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
             }
             .attachTo(destroyer)
     }
-
-    private fun showInfoDialog(shortcutData: LiveData<Shortcut?>) {
-        val shortcut = shortcutData.value ?: return
-        ShortcutInfoDialog(requireContext(), shortcut)
-            .show()
-    }
+     */
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
         when (requestCode) {
             REQUEST_EDIT_SHORTCUT -> {
-                tabHost?.updateLauncherShortcuts()
+                viewModel.onShortcutEdited()
             }
             REQUEST_EXPORT -> {
                 if (resultCode == RESULT_OK) {
-                    startExport(intent?.data ?: return, viewModel.exportedShortcutId!!)
+                    viewModel.onExportDestinationSelected(intent?.data ?: return)
                 }
             }
         }
     }
 
+    /*
     private fun startExport(uri: Uri, shortcutId: String) {
         val shortcut = shortcuts.value?.find { it.id == shortcutId } ?: return
         val variableIds = getVariableIdsRequiredForExport(shortcut)
@@ -460,6 +369,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
                 variableLookup = VariableManager(getBase().findFirst()!!.variables),
             )
         }
+     */
 
     override fun onPause() {
         super.onPause()
@@ -473,17 +383,13 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
     companion object {
 
         fun create(categoryId: String, layoutType: CategoryLayoutType, selectionMode: SelectionMode): ListFragment =
-            ListFragment()
-                .apply {
-                    arguments = Bundle()
-                        .apply {
-                            putString(ARG_CATEGORY_ID, categoryId)
-                            putString(ARG_CATEGORY_LAYOUT_TYPE, layoutType.toString())
-                            putSerializable(ARG_SELECTION_MODE, selectionMode)
-                        }
-                }
+            ListFragment().addArguments {
+                putString(ARG_CATEGORY_ID, categoryId)
+                putString(ARG_CATEGORY_LAYOUT_TYPE, layoutType.toString())
+                putSerializable(ARG_SELECTION_MODE, selectionMode)
+            }
 
-        private const val REQUEST_EDIT_SHORTCUT = 2
+        const val REQUEST_EDIT_SHORTCUT = 2
         private const val REQUEST_EXPORT = 3
 
         private const val ARG_CATEGORY_ID = "categoryId"

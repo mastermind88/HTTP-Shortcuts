@@ -41,18 +41,6 @@ class RealmFactory private constructor() {
 
         fun getInstance(): RealmFactory = instance!!
 
-        // TODO: Remove this
-        @Deprecated("Don't use RealmFactory directly")
-        fun <T> withRealmContext(block: RealmContext.() -> T): T =
-            getInstance().createRealm().use { realm ->
-                block(
-                    object : RealmTransactionContext {
-                        override val realmInstance: Realm
-                            get() = realm
-                    }
-                )
-            }
-
         private fun createConfiguration(context: Context): RealmConfiguration =
             RealmConfiguration.Builder()
                 .schemaVersion(DatabaseMigration.VERSION)

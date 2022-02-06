@@ -54,13 +54,11 @@ class VariablesActivity : BaseActivity() {
     private fun initUserInputBindings() {
         initDragOrdering()
 
-        adapter.userEvents
-            .subscribe { event ->
-                when (event) {
-                    is VariableAdapter.UserEvent.VariableClicked -> viewModel.onVariableClicked(event.id)
-                }
+        adapter.userEvents.observe(this) { event ->
+            when (event) {
+                is VariableAdapter.UserEvent.VariableClicked -> viewModel.onVariableClicked(event.id)
             }
-            .attachTo(destroyer)
+        }
         binding.buttonCreateVariable.setOnClickListener {
             viewModel.onCreateButtonClicked()
         }
@@ -69,16 +67,13 @@ class VariablesActivity : BaseActivity() {
     private fun initDragOrdering() {
         val dragOrderingHelper = DragOrderingHelper { isDraggingEnabled }
         dragOrderingHelper.attachTo(binding.variableList)
-        dragOrderingHelper.positionChangeSource
-            .subscribe { (oldPosition, newPosition) ->
-                viewModel.onVariableMoved(oldPosition, newPosition)
-            }
-            .attachTo(destroyer)
+        dragOrderingHelper.positionChangeSource.observe(this) { (oldPosition, newPosition) ->
+            viewModel.onVariableMoved(oldPosition, newPosition)
+        }
     }
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
-            // TODO
             adapter.items = viewState.variables
             isDraggingEnabled = viewState.isDraggingEnabled
         }

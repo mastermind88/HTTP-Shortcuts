@@ -11,6 +11,7 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.context
 import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.extensions.toLocalizable
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
@@ -145,19 +146,19 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
 
     fun onPlaceOnHomeScreenSelected(categoryId: String) {
         val category = getCategory(categoryId) ?: return
-        LauncherShortcutManager.pinCategory(context, category)
+        LauncherShortcutManager.pinCategory(context, category.id, category.name)
     }
 
     fun onLayoutTypeChanged(categoryId: String, layoutType: CategoryLayoutType) {
         performOperation(
-            categoryRepository.setLayoutType(categoryId, layoutType.type)
+            categoryRepository.setLayoutType(categoryId, layoutType)
                 .doOnComplete {
                     showSnackbar(R.string.message_layout_type_changed)
                 }
         )
     }
 
-    fun onBackgroundTypeChanged(categoryId: String, backgroundType: String) {
+    fun onBackgroundTypeChanged(categoryId: String, backgroundType: CategoryBackgroundType) {
         performOperation(
             categoryRepository.setBackground(categoryId, backgroundType)
                 .doOnComplete {
@@ -187,7 +188,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
                         .map { shortcut ->
                             shortcut.icon
                         },
-                    layoutType = category.layoutType.takeUnless { category.hidden },
+                    layoutType = category.categoryLayoutType.takeUnless { category.hidden },
                 )
             }
     }

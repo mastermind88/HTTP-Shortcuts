@@ -38,6 +38,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val appRepository: AppRepository = AppRepository()
     private val launcherShortcutMapper: LauncherShortcutMapper = LauncherShortcutMapper()
+    private val eventBridge = ChildViewModelEventBridge()
 
     private var initialized = false
     private var initialCategoryId: String? = null
@@ -51,10 +52,10 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
         if (initialized) {
             return
         }
+        initialized = true
         this.selectionMode = selectionMode
         this.initialCategoryId = initialCategoryId
         this.widgetId = widgetId
-        initialized = true
 
         categoryRepository.getCategories()
             .subscribe { categories ->
@@ -84,11 +85,12 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
             }
 
     override fun onInitialized() {
+        observeChildViewModelEvents()
         observeToolbarTitle()
         observeAppLock()
 
         emitEvent(MainEvent.ScheduleExecutions)
-        emitEvent(MainEvent.UpdateLauncherShortcuts(launcherShortcutMapper(categories)))
+        updateLauncherShortcuts()
 
         if (selectionMode === SelectionMode.NORMAL) {
             emitEvent(MainEvent.ShowChangeLogDialogIfNeeded)
@@ -104,6 +106,28 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
                 showToast(R.string.instructions_select_shortcut_for_home_screen, long = true)
             }
         }
+    }
+
+    private fun observeChildViewModelEvents() {
+        eventBridge.events.subscribe(::handleChildViewModelEvent)
+            .attachTo(destroyer)
+    }
+
+    private fun handleChildViewModelEvent(event: ChildViewModelEvent) {
+        when (event) {
+            is ChildViewModelEvent.MovingModeChanged -> {
+                updateViewState {
+                    copy(isInMovingMode = event.enabled)
+                }
+            }
+            is ChildViewModelEvent.ShortcutEdited -> {
+                updateLauncherShortcuts()
+            }
+        }
+    }
+
+    private fun updateLauncherShortcuts() {
+        emitEvent(MainEvent.UpdateLauncherShortcuts(launcherShortcutMapper(categories)))
     }
 
     private fun observeToolbarTitle() {

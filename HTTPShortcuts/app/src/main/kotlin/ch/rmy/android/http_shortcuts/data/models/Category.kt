@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.data.models
 
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.isUUID
 import io.realm.RealmList
@@ -19,11 +20,20 @@ open class Category(
     @Required
     var layoutType: String = CategoryLayoutType.LINEAR_LIST.type
 
-    var background: String = BACKGROUND_TYPE_WHITE
+    var background: String = CategoryBackgroundType.WHITE.type
     var hidden: Boolean = false
 
-    val categoryLayoutType
+    var categoryLayoutType
         get() = CategoryLayoutType.parse(layoutType)
+        set(value) {
+            layoutType = value.type
+        }
+
+    var categoryBackgroundType
+        get() = CategoryBackgroundType.parse(background)
+        set(value) {
+            background = value.type
+        }
 
     fun validate() {
         if (!isUUID(id) && id.toIntOrNull() == null) {
@@ -34,17 +44,10 @@ open class Category(
             throw IllegalArgumentException("Invalid layout type: $layoutType")
         }
 
-        if (background !in setOf(BACKGROUND_TYPE_WHITE, BACKGROUND_TYPE_BLACK, BACKGROUND_TYPE_WALLPAPER)) {
+        if (CategoryBackgroundType.values().none { it.type == background }) {
             throw IllegalArgumentException("Invalid background: $background")
         }
 
         shortcuts.forEach(Shortcut::validate)
-    }
-
-    companion object {
-
-        const val BACKGROUND_TYPE_WHITE = "white"
-        const val BACKGROUND_TYPE_BLACK = "black"
-        const val BACKGROUND_TYPE_WALLPAPER = "wallpaper"
     }
 }

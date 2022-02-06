@@ -1,8 +1,16 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
+
 data class ShortcutListViewState(
-    val inMovingMode: Boolean = false,
+    val shortcuts: List<ShortcutListItem> = emptyList(),
+    val isInMovingMode: Boolean = false,
+    val isAppLocked: Boolean = false,
+    val background: CategoryBackgroundType = CategoryBackgroundType.WHITE,
 ) {
     val isDraggingEnabled
-        get() = inMovingMode
+        get() = !isAppLocked && isInMovingMode
+
+    val isLongClickingEnabled
+        get() = !isAppLocked && !isInMovingMode
 }

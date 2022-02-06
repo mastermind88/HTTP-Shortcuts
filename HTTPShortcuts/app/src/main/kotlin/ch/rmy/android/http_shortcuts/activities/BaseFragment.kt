@@ -47,7 +47,7 @@ abstract class BaseFragment<Binding : ViewBinding> : Fragment() {
 
     open fun onBackPressed(): Boolean = false
 
-    protected fun handleEvent(event: ViewModelEvent) {
+    protected open fun handleEvent(event: ViewModelEvent) {
         when (event) {
             is ViewModelEvent.OpenActivity -> {
                 event.intentBuilder.startActivity(this, event.requestCode)

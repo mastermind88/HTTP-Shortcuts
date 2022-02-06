@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
+import ch.rmy.android.http_shortcuts.activities.Entrypoint
 import ch.rmy.android.http_shortcuts.activities.main.MainActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
@@ -13,7 +14,7 @@ import com.joaomgcd.taskerpluginlibrary.input.TaskerInput
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfo
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfos
 
-class PluginEditActivity : BaseActivity(), TaskerPluginConfig<Input> {
+class PluginEditActivity : BaseActivity(), TaskerPluginConfig<Input>, Entrypoint {
 
     private var input: Input? = null
 
@@ -21,8 +22,10 @@ class PluginEditActivity : BaseActivity(), TaskerPluginConfig<Input> {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        RealmFactory.init(applicationContext)
 
+        if (isRealmAvailable) {
+            return
+        }
         Intent(this, MainActivity::class.java)
             .setAction(ACTION_SELECT_SHORTCUT_FOR_PLUGIN)
             .startActivity(this, REQUEST_SELECT)

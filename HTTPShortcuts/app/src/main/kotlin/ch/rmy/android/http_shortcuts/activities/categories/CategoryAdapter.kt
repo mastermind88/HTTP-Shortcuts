@@ -15,6 +15,7 @@ import ch.rmy.android.http_shortcuts.extensions.setText
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.icons.IconView
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 
@@ -81,15 +82,15 @@ class CategoryAdapter() : BaseAdapter<CategoryListItem>() {
             }
         }
 
-        private fun updateLayoutTypeIcon(layoutType: String?) {
+        private fun updateLayoutTypeIcon(layoutType: CategoryLayoutType?) {
             if (layoutType == null) {
                 binding.layoutTypeIcon.visible = false
             } else {
                 binding.layoutTypeIcon.visible = true
                 binding.layoutTypeIcon.setImageResource(
                     when (layoutType) {
-                        Category.LAYOUT_GRID -> R.drawable.ic_grid
-                        else -> R.drawable.ic_list
+                        CategoryLayoutType.GRID -> R.drawable.ic_grid
+                        CategoryLayoutType.LINEAR_LIST -> R.drawable.ic_list
                     }
                 )
                 binding.layoutTypeIcon.applyTheme()

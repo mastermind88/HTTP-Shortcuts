@@ -4,6 +4,8 @@ import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getCategoryById
 import ch.rmy.android.http_shortcuts.data.models.Category
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -26,6 +28,11 @@ class CategoryRepository : BaseRepository() {
             .map { base ->
                 base.categories
             }
+
+    fun getCategory(categoryId: String): Single<Category> =
+        queryItem {
+            getCategoryById(categoryId)
+        }
 
     fun createCategory(name: String): Completable =
         commitTransaction {
@@ -51,11 +58,11 @@ class CategoryRepository : BaseRepository() {
             category.deleteFromRealm()
         }
 
-    fun setBackground(categoryId: String, background: String): Completable =
+    fun setBackground(categoryId: String, background: CategoryBackgroundType): Completable =
         commitTransaction {
             getCategoryById(categoryId)
                 .findFirst()
-                ?.background = background
+                ?.categoryBackgroundType = background
         }
 
     fun renameCategory(categoryId: String, newName: String): Completable =
@@ -72,11 +79,11 @@ class CategoryRepository : BaseRepository() {
                 ?.hidden = hidden
         }
 
-    fun setLayoutType(categoryId: String, layoutType: String): Completable =
+    fun setLayoutType(categoryId: String, layoutType: CategoryLayoutType): Completable =
         commitTransaction {
             getCategoryById(categoryId)
                 .findFirst()
-                ?.layoutType = layoutType
+                ?.categoryLayoutType = layoutType
         }
 
     fun moveCategory(categoryId: String, position: Int): Completable =

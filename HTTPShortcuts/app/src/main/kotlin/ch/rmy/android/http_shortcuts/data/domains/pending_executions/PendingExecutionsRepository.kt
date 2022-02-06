@@ -4,6 +4,7 @@ import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.domains.getPendingExecution
 import ch.rmy.android.http_shortcuts.data.domains.getPendingExecutions
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
+import io.reactivex.Observable
 import io.reactivex.Single
 import java.util.Date
 
@@ -12,6 +13,11 @@ class PendingExecutionsRepository : BaseRepository() {
     fun getPendingExecution(id: String): Single<List<PendingExecution>> =
         query {
             getPendingExecution(id)
+        }
+
+    fun getObservablePendingExecutions(): Observable<List<PendingExecution>> =
+        observe {
+            getPendingExecutions()
         }
 
     fun createPendingExecution(

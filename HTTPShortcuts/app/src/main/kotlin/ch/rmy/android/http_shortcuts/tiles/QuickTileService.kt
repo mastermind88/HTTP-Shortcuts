@@ -8,13 +8,10 @@ import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
-import ch.rmy.android.http_shortcuts.data.RealmFactory
-import ch.rmy.android.http_shortcuts.data.domains.getShortcuts
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.mapFor
 import ch.rmy.android.http_shortcuts.utils.ThemeHelper
@@ -25,8 +22,7 @@ class QuickTileService : TileService() {
     private val shortcutRepository = ShortcutRepository()
 
     override fun onClick() {
-        val shortcuts = shortcutRepository.getShortcuts()
-            .blockingGet() // TODO: Avoid blocking
+        val shortcuts = getShortcuts()
 
         when (shortcuts.size) {
             0 -> {
@@ -42,12 +38,10 @@ class QuickTileService : TileService() {
     }
 
     private fun getShortcuts() =
-        RealmFactory.withRealmContext {
-            getShortcuts()
-                .findAll()
-                .filter { it.quickSettingsTileShortcut }
-                .map { it.detachFromRealm() }
-        }
+        shortcutRepository.getShortcuts()
+            .blockingGet() // TODO: Avoid blocking
+            .sortedBy { it.name }
+            .filter { it.quickSettingsTileShortcut }
 
     private fun showInstructions() {
         applyTheme()

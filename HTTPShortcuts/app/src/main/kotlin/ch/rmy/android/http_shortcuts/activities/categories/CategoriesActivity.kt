@@ -17,6 +17,7 @@ import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
+import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.PermissionManager
@@ -54,15 +55,13 @@ class CategoriesActivity : BaseActivity() {
     private fun initUserInputBindings() {
         initDragOrdering()
 
-        adapter.userEvents
-            .subscribe { event ->
-                when (event) {
-                    is CategoryAdapter.UserEvent.CategoryClicked -> {
-                        viewModel.onCategoryClicked(event.id)
-                    }
+        adapter.userEvents.observe(this) { event ->
+            when (event) {
+                is CategoryAdapter.UserEvent.CategoryClicked -> {
+                    viewModel.onCategoryClicked(event.id)
                 }
             }
-            .attachTo(destroyer)
+        }
 
         binding.buttonCreateCategory.setOnClickListener {
             viewModel.onCreateCategoryButtonClicked()
@@ -72,11 +71,9 @@ class CategoriesActivity : BaseActivity() {
     private fun initDragOrdering() {
         val dragOrderingHelper = DragOrderingHelper { isDraggingEnabled }
         dragOrderingHelper.attachTo(binding.categoryList)
-        dragOrderingHelper.positionChangeSource
-            .subscribe { (oldPosition, newPosition) ->
-                viewModel.onCategoryMoved(oldPosition, newPosition)
-            }
-            .attachTo(destroyer)
+        dragOrderingHelper.positionChangeSource.observe(this) { (oldPosition, newPosition) ->
+            viewModel.onCategoryMoved(oldPosition, newPosition)
+        }
     }
 
     private fun initViewModelBindings() {
@@ -186,14 +183,14 @@ class CategoriesActivity : BaseActivity() {
     private fun showBackgroundChangeDialog(categoryId: String) {
         DialogBuilder(context)
             .item(R.string.category_background_type_white) {
-                viewModel.onBackgroundTypeChanged(categoryId, Category.BACKGROUND_TYPE_WHITE)
+                viewModel.onBackgroundTypeChanged(categoryId, CategoryBackgroundType.WHITE)
             }
             .item(R.string.category_background_type_black) {
-                viewModel.onBackgroundTypeChanged(categoryId, Category.BACKGROUND_TYPE_BLACK)
+                viewModel.onBackgroundTypeChanged(categoryId, CategoryBackgroundType.BLACK)
             }
             .item(R.string.category_background_type_wallpaper) {
                 PermissionManager.requestFileStoragePermissionIfNeeded(this)
-                viewModel.onBackgroundTypeChanged(categoryId, Category.BACKGROUND_TYPE_WALLPAPER)
+                viewModel.onBackgroundTypeChanged(categoryId, CategoryBackgroundType.WALLPAPER)
             }
             .showIfPossible()
     }
