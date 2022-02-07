@@ -7,7 +7,7 @@ import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.mapIf
 import io.reactivex.Single
 
-open class TextType : BaseVariableType(), HasTitle {
+open class TextType : BaseVariableType() {
 
     private val variablesRepository = VariableRepository()
 

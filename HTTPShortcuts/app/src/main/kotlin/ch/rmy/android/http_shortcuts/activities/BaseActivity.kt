@@ -21,6 +21,7 @@ import ch.rmy.android.http_shortcuts.extensions.drawable
 import ch.rmy.android.http_shortcuts.extensions.finishWithoutAnimation
 import ch.rmy.android.http_shortcuts.extensions.logInfo
 import ch.rmy.android.http_shortcuts.extensions.openURL
+import ch.rmy.android.http_shortcuts.extensions.setSubtitle
 import ch.rmy.android.http_shortcuts.extensions.setTintCompat
 import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.extensions.showToast
@@ -28,6 +29,7 @@ import ch.rmy.android.http_shortcuts.utils.Destroyer
 import ch.rmy.android.http_shortcuts.utils.LocaleHelper
 import ch.rmy.android.http_shortcuts.utils.SnackbarManager
 import ch.rmy.android.http_shortcuts.utils.ThemeHelper
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -170,6 +172,14 @@ abstract class BaseActivity : AppCompatActivity() {
             }
             else -> logInfo("Unhandled event: $event")
         }
+    }
+
+    protected fun setTitle(title: Localizable?) {
+        setTitle(title?.localize(context))
+    }
+
+    protected fun setSubtitle(subtitle: Localizable?) {
+        toolbar?.setSubtitle(subtitle)
     }
 
     override fun onDestroy() {

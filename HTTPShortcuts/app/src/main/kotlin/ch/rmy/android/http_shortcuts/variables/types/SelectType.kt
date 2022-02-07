@@ -7,7 +7,7 @@ import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.mapFor
 import io.reactivex.Single
 
-internal class SelectType : BaseVariableType(), HasTitle {
+internal class SelectType : BaseVariableType() {
 
     private val variablesRepository = VariableRepository()
 

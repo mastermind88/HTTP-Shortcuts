@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.import_export
 import android.content.Context
 import android.net.Uri
 import ch.rmy.android.http_shortcuts.data.RealmFactory
+import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.Category
@@ -13,6 +14,7 @@ import ch.rmy.android.http_shortcuts.data.models.Parameter
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
+import ch.rmy.android.http_shortcuts.extensions.applyIf
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.mapFor
@@ -32,6 +34,8 @@ import java.util.zip.ZipOutputStream
 
 class Exporter(private val context: Context) {
 
+    private val appRepository = AppRepository()
+
     fun exportToUri(
         uri: Uri,
         format: ExportFormat = ExportFormat.ZIP,
@@ -39,10 +43,8 @@ class Exporter(private val context: Context) {
         variableIds: Collection<String>? = null,
         excludeDefaults: Boolean = false,
     ): Single<ExportStatus> =
-        RxUtils
-            .single {
-                val base = getDetachedBase(shortcutId, variableIds)
-
+        getBase(shortcutId, variableIds)
+            .map { base ->
                 when (format) {
                     ExportFormat.ZIP -> {
                         ZipOutputStream(FileUtil.getOutputStream(context, uri)).use { out ->
@@ -80,21 +82,19 @@ class Exporter(private val context: Context) {
         return ExportStatus(exportedShortcuts = base.shortcuts.size)
     }
 
-    private fun getDetachedBase(shortcutId: String?, variableIds: Collection<String>?): Base =
-        RealmFactory.withRealmContext {
-            getBase().findFirst()!!.detachFromRealm()
-        }
-            .also { base ->
-                if (shortcutId != null) {
-                    base.title = null
-                    base.categories.safeRemoveIf {
-                        it.shortcuts.none { it.id == shortcutId }
+    private fun getBase(shortcutId: String?, variableIds: Collection<String>?): Single<Base> =
+        appRepository.getBase()
+            .map { base ->
+                base.applyIf(shortcutId != null) {
+                    title = null
+                    categories.safeRemoveIf { category ->
+                        category.shortcuts.none { it.id == shortcutId }
                     }
-                    base.categories.firstOrNull()?.shortcuts?.safeRemoveIf { it.id != shortcutId }
+                    categories.firstOrNull()?.shortcuts?.safeRemoveIf { it.id != shortcutId }
                 }
-                if (variableIds != null) {
-                    base.variables.safeRemoveIf { !variableIds.contains(it.id) }
-                }
+                    .applyIf(variableIds != null) {
+                        variables.safeRemoveIf { !variableIds!!.contains(it.id) }
+                    }
             }
 
     private fun exportData(base: Base, writer: Appendable, excludeDefaults: Boolean = false) {

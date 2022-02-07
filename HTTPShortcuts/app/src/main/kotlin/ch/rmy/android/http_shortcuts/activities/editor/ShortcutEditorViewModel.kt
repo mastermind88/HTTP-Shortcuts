@@ -67,8 +67,6 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     private var oldShortcut: Shortcut? = null
     private lateinit var shortcut: Shortcut
 
-    override fun initViewState() = ShortcutEditorViewState()
-
     fun initialize(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: ShortcutExecutionType) {
         if (isInitialized) {
             return
@@ -100,6 +98,10 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             )
             .attachTo(destroyer)
     }
+
+    override fun initViewState() = ShortcutEditorViewState(
+        toolbarTitle = StringResLocalizable(if (shortcutId != null) R.string.edit_shortcut else R.string.create_shortcut),
+    )
 
     override fun onInitialized() {
         observeTemporaryShortcut()

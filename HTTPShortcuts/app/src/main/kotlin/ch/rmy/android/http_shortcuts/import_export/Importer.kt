@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.RealmFactory
+import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.migration.ImportMigrator
 import ch.rmy.android.http_shortcuts.data.migration.ImportVersionMismatchException
@@ -35,6 +36,8 @@ import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 
 class Importer(private val context: Context) {
+
+    private val appRepository = AppRepository()
 
     fun importFromUri(uri: Uri, importMode: ImportMode): Single<ImportStatus> =
         RxUtils
@@ -94,7 +97,8 @@ class Importer(private val context: Context) {
         } catch (e: IllegalArgumentException) {
             throw ImportException(e.message!!)
         }
-        importBase(newBase, importMode)
+        appRepository.importBase(newBase, importMode)
+            .blockingAwait() // TODO: Refactor this so we don't have to block the thread
         return ImportStatus(
             importedShortcuts = newBase.shortcuts.size,
             needsRussianWarning = newBase.shortcuts.any { it.url.contains(".beeline.ru") }
@@ -109,65 +113,6 @@ class Importer(private val context: Context) {
                 ?: throw IOException("Failed to open input stream")
         }
 
-    private fun importBase(base: Base, importMode: ImportMode) {
-        RealmFactory.withRealmContext {
-            realmInstance.executeTransaction { realm ->
-                val oldBase = getBase().findFirst()!!
-                if (base.title != null) {
-                    oldBase.title = base.title
-                }
-                if (!base.globalCode.isNullOrEmpty() && oldBase.globalCode.isNullOrEmpty()) {
-                    oldBase.globalCode = base.globalCode
-                }
-                when (importMode) {
-                    ImportMode.MERGE -> {
-                        if (oldBase.categories.singleOrNull()?.shortcuts?.isEmpty() == true) {
-                            oldBase.categories.clear()
-                        }
-
-                        base.categories.forEach { category ->
-                            importCategory(realm, oldBase, category)
-                        }
-
-                        val persistedVariables = realm.copyToRealmOrUpdate(base.variables)
-                        oldBase.variables.removeAll(persistedVariables)
-                        oldBase.variables.addAll(persistedVariables)
-                    }
-                    ImportMode.REPLACE -> {
-                        oldBase.categories.clear()
-                        oldBase.categories.addAll(realm.copyToRealmOrUpdate(base.categories))
-
-                        oldBase.variables.clear()
-                        oldBase.variables.addAll(realm.copyToRealmOrUpdate(base.variables))
-                    }
-                }
-            }
-        }
-    }
-
-    private fun importCategory(realm: Realm, base: Base, category: Category) {
-        val oldCategory = base.categories.find { it.id == category.id }
-        if (oldCategory == null) {
-            base.categories.add(realm.copyToRealmOrUpdate(category))
-        } else {
-            oldCategory.name = category.name
-            oldCategory.background = category.background
-            oldCategory.hidden = category.hidden
-            oldCategory.layoutType = category.layoutType
-            category.shortcuts.forEach { shortcut ->
-                importShortcut(realm, oldCategory, shortcut)
-            }
-        }
-    }
-
-    private fun importShortcut(realm: Realm, category: Category, shortcut: Shortcut) {
-        val oldShortcut = category.shortcuts.find { it.id == shortcut.id }
-        if (oldShortcut == null) {
-            category.shortcuts.add(realm.copyToRealmOrUpdate(shortcut))
-        } else {
-            realm.copyToRealmOrUpdate(shortcut)
-        }
-    }
 
     private fun handleError(error: Throwable): Throwable =
         getHumanReadableErrorMessage(error)

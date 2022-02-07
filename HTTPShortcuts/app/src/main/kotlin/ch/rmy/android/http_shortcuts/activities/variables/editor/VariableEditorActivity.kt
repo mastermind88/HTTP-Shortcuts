@@ -26,13 +26,6 @@ import ch.rmy.android.http_shortcuts.variables.types.VariableEditorFragment
 
 class VariableEditorActivity : BaseActivity() {
 
-    private val variableId: String? by lazy {
-        intent.getStringExtra(EXTRA_VARIABLE_ID)
-    }
-    private val variableType: VariableType by lazy {
-        VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE))
-    }
-
     private lateinit var defaultColor: ColorStateList
 
     private val viewModel: VariableEditorViewModel by bindViewModel()
@@ -48,7 +41,10 @@ class VariableEditorActivity : BaseActivity() {
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize(variableId, variableType)
+        viewModel.initialize(
+            variableId = intent.getStringExtra(EXTRA_VARIABLE_ID),
+            variableType = VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE)),
+        )
     }
 
     private fun initViews() {
@@ -89,8 +85,8 @@ class VariableEditorActivity : BaseActivity() {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
-            toolbar?.setTitle(viewState.title)
-            toolbar?.setSubtitle(viewState.subtitle)
+            setTitle(viewState.title)
+            setSubtitle(viewState.subtitle)
             binding.dialogTitleContainer.visible = viewState.titleInputVisible
             binding.inputVariableKey.error = viewState.variableKeyInputError?.localize(context)
             binding.inputVariableKey.setText(viewState.variableKey)

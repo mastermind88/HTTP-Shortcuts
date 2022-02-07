@@ -5,6 +5,7 @@ import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 data class ShortcutEditorViewState(
+    val toolbarTitle: Localizable,
     val toolbarSubtitle: Localizable? = null,
     val shortcutExecutionType: ShortcutExecutionType = ShortcutExecutionType.APP,
     val shortcutIcon: ShortcutIcon = ShortcutIcon.NoIcon,

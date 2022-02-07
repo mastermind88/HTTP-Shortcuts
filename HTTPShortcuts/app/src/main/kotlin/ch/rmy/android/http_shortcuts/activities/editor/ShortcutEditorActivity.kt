@@ -27,21 +27,6 @@ import ch.rmy.curlcommand.CurlCommand
 
 class ShortcutEditorActivity : BaseActivity() {
 
-    private val shortcutId by lazy {
-        intent.getStringExtra(EXTRA_SHORTCUT_ID)
-    }
-    private val categoryId by lazy {
-        intent.getStringExtra(EXTRA_CATEGORY_ID)
-    }
-    private val curlCommand by lazy {
-        intent.getSerializableExtra(EXTRA_CURL_COMMAND) as CurlCommand?
-    }
-    private val executionType: ShortcutExecutionType by lazy {
-        intent.getStringExtra(EXTRA_EXECUTION_TYPE)
-            ?.let(ShortcutExecutionType::get)
-            ?: ShortcutExecutionType.APP
-    }
-
     private val viewModel: ShortcutEditorViewModel by bindViewModel()
 
     private lateinit var binding: ActivityShortcutEditorOverviewBinding
@@ -56,18 +41,17 @@ class ShortcutEditorActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTitle(
-            if (shortcutId != null) {
-                R.string.edit_shortcut
-            } else {
-                R.string.create_shortcut
-            }
-        )
-
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize(categoryId, shortcutId, curlCommand, executionType)
+        viewModel.initialize(
+            categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID),
+            shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID),
+            curlCommand = intent.getSerializableExtra(EXTRA_CURL_COMMAND) as CurlCommand?,
+            executionType = intent.getStringExtra(EXTRA_EXECUTION_TYPE)
+                ?.let(ShortcutExecutionType::get)
+                ?: ShortcutExecutionType.APP,
+        )
     }
 
     private fun initViews() {
@@ -124,7 +108,8 @@ class ShortcutEditorActivity : BaseActivity() {
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
             val type = viewState.shortcutExecutionType
-            toolbar?.setSubtitle(viewState.toolbarSubtitle)
+            setTitle(viewState.toolbarTitle)
+            setSubtitle(viewState.toolbarSubtitle)
             binding.inputIcon.setIcon(viewState.shortcutIcon, animated = true)
             binding.inputShortcutName.setTextSafely(viewState.shortcutName)
             binding.inputDescription.setTextSafely(viewState.shortcutDescription)

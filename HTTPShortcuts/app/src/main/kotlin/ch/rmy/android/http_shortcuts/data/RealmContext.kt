@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.data
 
+import io.realm.ImportFlag
 import io.realm.Realm
 import io.realm.RealmObject
 
@@ -21,8 +22,11 @@ fun Realm.createTransactionContext() =
 
 interface RealmTransactionContext : RealmContext {
     fun <T : RealmObject> copy(`object`: T): T =
-        realmInstance.copyToRealm(`object`)
+        realmInstance.copyToRealm(`object`, ImportFlag.CHECK_SAME_VALUES_BEFORE_SET)
 
     fun <T : RealmObject> copyOrUpdate(`object`: T): T =
-        realmInstance.copyToRealmOrUpdate(`object`)
+        realmInstance.copyToRealmOrUpdate(`object`, ImportFlag.CHECK_SAME_VALUES_BEFORE_SET)
+
+    fun <T : RealmObject> copyOrUpdate(objects: Iterable<T>): List<T> =
+        realmInstance.copyToRealmOrUpdate(objects, ImportFlag.CHECK_SAME_VALUES_BEFORE_SET)
 }

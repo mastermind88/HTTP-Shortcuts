@@ -59,7 +59,8 @@ class ImportExportActivity : BaseActivity() {
             }
 
             initPreference("export") {
-                exportUI.showExportOptions(format = ExportFormat.getPreferredFormat(requireContext())) { intent ->
+
+                exportUI.showExportOptions(format = getExportFormat()) { intent ->
                     try {
                         intent.startActivity(this, REQUEST_EXPORT_TO_DOCUMENTS)
                     } catch (e: ActivityNotFoundException) {
@@ -72,6 +73,9 @@ class ImportExportActivity : BaseActivity() {
                 openRemoteEditor()
             }
         }
+
+        private fun getExportFormat() =
+            if (Settings(requireContext()).useLegacyExportFormat) ExportFormat.LEGACY_JSON else ExportFormat.ZIP
 
         private fun openGeneralPickerForImport() {
             try {
@@ -117,7 +121,7 @@ class ImportExportActivity : BaseActivity() {
                 REQUEST_EXPORT_TO_DOCUMENTS -> {
                     exportUI.startExport(
                         intent.data ?: return,
-                        format = ExportFormat.getPreferredFormat(requireContext()),
+                        format = getExportFormat(),
                     )
                 }
                 REQUEST_IMPORT_FROM_DOCUMENTS -> {

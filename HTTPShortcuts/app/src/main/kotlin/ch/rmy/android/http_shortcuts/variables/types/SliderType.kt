@@ -11,7 +11,7 @@ import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.utils.SimpleOnSeekBarChangeListener
 import io.reactivex.Single
 
-internal class SliderType : BaseVariableType(), HasTitle {
+internal class SliderType : BaseVariableType() {
 
     private val variablesRepository = VariableRepository()
 

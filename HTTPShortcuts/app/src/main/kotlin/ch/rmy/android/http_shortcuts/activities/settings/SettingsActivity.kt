@@ -138,7 +138,7 @@ class SettingsActivity : BaseActivity() {
         }
 
         private fun openGlobalScriptingEditor() {
-            GlobalScriptingActivity.IntentBuilder(requireContext())
+            GlobalScriptingActivity.IntentBuilder()
                 .startActivity(this)
         }
 
