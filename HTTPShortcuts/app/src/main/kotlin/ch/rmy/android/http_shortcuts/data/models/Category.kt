@@ -1,7 +1,7 @@
 package ch.rmy.android.http_shortcuts.data.models
 
-import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.isUUID
 import io.realm.RealmList
 import io.realm.RealmObject
@@ -11,10 +11,10 @@ import io.realm.annotations.Required
 open class Category(
     @Required
     var name: String = "",
-) : RealmObject(), HasId {
+) : RealmObject() {
 
     @PrimaryKey
-    override var id: String = ""
+    var id: String = ""
     var shortcuts: RealmList<Shortcut> = RealmList()
 
     @Required
@@ -49,5 +49,9 @@ open class Category(
         }
 
         shortcuts.forEach(Shortcut::validate)
+    }
+
+    companion object {
+        const val FIELD_ID = "id"
     }
 }

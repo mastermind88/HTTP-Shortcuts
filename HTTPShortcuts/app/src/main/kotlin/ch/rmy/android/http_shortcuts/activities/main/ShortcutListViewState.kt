@@ -1,6 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
-import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 
 data class ShortcutListViewState(
     val shortcuts: List<ShortcutListItem> = emptyList(),

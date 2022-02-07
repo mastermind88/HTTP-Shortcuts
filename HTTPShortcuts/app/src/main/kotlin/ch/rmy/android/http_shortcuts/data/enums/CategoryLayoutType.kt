@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.utils
+package ch.rmy.android.http_shortcuts.data.enums
 
 enum class CategoryLayoutType(val type: String) {
     LINEAR_LIST("linear_list"),

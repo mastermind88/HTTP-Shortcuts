@@ -3,7 +3,7 @@ package ch.rmy.android.http_shortcuts.activities.main
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.extensions.takeUnlessEmpty
 import ch.rmy.android.http_shortcuts.extensions.toLocalizable
-import ch.rmy.android.http_shortcuts.utils.SelectionMode
+import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 

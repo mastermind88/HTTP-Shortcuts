@@ -12,11 +12,11 @@ import io.realm.annotations.Required
 
 open class Shortcut(
     @PrimaryKey
-    override var id: String = "",
+    var id: String = "",
     icon: ShortcutIcon = ShortcutIcon.NoIcon,
     var executionType: String? = ShortcutExecutionType.APP.type,
     var responseHandling: ResponseHandling? = null,
-) : RealmObject(), HasId {
+) : RealmObject() {
 
     @Required
     var name: String = ""
@@ -254,6 +254,7 @@ open class Shortcut(
         const val TEMPORARY_ID: String = "0"
         const val NAME_MAX_LENGTH = 50
 
+        const val FIELD_ID = "id"
         const val FIELD_NAME = "name"
 
         const val METHOD_GET = "GET"

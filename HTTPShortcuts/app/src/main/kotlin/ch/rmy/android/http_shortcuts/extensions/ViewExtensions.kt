@@ -163,6 +163,10 @@ fun TextView.setHint(localizable: Localizable?) {
     hint = localizable?.localize(context)
 }
 
+fun Toolbar.setTitle(localizable: Localizable?) {
+    title = localizable?.localize(context)
+}
+
 fun Toolbar.setSubtitle(localizable: Localizable?) {
     subtitle = localizable?.localize(context)
 }

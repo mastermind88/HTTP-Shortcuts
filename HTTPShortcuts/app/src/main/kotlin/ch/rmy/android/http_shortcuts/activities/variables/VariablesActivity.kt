@@ -11,7 +11,6 @@ import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariablesBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
-import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.mapFor
@@ -83,7 +82,7 @@ class VariablesActivity : BaseActivity() {
     override fun handleEvent(event: ViewModelEvent) {
         when (event) {
             is VariablesEvent.ShowCreationDialog -> {
-                showCreationDialog()
+                showCreationDialog(event.variableOptions)
             }
             is VariablesEvent.ShowContextMenu -> {
                 showContextMenu(event.variableId, event.title)
@@ -95,16 +94,18 @@ class VariablesActivity : BaseActivity() {
         }
     }
 
-    private fun showCreationDialog() {
+    private fun showCreationDialog(variableOptions: List<VariablesEvent.ShowCreationDialog.VariableTypeOption>) {
         DialogBuilder(context)
             .title(R.string.title_select_variable_type)
-            .mapFor(VariableTypes.TYPES) { variableType ->
-                item(variableType.name) {
-                    viewModel.onCreationDialogVariableTypeSelected(variableType.type)
-                }
-                    .mapIf(variableType.type == Variable.TYPE_CONSTANT) {
-                        separator()
+            .mapFor(variableOptions) { option ->
+                when (option) {
+                    is VariablesEvent.ShowCreationDialog.VariableTypeOption.Separator -> separator()
+                    is VariablesEvent.ShowCreationDialog.VariableTypeOption.Variable -> {
+                        item(name = option.name.localize(context)) {
+                            viewModel.onCreationDialogVariableTypeSelected(option.type)
+                        }
                     }
+                }
             }
             .showIfPossible()
     }

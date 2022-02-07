@@ -1,38 +1,41 @@
 package ch.rmy.android.http_shortcuts.activities.variables.editor
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.variables.VariableTypes
-import ch.rmy.android.http_shortcuts.data.models.Variable
+import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariableEditorBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
+import ch.rmy.android.http_shortcuts.extensions.focus
+import ch.rmy.android.http_shortcuts.extensions.observe
+import ch.rmy.android.http_shortcuts.extensions.observeChecked
+import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
+import ch.rmy.android.http_shortcuts.extensions.setSubtitle
+import ch.rmy.android.http_shortcuts.extensions.setTitle
+import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.variables.Variables
-import ch.rmy.android.http_shortcuts.variables.types.HasTitle
 import ch.rmy.android.http_shortcuts.variables.types.VariableEditorFragment
-import ch.rmy.android.http_shortcuts.variables.types.VariableTypeFactory
 
 class VariableEditorActivity : BaseActivity() {
 
     private val variableId: String? by lazy {
         intent.getStringExtra(EXTRA_VARIABLE_ID)
     }
-    private val preferredType: String? by lazy {
-        intent.getStringExtra(EXTRA_VARIABLE_TYPE)
+    private val variableType: VariableType by lazy {
+        VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE))
     }
+
+    private lateinit var defaultColor: ColorStateList
 
     private val viewModel: VariableEditorViewModel by bindViewModel()
-
-    private val variable by lazy {
-        viewModel.getVariable()
-    }
 
     private lateinit var binding: ActivityVariableEditorBinding
 
@@ -41,49 +44,83 @@ class VariableEditorActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = applyBinding(ActivityVariableEditorBinding.inflate(layoutInflater))
-        initViewModel()
-        initViews()
-    }
 
-    private fun initViewModel() {
-        viewModel.variableType = preferredType ?: Variable.TYPE_CONSTANT
-        viewModel.variableId = variableId
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+        viewModel.initialize(variableId, variableType)
     }
 
     private fun initViews() {
-        setSubtitle(VariableTypes.getTypeName(variable.type))
-        binding.inputVariableKey.setText(variable.key)
-        binding.inputVariableTitle.setText(variable.title)
-        val defaultColor = binding.inputVariableKey.textColors
+        // TODO
+        defaultColor = binding.inputVariableKey.textColors
+    }
+
+    private fun initUserInputBindings() {
         binding.inputVariableKey
             .observeTextChanges()
             .subscribe { text ->
-                if (text.isEmpty() || Variables.isValidVariableKey(text.toString())) {
-                    binding.inputVariableKey.setTextColor(defaultColor)
-                    binding.inputVariableKey.error = null
-                } else {
-                    binding.inputVariableKey.setTextColor(Color.RED)
-                    binding.inputVariableKey.error = getString(R.string.warning_invalid_variable_key)
-                }
+                viewModel.onVariableKeyChanged(text?.toString() ?: "")
             }
             .attachTo(destroyer)
 
-        binding.inputUrlEncode.isChecked = variable.urlEncode
-        binding.inputJsonEncode.isChecked = variable.jsonEncode
-        binding.inputAllowShare.isChecked = variable.isShareText
+        binding.inputVariableTitle
+            .observeTextChanges()
+            .subscribe { text ->
+                viewModel.onVariableTitleChanged(text?.toString() ?: "")
+            }
+            .attachTo(destroyer)
 
-        setTitle(if (variable.isNew) R.string.create_variable else R.string.edit_variable)
+        binding.inputUrlEncode
+            .observeChecked()
+            .subscribe(viewModel::onUrlEncodeChanged)
+            .attachTo(destroyer)
 
-        updateTypeEditor()
+        binding.inputJsonEncode
+            .observeChecked()
+            .subscribe(viewModel::onJsonEncodeChanged)
+            .attachTo(destroyer)
+
+        binding.inputAllowShare
+            .observeChecked()
+            .subscribe(viewModel::onAllowShareChanged)
+            .attachTo(destroyer)
     }
+
+    private fun initViewModelBindings() {
+        viewModel.viewState.observe(this) { viewState ->
+            toolbar?.setTitle(viewState.title)
+            toolbar?.setSubtitle(viewState.subtitle)
+            binding.dialogTitleContainer.visible = viewState.titleInputVisible
+            binding.inputVariableKey.error = viewState.variableKeyInputError?.localize(context)
+            binding.inputVariableKey.setText(viewState.variableKey)
+            binding.inputVariableTitle.setText(viewState.variableTitle)
+            if (viewState.variableKeyErrorHighlighting) {
+                binding.inputVariableKey.setTextColor(Color.RED)
+            } else {
+                binding.inputVariableKey.setTextColor(defaultColor)
+            }
+            binding.inputUrlEncode.isChecked = viewState.urlEncodeChecked
+            binding.inputJsonEncode.isChecked = viewState.jsonEncodeChecked
+            binding.inputAllowShare.isChecked = viewState.allowShareChecked
+        }
+        viewModel.events.observe(this, ::handleEvent)
+    }
+
+    override fun handleEvent(event: ViewModelEvent) {
+        when (event) {
+            is VariableEditorEvent.FocusVariableKeyInput -> binding.inputVariableKey.focus()
+            else -> super.handleEvent(event)
+        }
+    }
+
+    /*
 
     private fun updateTypeEditor() {
         compileVariable()
         val variableType = VariableTypeFactory.getType(variable.type)
 
         fragment = variableType.getEditorFragment(supportFragmentManager)
-
-        binding.dialogTitleContainer.visible = variableType is HasTitle
 
         fragment?.let { fragment ->
             supportFragmentManager
@@ -96,6 +133,7 @@ class VariableEditorActivity : BaseActivity() {
     fun onFragmentStarted() {
         fragment?.updateViews(variable)
     }
+     */
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.variable_editor_activity_menu, menu)
@@ -105,60 +143,16 @@ class VariableEditorActivity : BaseActivity() {
     override val navigateUpIcon = R.drawable.ic_clear
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        android.R.id.home -> consume { confirmClose() }
-        R.id.action_save_variable -> consume { trySave() }
+        R.id.action_save_variable -> consume { viewModel.onSaveButtonClicked() }
         else -> super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
-        confirmClose()
-    }
-
-    private fun confirmClose() {
-        compileVariable()
-        if (viewModel.hasChanges()) {
-            DialogBuilder(context)
-                .message(R.string.confirm_discard_changes_message)
-                .positive(R.string.dialog_discard) { finish() }
-                .negative(R.string.dialog_cancel)
-                .showIfPossible()
-        } else {
-            finish()
-        }
-    }
-
-    private fun trySave() {
-        compileVariable()
-        if (validate()) {
-            viewModel.save()
-                .subscribe {
-                    finish()
-                }
-                .attachTo(destroyer)
-        }
+        viewModel.onBackPressed()
     }
 
     private fun compileVariable() {
         fragment?.compileIntoVariable(variable)
-        variable.title = binding.inputVariableTitle.text.toString().trim { it <= ' ' }
-        variable.key = binding.inputVariableKey.text.toString()
-        variable.urlEncode = binding.inputUrlEncode.isChecked
-        variable.jsonEncode = binding.inputJsonEncode.isChecked
-        variable.isShareText = binding.inputAllowShare.isChecked
-    }
-
-    private fun validate(): Boolean {
-        if (variable.key.isEmpty()) {
-            binding.inputVariableKey.error = getString(R.string.validation_key_non_empty)
-            binding.inputVariableKey.focus()
-            return false
-        }
-        if (viewModel.isKeyAlreadyInUsed()) {
-            binding.inputVariableKey.error = getString(R.string.validation_key_already_exists)
-            binding.inputVariableKey.focus()
-            return false
-        }
-        return fragment == null || fragment!!.validate()
     }
 
     override fun onStop() {
@@ -168,8 +162,8 @@ class VariableEditorActivity : BaseActivity() {
 
     class IntentBuilder : BaseIntentBuilder(VariableEditorActivity::class.java) {
 
-        fun variableType(type: String) = also {
-            intent.putExtra(EXTRA_VARIABLE_TYPE, type)
+        fun variableType(type: VariableType) = also {
+            intent.putExtra(EXTRA_VARIABLE_TYPE, type.type)
         }
 
         fun variableId(variableId: String) = also {

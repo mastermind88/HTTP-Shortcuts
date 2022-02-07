@@ -8,14 +8,14 @@ import io.realm.annotations.Required
 open class Parameter(
     @PrimaryKey
     @Required
-    override var id: String = newUUID(),
+    var id: String = newUUID(),
     @Required
     var key: String = "",
     @Required
     var value: String = "",
     var type: String = TYPE_STRING,
     var fileName: String = "",
-) : RealmObject(), HasId {
+) : RealmObject() {
 
     fun isSameAs(other: Parameter) =
         other.key == key &&

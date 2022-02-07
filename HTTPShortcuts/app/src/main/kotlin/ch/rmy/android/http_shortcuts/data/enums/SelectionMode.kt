@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.utils
+package ch.rmy.android.http_shortcuts.data.enums
 
 import android.appwidget.AppWidgetManager
 import android.content.Intent

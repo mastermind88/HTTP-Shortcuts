@@ -6,8 +6,10 @@ import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.activities.variables.editor.VariableEditorActivity
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
+import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.attachTo
+import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
@@ -43,7 +45,7 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
             VariableListItem.Variable(
                 id = variable.id,
                 key = variable.key,
-                type = StringResLocalizable(VariableTypes.getTypeName(variable.type)),
+                type = StringResLocalizable(VariableTypeMappings.getTypeName(variable.variableType)),
             )
         }
             .ifEmpty {
@@ -58,7 +60,19 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
     }
 
     fun onCreateButtonClicked() {
-        emitEvent(VariablesEvent.ShowCreationDialog)
+        emitEvent(VariablesEvent.ShowCreationDialog(
+            VariableTypeMappings.TYPES.flatMap { typeMapping ->
+                listOf<VariablesEvent.ShowCreationDialog.VariableTypeOption>(
+                    VariablesEvent.ShowCreationDialog.VariableTypeOption.Variable(
+                        name = StringResLocalizable(typeMapping.name),
+                        type = typeMapping.type,
+                    )
+                )
+                    .mapIf(typeMapping.type == VariableType.CONSTANT) {
+                        plusElement(VariablesEvent.ShowCreationDialog.VariableTypeOption.Separator)
+                    }
+            }
+        ))
     }
 
     fun onHelpButtonClicked() {
@@ -67,13 +81,13 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
 
     fun onVariableClicked(variableId: String) {
         val variable = getVariable(variableId) ?: return
-        emitEvent(VariablesEvent.ShowContextMenu(variableId, StringResLocalizable(VariableTypes.getTypeName(variable.type))))
+        emitEvent(VariablesEvent.ShowContextMenu(variableId, StringResLocalizable(VariableTypeMappings.getTypeName(variable.variableType))))
     }
 
     private fun getVariable(variableId: String) =
         variables.firstOrNull { it.id == variableId }
 
-    fun onCreationDialogVariableTypeSelected(variableType: String) {
+    fun onCreationDialogVariableTypeSelected(variableType: VariableType) {
         openActivity(
             VariableEditorActivity.IntentBuilder()
                 .variableType(variableType)

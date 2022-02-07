@@ -9,13 +9,10 @@ import ch.rmy.android.http_shortcuts.extensions.showMessageDialog
 
 class SliderEditorFragment : VariableEditorFragment<VariableEditorSliderBinding>() {
 
-    private var variable: Variable? = null
-
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         VariableEditorSliderBinding.inflate(inflater, container, false)
 
     override fun updateViews(variable: Variable) {
-        this.variable = variable
         binding.inputRememberValue.isChecked = variable.rememberValue
 
         binding.inputSliderMin.setText(SliderType.findMin(variable).toString())

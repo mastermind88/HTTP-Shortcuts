@@ -3,22 +3,21 @@ package ch.rmy.android.http_shortcuts.activities.categories
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.annotation.MenuRes
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
-import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.databinding.ActivityCategoriesBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
-import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.bindViewModel
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.PermissionManager
 

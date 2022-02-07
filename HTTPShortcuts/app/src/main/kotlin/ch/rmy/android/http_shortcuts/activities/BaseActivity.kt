@@ -105,10 +105,6 @@ abstract class BaseActivity : AppCompatActivity() {
         setUpCommonViews()
     }
 
-    fun setSubtitle(@StringRes subtitle: Int) {
-        toolbar?.setSubtitle(subtitle)
-    }
-
     val context: Context
         get() = this
 

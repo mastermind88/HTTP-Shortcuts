@@ -1,17 +1,25 @@
 package ch.rmy.android.http_shortcuts.activities.variables
 
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 abstract class VariablesEvent : ViewModelEvent() {
-    object ShowCreationDialog : VariablesEvent()
+    data class ShowCreationDialog(
+        val variableOptions: List<VariableTypeOption>,
+    ) : VariablesEvent() {
+        sealed interface VariableTypeOption {
+            data class Variable(val type: VariableType, val name: Localizable) : VariableTypeOption
+            object Separator : VariableTypeOption
+        }
+    }
 
-    class ShowContextMenu(
+    data class ShowContextMenu(
         val variableId: String,
         val title: Localizable,
     ) : VariablesEvent()
 
-    class ShowDeletionDialog(
+    data class ShowDeletionDialog(
         val variableId: String,
         val message: Localizable,
     ) : VariablesEvent()

@@ -6,7 +6,6 @@ import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseAdapter
-import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.databinding.ListItemCategoryBinding
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.extensions.context
@@ -15,7 +14,7 @@ import ch.rmy.android.http_shortcuts.extensions.setText
 import ch.rmy.android.http_shortcuts.extensions.visible
 import ch.rmy.android.http_shortcuts.icons.IconView
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
-import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 

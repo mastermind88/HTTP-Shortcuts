@@ -11,8 +11,8 @@ import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.context
 import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.extensions.toLocalizable
-import ch.rmy.android.http_shortcuts.utils.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.text.QuantityStringLocalizable

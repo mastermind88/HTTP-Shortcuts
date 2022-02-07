@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.utils
+package ch.rmy.android.http_shortcuts.data.enums
 
 enum class CategoryBackgroundType(val type: String) {
     WHITE("white"),

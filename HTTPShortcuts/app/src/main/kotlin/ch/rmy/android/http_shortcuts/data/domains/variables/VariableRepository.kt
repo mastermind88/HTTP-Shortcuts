@@ -14,14 +14,9 @@ import io.reactivex.Single
 
 class VariableRepository : BaseRepository() {
 
-    fun getVariableById(variableId: String): Single<List<Variable>> =
-        query {
+    fun getVariableById(variableId: String): Single<Variable> =
+        queryItem {
             getVariableById(variableId)
-        }
-
-    fun getVariableByKey(key: String): Single<List<Variable>> =
-        query {
-            getVariableByKey(key)
         }
 
     fun getVariableByKeyOrId(keyOrId: String): Single<Variable> =
@@ -47,7 +42,7 @@ class VariableRepository : BaseRepository() {
 
     fun saveVariable(variable: Variable) =
         commitTransaction {
-            val isNew = variable.isNew
+            val isNew = variable.id.isEmpty()
             if (isNew) {
                 variable.id = newUUID()
             }
