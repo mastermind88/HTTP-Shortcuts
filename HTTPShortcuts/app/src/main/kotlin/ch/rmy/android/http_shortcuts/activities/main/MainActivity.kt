@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
+import androidx.viewpager.widget.ViewPager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.BaseFragment
@@ -85,6 +86,11 @@ class MainActivity : BaseActivity(), Entrypoint {
     private fun setupViewPager() {
         adapter = CategoryPagerAdapter(supportFragmentManager)
         binding.viewPager.adapter = adapter
+        binding.viewPager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                viewModel.onSwitchedToCategory(position)
+            }
+        })
         binding.tabs.setupWithViewPager(binding.viewPager)
     }
 

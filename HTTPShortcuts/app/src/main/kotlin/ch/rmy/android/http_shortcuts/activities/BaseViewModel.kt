@@ -117,6 +117,10 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
         emitEvent(ViewModelEvent.OpenActivity(intentBuilder, requestCode))
     }
 
+    protected fun sendBroadcast(intent: Intent) {
+        emitEvent(ViewModelEvent.SendBroadcast(intent))
+    }
+
     final override fun onCleared() {
         destroyer.destroy()
     }

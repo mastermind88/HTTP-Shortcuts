@@ -1,6 +1,9 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
+import android.net.Uri
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.import_export.ExportFormat
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 abstract class ShortcutListEvent : ViewModelEvent() {
     data class ShowContextMenu(
@@ -18,5 +21,13 @@ abstract class ShortcutListEvent : ViewModelEvent() {
 
     data class ShowShortcutInfoDialog(val shortcutId: String, val shortcutName: String) : ViewModelEvent()
 
+    data class ShowExportOptionsDialog(val shortcutId: String) : ViewModelEvent()
 
+    data class ShowCurlExportDialog(val shortcutName: String, val command: String) : ViewModelEvent()
+
+    data class ShowFileExportDialog(val shortcutId: String, val format: ExportFormat, val variableIds: Collection<String>) : ViewModelEvent()
+
+    data class StartExport(val shortcutId: String, val uri: Uri, val format: ExportFormat, val variableIds: Collection<String>) : ViewModelEvent()
+
+    data class ShowDeleteDialog(val shortcutId: String, val title: Localizable) : ViewModelEvent()
 }

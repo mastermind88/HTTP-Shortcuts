@@ -25,6 +25,7 @@ import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.extensions.toLauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.IntentUtil
+import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
@@ -123,11 +124,27 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
             is ChildViewModelEvent.ShortcutEdited -> {
                 updateLauncherShortcuts()
             }
+            is ChildViewModelEvent.PlaceShortcutOnHomeScreen -> placeShortcutOnHomeScreen(event.shortcut)
+            is ChildViewModelEvent.RemoveShortcutFromHomeScreen -> removeShortcutFromHomeScreen(event.shortcut)
+            is ChildViewModelEvent.SelectShortcut -> selectShortcut(event.shortcutId)
         }
     }
 
     private fun updateLauncherShortcuts() {
         emitEvent(MainEvent.UpdateLauncherShortcuts(launcherShortcutMapper(categories)))
+    }
+
+    private fun placeShortcutOnHomeScreen(shortcut: LauncherShortcut) {
+        if (LauncherShortcutManager.supportsPinning(context)) {
+            LauncherShortcutManager.pinShortcut(context, shortcut)
+        } else {
+            sendBroadcast(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, install = true))
+            showSnackbar(StringResLocalizable(R.string.shortcut_placed, shortcut.name))
+        }
+    }
+
+    private fun removeShortcutFromHomeScreen(shortcut: LauncherShortcut) {
+        sendBroadcast(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, install = false))
     }
 
     private fun observeToolbarTitle() {
@@ -149,12 +166,6 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
             }
             .attachTo(destroyer)
     }
-    /*
-
-    fun moveShortcut(shortcutId: String, targetPosition: Int? = null, targetCategoryId: String? = null) =
-        shortcutRepository.moveShortcut(shortcutId, targetPosition, targetCategoryId)
-            .observeOn(AndroidSchedulers.mainThread())
-    */
 
     fun onSettingsButtonClicked() {
         openActivity(SettingsActivity.IntentBuilder(), MainActivity.REQUEST_SETTINGS)
@@ -189,8 +200,6 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     fun onToolbarTitleClicked() {
         if (selectionMode == SelectionMode.NORMAL && !currentViewState.isLocked) {
             emitEvent(MainEvent.ShowToolbarTitleChangeDialog(currentViewState.toolbarTitle))
-            // TODO
-            // showToolbarTitleChangeDialog()
         }
     }
 
@@ -217,8 +226,8 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
         }
     }
 
-    fun onSwitchedToCategory(categoryId: String) {
-        activeCategoryId = categoryId
+    fun onSwitchedToCategory(position: Int) {
+        activeCategoryId = categories.getOrNull(position)?.id ?: ""
     }
 
     fun onUnlockButtonClicked() {

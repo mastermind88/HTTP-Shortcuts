@@ -12,17 +12,17 @@ import ch.rmy.android.http_shortcuts.variables.Variables.rawPlaceholdersToResolv
 import ch.rmy.curlcommand.CurlCommand
 import io.reactivex.Single
 
-object CurlExporter {
+class CurlExporter(val context: Context) {
 
-    fun generateCommand(context: Context, shortcut: Shortcut): Single<CurlCommand> {
+    fun generateCommand(shortcut: Shortcut): Single<CurlCommand> {
         val detachedShortcut = shortcut.detachFromRealm()
-        return resolveVariables(context, detachedShortcut)
+        return resolveVariables(detachedShortcut)
             .map { variableManager ->
                 generateCommand(detachedShortcut, variableManager.getVariableValuesByIds())
             }
     }
 
-    private fun resolveVariables(context: Context, shortcut: Shortcut) =
+    private fun resolveVariables(shortcut: Shortcut) =
         VariableRepository().getVariables()
             .flatMap { variables ->
                 VariableResolver(context)

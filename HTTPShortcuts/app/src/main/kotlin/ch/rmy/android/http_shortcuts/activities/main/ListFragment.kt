@@ -40,8 +40,10 @@ import ch.rmy.android.http_shortcuts.utils.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
 import ch.rmy.android.http_shortcuts.utils.SelectionMode
+import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
+import ch.rmy.curlcommand.CurlCommand
 import ch.rmy.curlcommand.CurlConstructor
 
 class ListFragment : BaseFragment<FragmentListBinding>() {
@@ -174,6 +176,11 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
             is ShortcutListEvent.ShowMoveOptionsDialog -> showMoveDialog(event.shortcutId)
             is ShortcutListEvent.ShowMoveToCategoryDialog -> showMoveToCategoryDialog(event.shortcutId, event.categoryOptions)
             is ShortcutListEvent.ShowShortcutInfoDialog -> showShortcutInfoDialog(event.shortcutId, event.shortcutName)
+            is ShortcutListEvent.ShowExportOptionsDialog -> showExportOptionsDialog(event.shortcutId)
+            is ShortcutListEvent.ShowCurlExportDialog -> showCurlExportDialog(event.shortcutName, event.command)
+            is ShortcutListEvent.ShowFileExportDialog -> showFileExportDialog(event.shortcutId, event.format, event.variableIds)
+            is ShortcutListEvent.StartExport -> startExport(event.shortcutId, event.uri, event.format, event.variableIds)
+            is ShortcutListEvent.ShowDeleteDialog -> showDeleteDialog(event.shortcutId, event.title)
             else -> super.handleEvent(event)
         }
     }
@@ -244,67 +251,26 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
             .show()
     }
 
-    /*
-    private fun duplicateShortcut(shortcut: Shortcut) {
-        val name = shortcut.name
-        val newName = String.format(getString(R.string.template_shortcut_name_copy), shortcut.name)
-        val categoryId = categoryData.value?.id ?: return
-        val newPosition = categoryData.value
-            ?.shortcuts
-            ?.indexOfFirst { it.id == shortcut.id }
-            .takeIf { it != -1 }
-            ?.let { it + 1 }
-        viewModel.duplicateShortcut(shortcut.id, newName, newPosition, categoryId)
-            .subscribe {
-                showSnackbar(String.format(getString(R.string.shortcut_duplicated), name))
+    private fun showExportOptionsDialog(shortcutId: String) {
+        DialogBuilder(requireContext())
+            .title(R.string.title_export_shortcut_as)
+            .item(R.string.action_export_as_curl) {
+                viewModel.onExportAsCurlOptionSelected(shortcutId)
             }
-            .attachTo(destroyer)
+            .item(R.string.action_export_as_file) {
+                viewModel.onExportAsFileOptionSelected(shortcutId)
+            }
+            .showIfPossible()
     }
 
-    private fun showExportChoiceDialog(shortcutData: LiveData<Shortcut?>) {
-        val shortcut = shortcutData.value ?: return
-        if (shortcut.type.usesUrl) {
-            DialogBuilder(requireContext())
-                .title(R.string.title_export_shortcut_as)
-                .item(R.string.action_export_as_curl) {
-                    showCurlExportDialog(shortcutData)
-                }
-                .item(R.string.action_export_as_file) {
-                    showFileExportDialog(shortcutData)
-                }
-                .showIfPossible()
-        } else {
-            showFileExportDialog(shortcutData)
-        }
+    private fun showCurlExportDialog(shortcutName: String, command: String) {
+        CurlExportDialog(requireContext(), shortcutName, command)
+            .show()
     }
 
-    private fun showCurlExportDialog(shortcutData: LiveData<Shortcut?>) {
-        CurlExporter.generateCommand(requireContext(), shortcutData.value ?: return)
-            .subscribe(
-                { command ->
-                    CurlExportDialog(
-                        requireContext(),
-                        shortcutData.value?.name ?: return@subscribe,
-                        CurlConstructor.toCurlCommandString(command)
-                    )
-                        .show()
-                },
-                { e ->
-                    if (e !is CanceledByUserException) {
-                        activity?.showToast(R.string.error_generic)
-                        logException(e)
-                    }
-                }
-            )
-            .attachTo(destroyer)
-    }
-
-    private fun showFileExportDialog(shortcutData: LiveData<Shortcut?>) {
-        val shortcut = shortcutData.value ?: return
-        val shortcutId = shortcut.id
-        val variableIds = getVariableIdsRequiredForExport(shortcut)
-        exportUI.showExportOptions(format = ExportFormat.getPreferredFormat(requireContext()), shortcutId, variableIds) { intent ->
-            viewModel.exportedShortcutId = shortcutId
+    private fun showFileExportDialog(shortcutId: String, format: ExportFormat, variableIds: Collection<String>) {
+        exportUI.showExportOptions(format, shortcutId, variableIds) { intent ->
+            viewModel.onFileExportStarted(shortcutId)
             try {
                 intent.startActivity(this, REQUEST_EXPORT)
             } catch (e: ActivityNotFoundException) {
@@ -313,26 +279,20 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         }
     }
 
-    private fun showDeleteDialog(shortcutData: LiveData<Shortcut?>) {
+    private fun startExport(shortcutId: String, uri: Uri, format: ExportFormat, variableIds: Collection<String>) {
+        exportUI.startExport(uri, format = format, shortcutId = shortcutId, variableIds = variableIds)
+    }
+
+    private fun showDeleteDialog(shortcutId: String, title: Localizable) {
         DialogBuilder(requireContext())
+            .title(title)
             .message(R.string.confirm_delete_shortcut_message)
             .positive(R.string.dialog_delete) {
-                deleteShortcut(shortcutData.value ?: return@positive)
+                viewModel.onDeletionConfirmed(shortcutId)
             }
             .negative(R.string.dialog_cancel)
             .showIfPossible()
     }
-
-    private fun deleteShortcut(shortcut: Shortcut) {
-        showSnackbar(String.format(getString(R.string.shortcut_deleted), shortcut.name))
-        tabHost?.removeShortcutFromHomeScreen(shortcut)
-        viewModel.deleteShortcut(shortcut.id)
-            .subscribe {
-                ExecutionScheduler.schedule(requireContext())
-            }
-            .attachTo(destroyer)
-    }
-     */
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
@@ -348,37 +308,13 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         }
     }
 
-    /*
-    private fun startExport(uri: Uri, shortcutId: String) {
-        val shortcut = shortcuts.value?.find { it.id == shortcutId } ?: return
-        val variableIds = getVariableIdsRequiredForExport(shortcut)
-
-        exportUI.startExport(
-            uri,
-            format = ExportFormat.getPreferredFormat(requireContext()),
-            shortcutId = shortcutId,
-            variableIds = variableIds,
-        )
-    }
-
-    private fun getVariableIdsRequiredForExport(shortcut: Shortcut) =
-        // TODO: Recursively collect variables referenced by other variables
-        RealmFactory.withRealmContext {
-            VariableResolver.extractVariableIds(
-                shortcut,
-                variableLookup = VariableManager(getBase().findFirst()!!.variables),
-            )
-        }
-     */
-
     override fun onPause() {
         super.onPause()
         viewModel.onPaused()
     }
 
-    override fun onBackPressed() = consume {
+    override fun onBackPressed() =
         viewModel.onBackPressed()
-    }
 
     companion object {
 

@@ -29,8 +29,8 @@ class CategoryRepository : BaseRepository() {
                 base.categories
             }
 
-    fun getCategory(categoryId: String): Single<Category> =
-        queryItem {
+    fun getObservableCategory(categoryId: String): Observable<Category> =
+        observeItem {
             getCategoryById(categoryId)
         }
 

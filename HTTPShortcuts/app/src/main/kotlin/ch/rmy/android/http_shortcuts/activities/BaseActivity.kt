@@ -144,6 +144,9 @@ abstract class BaseActivity : AppCompatActivity() {
                     showToast(R.string.error_not_supported)
                 }
             }
+            is ViewModelEvent.SendBroadcast -> {
+                sendBroadcast(event.intent)
+            }
             is ViewModelEvent.OpenURL -> {
                 openURL(event.url)
             }
