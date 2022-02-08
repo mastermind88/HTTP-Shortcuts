@@ -172,6 +172,7 @@ dependencies {
 
     /* Scheduling */
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
+    implementation 'androidx.work:work-rxjava2:2.7.1'
 
     /* Tasker integration */
     implementation 'com.joaomgcd:taskerpluginlibrary:0.4.2'

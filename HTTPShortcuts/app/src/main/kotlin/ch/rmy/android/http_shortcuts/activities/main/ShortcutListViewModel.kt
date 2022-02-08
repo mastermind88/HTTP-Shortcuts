@@ -43,6 +43,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
     private val widgetsRepository = WidgetsRepository()
     private val curlExporter = CurlExporter(context)
     private val eventBridge = ChildViewModelEventBridge()
+    private val executionScheduler = ExecutionScheduler(application)
 
     private val settings = Settings(context)
 
@@ -243,10 +244,10 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
 
     private fun cancelPendingExecution(shortcutId: String) {
         val shortcut = getShortcutById(shortcutId) ?: return
-        pendingExecutionsRepository.removePendingExecution(shortcutId)
+        pendingExecutionsRepository.removePendingExecutionsForShortcut(shortcutId)
+            .andThen(executionScheduler.schedule())
             .subscribe {
                 showSnackbar(StringResLocalizable(R.string.pending_shortcut_execution_cancelled, shortcut.name))
-                ExecutionScheduler.schedule(context)
             }
             .attachTo(destroyer)
     }
@@ -390,7 +391,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
         val shortcut = getShortcutById(shortcutId) ?: return
         performOperation(
             shortcutRepository.deleteShortcut(shortcutId)
-                .mergeWith(pendingExecutionsRepository.removePendingExecution(shortcutId))
+                .mergeWith(pendingExecutionsRepository.removePendingExecutionsForShortcut(shortcutId))
                 .andThen(widgetsRepository.deleteDeadWidgets())
         ) {
             showSnackbar(StringResLocalizable(R.string.shortcut_deleted, shortcut.name))

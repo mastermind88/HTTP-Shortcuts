@@ -98,6 +98,10 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         ScriptExecutor(context, ActionFactory())
     }
 
+    private val executionScheduler by lazy {
+        ExecutionScheduler(applicationContext)
+    }
+
     /* Execution Parameters */
     private val shortcutId: String by lazy {
         IntentUtil.getShortcutId(intent)
@@ -109,10 +113,13 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         intent.extras?.getInt(EXTRA_TRY_NUMBER) ?: 0
     }
     private val recursionDepth by lazy {
-        intent?.extras?.getInt(EXTRA_RECURSION_DEPTH) ?: 0
+        intent.extras?.getInt(EXTRA_RECURSION_DEPTH) ?: 0
     }
     private val fileUris: List<Uri> by lazy {
-        intent?.extras?.getParcelableArrayList<Uri>(EXTRA_FILES) ?: emptyList<Uri>()
+        intent.extras?.getParcelableArrayList<Uri>(EXTRA_FILES) ?: emptyList<Uri>()
+    }
+    private val executionId: String? by lazy {
+        intent.extras?.getString(EXTRA_EXECUTION_SCHEDULE_ID)
     }
     private val shortcutName by lazy {
         shortcut.name.ifEmpty { getString(R.string.shortcut_safe_name) }
@@ -160,7 +167,12 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
             )
             .attachTo(destroyer)
 
-        shortcutRepository.getShortcutById(shortcutId)
+        if (executionId != null) {
+            pendingExecutionsRepository.removePendingExecution(executionId!!)
+        } else {
+            Completable.complete()
+        }
+            .andThen(shortcutRepository.getShortcutById(shortcutId))
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { shortcut ->
@@ -186,7 +198,8 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
             if (fileUploadManager != null) {
                 FileUtil.deleteOldCacheFiles(context)
             }
-            ExecutionScheduler.schedule(context)
+            executionScheduler.schedule()
+                .blockingAwait() // TODO: Avoid blocking the UI thread
         }
 
         subscribeAndFinishAfterIfNeeded(
@@ -226,9 +239,7 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
                                 )
                             }
                             rescheduleExecution()
-                                .doOnComplete {
-                                    ExecutionScheduler.schedule(context)
-                                }
+                                .andThen(executionScheduler.schedule())
                         } else {
                             val simple = shortcut.responseHandling?.failureOutput == ResponseHandling.FAILURE_OUTPUT_SIMPLE
                             displayOutput(
@@ -621,7 +632,7 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
                     .showAsCompletable()
             }
             ResponseHandling.UI_TYPE_WINDOW -> {
-                DisplayResponseActivity.IntentBuilder(context, shortcutId)
+                DisplayResponseActivity.IntentBuilder(shortcutId)
                     .name(shortcutName)
                     .type(response?.contentType)
                     .text(output)
@@ -716,6 +727,10 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
                 ArrayList<Uri>().apply { addAll(files) }
             )
         }
+
+        fun executionId(id: String) = also {
+            intent.putExtra(EXTRA_EXECUTION_SCHEDULE_ID, id)
+        }
     }
 
     companion object {
@@ -728,6 +743,7 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         const val EXTRA_TRY_NUMBER = "try_number"
         const val EXTRA_RECURSION_DEPTH = "recursion_depth"
         const val EXTRA_FILES = "files"
+        const val EXTRA_EXECUTION_SCHEDULE_ID = "schedule_id"
 
         private const val REQUEST_PICK_FILES = 1
 

@@ -148,7 +148,7 @@ class VariableEditorActivity : BaseActivity() {
     }
 
     private fun compileVariable() {
-        fragment?.compileIntoVariable(variable)
+        // TODO: fragment?.compileIntoVariable(variable)
     }
 
     override fun onStop() {

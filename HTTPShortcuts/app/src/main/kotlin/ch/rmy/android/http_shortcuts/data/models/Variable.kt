@@ -87,9 +87,6 @@ open class Variable(
             data = GsonUtil.toJson(dataMap)
         }
 
-    val isConstant
-        get() = type == VariableType.CONSTANT.type
-
     override fun toString() = "Variable($type, $key, $id)"
 
     fun validate() {

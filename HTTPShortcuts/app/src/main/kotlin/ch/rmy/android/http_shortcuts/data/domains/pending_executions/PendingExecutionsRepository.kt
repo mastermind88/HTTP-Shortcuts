@@ -4,14 +4,15 @@ import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.domains.getPendingExecution
 import ch.rmy.android.http_shortcuts.data.domains.getPendingExecutions
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
+import ch.rmy.android.http_shortcuts.utils.Optional
 import io.reactivex.Observable
 import io.reactivex.Single
 import java.util.Date
 
 class PendingExecutionsRepository : BaseRepository() {
 
-    fun getPendingExecution(id: String): Single<List<PendingExecution>> =
-        query {
+    fun getPendingExecution(id: String): Single<PendingExecution> =
+        queryItem {
             getPendingExecution(id)
         }
 
@@ -41,10 +42,25 @@ class PendingExecutionsRepository : BaseRepository() {
             )
         }
 
-    fun removePendingExecution(shortcutId: String) =
+    fun removePendingExecution(executionId: String) =
+        commitTransaction {
+            getPendingExecution(executionId)
+                .findAll()
+                .deleteAllFromRealm()
+        }
+
+    fun removePendingExecutionsForShortcut(shortcutId: String) =
         commitTransaction {
             getPendingExecutions(shortcutId)
                 .findAll()
                 .deleteAllFromRealm()
         }
+
+    fun getNextPendingExecution(withNetworkConstraints: Boolean): Single<Optional<PendingExecution>> =
+        query {
+            getPendingExecutions(waitForNetwork = withNetworkConstraints)
+        }
+            .map {
+                Optional(it.firstOrNull())
+            }
 }

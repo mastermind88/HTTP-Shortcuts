@@ -57,7 +57,7 @@ open class VariableButton : AppCompatImageButton {
     }
 
     private fun openVariableEditor() {
-        VariablesActivity.IntentBuilder(context)
+        VariablesActivity.IntentBuilder()
             .startActivity(context)
     }
 

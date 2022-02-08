@@ -12,12 +12,12 @@ abstract class VariableEditorFragment<Binding : ViewBinding> : BaseFragment<Bind
     private val variablesRepository = VariableRepository()
 
     protected val variablePlaceholderProvider by lazy {
-        VariablePlaceholderProvider(variablesRepository.getObservableVariables())
+        VariablePlaceholderProvider(/*variablesRepository.getObservableVariables()*/)
     }
 
     override fun onStart() {
         super.onStart()
-        (activity as VariableEditorActivity).onFragmentStarted()
+        // TODO (activity as VariableEditorActivity).onFragmentStarted()
     }
 
     open fun updateViews(variable: Variable) {

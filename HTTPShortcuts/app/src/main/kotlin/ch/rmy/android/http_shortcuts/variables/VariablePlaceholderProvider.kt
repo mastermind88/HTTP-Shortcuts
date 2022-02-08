@@ -10,9 +10,6 @@ class VariablePlaceholderProvider(var variables: Collection<Variable> = emptyLis
     val hasVariables
         get() = variables.isNotEmpty()
 
-    val hasConstants
-        get() = variables.any { it.isConstant }
-
     fun findPlaceholderById(variableId: String): VariablePlaceholder? =
         variables
             .firstOrNull { it.id == variableId }

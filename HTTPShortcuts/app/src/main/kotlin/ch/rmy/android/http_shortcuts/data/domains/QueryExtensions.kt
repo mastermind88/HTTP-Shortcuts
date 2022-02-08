@@ -42,11 +42,6 @@ fun RealmContext.getVariableById(variableId: String): RealmQuery<Variable> =
         .where<Variable>()
         .equalTo(Variable.FIELD_ID, variableId)
 
-fun RealmContext.getVariableByKey(key: String): RealmQuery<Variable> =
-    realmInstance
-        .where<Variable>()
-        .equalTo(Variable.FIELD_KEY, key)
-
 fun RealmContext.getVariableByKeyOrId(keyOrId: String): RealmQuery<Variable> =
     realmInstance
         .where<Variable>()

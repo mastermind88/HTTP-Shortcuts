@@ -201,7 +201,7 @@ class CodeSnippetPicker(
                         .showIfPossible()
                 }
                 .item(R.string.dialog_code_snippet_set_variable) {
-                    if (variablePlaceholderProvider.hasConstants) {
+                    if (variablePlaceholderProvider.hasVariables) {
                         DialogBuilder(context)
                             .mapFor(variablePlaceholderProvider.placeholders) { variable ->
                                 item(name = variable.variableKey) {
@@ -229,7 +229,7 @@ class CodeSnippetPicker(
     }
 
     private fun openVariableEditor() {
-        VariablesActivity.IntentBuilder(context)
+        VariablesActivity.IntentBuilder()
             .startActivity(context)
     }
 

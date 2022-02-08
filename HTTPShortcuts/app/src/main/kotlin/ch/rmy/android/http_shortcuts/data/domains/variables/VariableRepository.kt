@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.data.domains.variables
 import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getVariableById
-import ch.rmy.android.http_shortcuts.data.domains.getVariableByKey
 import ch.rmy.android.http_shortcuts.data.domains.getVariableByKeyOrId
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm

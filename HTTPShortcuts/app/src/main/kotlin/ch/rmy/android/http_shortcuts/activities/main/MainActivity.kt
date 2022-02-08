@@ -44,6 +44,10 @@ import com.google.android.material.appbar.AppBarLayout
 
 class MainActivity : BaseActivity(), Entrypoint {
 
+    private val executionScheduler by lazy {
+        ExecutionScheduler(applicationContext)
+    }
+
     private val viewModel: MainViewModel by bindViewModel()
 
     private lateinit var binding: ActivityMainBinding
@@ -135,13 +139,19 @@ class MainActivity : BaseActivity(), Entrypoint {
         when (event) {
             is MainEvent.ShowCreationDialog -> showCreationDialog()
             is MainEvent.ShowToolbarTitleChangeDialog -> showToolbarTitleChangeDialog(event.oldTitle)
-            is MainEvent.ScheduleExecutions -> ExecutionScheduler.schedule(context)
+            is MainEvent.ScheduleExecutions -> scheduleExecutions()
             is MainEvent.UpdateLauncherShortcuts -> updateLauncherShortcuts(event.shortcuts)
             is MainEvent.ShowChangeLogDialogIfNeeded -> showChangeLogDialogIfNeeded()
             is MainEvent.ShowUnlockDialog -> showUnlockDialog(event.message)
             is MainEvent.ShowShortcutPlacementDialog -> showShortcutPlacementDialog(event.shortcutId)
             else -> super.handleEvent(event)
         }
+    }
+
+    private fun scheduleExecutions() {
+        executionScheduler.schedule()
+            .subscribe()
+            .attachTo(destroyer)
     }
 
     private fun showCreationDialog() {
