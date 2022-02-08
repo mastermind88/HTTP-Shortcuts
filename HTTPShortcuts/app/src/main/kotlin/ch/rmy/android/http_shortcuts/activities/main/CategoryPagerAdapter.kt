@@ -12,7 +12,7 @@ class CategoryPagerAdapter(
     BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
 ) {
 
-    private var fragments: List<Pair<String, ListFragment>> = emptyList()
+    private var fragments: List<Pair<String, ShortcutListFragment>> = emptyList()
 
     private var previousCategories: List<CategoryTabItem>? = null
 
@@ -24,9 +24,9 @@ class CategoryPagerAdapter(
         fragments = categories
             .mapIndexed { index, category ->
                 val fragment = fragmentManager.findFragmentByTag(makeFragmentName(index))
-                    ?.let { it as? ListFragment }
+                    ?.let { it as? ShortcutListFragment }
                     ?.takeIf { it.categoryId == category.categoryId && it.layoutType == category.layoutType && it.selectionMode == selectionMode }
-                    ?: ListFragment.create(category.categoryId, category.layoutType, selectionMode)
+                    ?: ShortcutListFragment.create(category.categoryId, category.layoutType, selectionMode)
                 category.name to fragment
             }
         notifyDataSetChanged()

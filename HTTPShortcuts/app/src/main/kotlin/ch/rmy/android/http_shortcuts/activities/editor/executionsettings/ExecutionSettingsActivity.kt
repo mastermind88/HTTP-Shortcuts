@@ -77,7 +77,7 @@ class ExecutionSettingsActivity : BaseActivity() {
             binding.inputLauncherShortcut.isChecked = viewState.launcherShortcut
             binding.inputQuickTileShortcut.visible = viewState.quickSettingsTileShortcutOptionVisible
             binding.inputQuickTileShortcut.isChecked = viewState.quickSettingsTileShortcut
-            binding.inputWaitForConnection.isChecked = viewState.isWaitForNetwork
+            binding.inputWaitForConnection.isChecked = viewState.waitForConnection
             binding.inputDelay.setSubtitle(viewState.delaySubtitle)
         }
         viewModel.events.observe(this, ::handleEvent)

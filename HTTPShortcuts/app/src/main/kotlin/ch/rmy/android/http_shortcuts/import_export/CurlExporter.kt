@@ -43,7 +43,9 @@ class CurlExporter(val context: Context) {
                 proxy(shortcut.proxyHost!!, shortcut.proxyPort!!)
             }
             .method(shortcut.method)
-            .timeout(shortcut.timeout)
+            .mapIf(shortcut.timeout != 10000) {
+                timeout(shortcut.timeout)
+            }
             .mapFor(shortcut.headers) { header ->
                 header(
                     rawPlaceholdersToResolvedValues(header.key, variableValues),

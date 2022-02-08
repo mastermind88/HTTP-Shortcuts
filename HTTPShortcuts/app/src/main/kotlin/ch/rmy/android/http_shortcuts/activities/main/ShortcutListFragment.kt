@@ -34,7 +34,7 @@ import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
 import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
-class ListFragment : BaseFragment<FragmentListBinding>() {
+class ShortcutListFragment : BaseFragment<FragmentListBinding>() {
 
     val categoryId by lazy {
         args.getString(ARG_CATEGORY_ID) ?: ""
@@ -56,7 +56,7 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
         destroyer.own(ExportUI(requireActivity()))
     }
 
-    private val viewModel: ShortcutListViewModel by bindViewModel()
+    private val viewModel: ShortcutListViewModel by bindViewModel { "$categoryId-$layoutType-$selectionMode" }
 
     private lateinit var adapter: BaseShortcutAdapter
 
@@ -116,9 +116,10 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
+            adapter.items = viewState.shortcuts
+            adapter.isLongClickingEnabled = viewState.isLongClickingEnabled
             binding.shortcutList.alpha = if (viewState.isInMovingMode) 0.7f else 1f
             isDraggingEnabled = viewState.isDraggingEnabled
-            adapter.isLongClickingEnabled = viewState.isLongClickingEnabled
             updateBackground(viewState.background)
         }
         viewModel.events.observe(this, ::handleEvent)
@@ -306,8 +307,8 @@ class ListFragment : BaseFragment<FragmentListBinding>() {
 
     companion object {
 
-        fun create(categoryId: String, layoutType: CategoryLayoutType, selectionMode: SelectionMode): ListFragment =
-            ListFragment().addArguments {
+        fun create(categoryId: String, layoutType: CategoryLayoutType, selectionMode: SelectionMode): ShortcutListFragment =
+            ShortcutListFragment().addArguments {
                 putString(ARG_CATEGORY_ID, categoryId)
                 putString(ARG_CATEGORY_LAYOUT_TYPE, layoutType.toString())
                 putSerializable(ARG_SELECTION_MODE, selectionMode)

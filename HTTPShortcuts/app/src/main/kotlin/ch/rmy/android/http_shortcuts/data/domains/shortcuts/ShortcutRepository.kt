@@ -30,12 +30,22 @@ class ShortcutRepository : BaseRepository() {
             .map { it.first() }
 
     fun getObservableShortcuts(): Observable<List<Shortcut>> =
-        TODO()
-    // TODO: Exclude temporary shortcut?
+        observeList {
+            getBase().findFirst()!!.categories
+        }
+            .map { categories ->
+                categories.flatMap { category ->
+                    category.shortcuts
+                }
+            }
 
-    fun getShortcuts(): Single<List<Shortcut>> {
-        TODO()
-    }
+    fun getShortcuts(): Single<List<Shortcut>> =
+        queryItem {
+            getBase()
+        }
+            .map { base ->
+                base.shortcuts
+            }
 
     fun moveShortcut(shortcutId: String, targetPosition: Int? = null, targetCategoryId: String? = null) =
         commitTransaction {

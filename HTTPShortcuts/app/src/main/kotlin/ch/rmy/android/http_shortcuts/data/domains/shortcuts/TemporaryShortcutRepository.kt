@@ -20,8 +20,7 @@ import java.net.URLDecoder
 import kotlin.time.Duration
 
 class TemporaryShortcutRepository : BaseRepository() {
-
-    // TODO: Remove this?
+    
     fun getObservableTemporaryShortcut(): Observable<Shortcut> =
         observeItem {
             getTemporaryShortcut()

@@ -53,12 +53,14 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
 
     protected val destroyer = Destroyer()
 
-    fun initialize() {
+    fun initialize(silent: Boolean = false) {
         if (::currentViewState.isInitialized) {
             return
         }
         currentViewState = initViewState()
-        viewStateSubject.onNext(currentViewState)
+        if (!silent) {
+            viewStateSubject.onNext(currentViewState)
+        }
         onInitialized()
     }
 

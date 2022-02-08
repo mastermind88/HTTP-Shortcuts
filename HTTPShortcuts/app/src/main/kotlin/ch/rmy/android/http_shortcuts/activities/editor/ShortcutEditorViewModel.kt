@@ -65,6 +65,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     private var categoryId: String? = null
     private var shortcutId: String? = null
     private var oldShortcut: Shortcut? = null
+    private lateinit var executionType: ShortcutExecutionType
     private lateinit var shortcut: Shortcut
 
     fun initialize(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: ShortcutExecutionType) {
@@ -75,6 +76,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
 
         this.categoryId = categoryId
         this.shortcutId = shortcutId
+        this.executionType = executionType
 
         if (shortcutId == null) {
             temporaryShortcutRepository.createNewTemporaryShortcut(
@@ -89,7 +91,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             }
             .subscribe(
                 {
-                    initialize()
+                    observeTemporaryShortcut()
                 },
                 {
                     finish()
@@ -97,14 +99,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
                 },
             )
             .attachTo(destroyer)
-    }
 
-    override fun initViewState() = ShortcutEditorViewState(
-        toolbarTitle = StringResLocalizable(if (shortcutId != null) R.string.edit_shortcut else R.string.create_shortcut),
-    )
-
-    override fun onInitialized() {
-        observeTemporaryShortcut()
         variableRepository.getObservableVariables()
             .subscribe { variables ->
                 variablePlaceholderProvider.variables = variables
@@ -112,13 +107,19 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             .attachTo(destroyer)
     }
 
+    override fun initViewState() = ShortcutEditorViewState(
+        toolbarTitle = StringResLocalizable(if (shortcutId != null) R.string.edit_shortcut else R.string.create_shortcut),
+        shortcutExecutionType = executionType,
+    )
+
     private fun observeTemporaryShortcut() {
         temporaryShortcutRepository.getObservableTemporaryShortcut()
             .subscribe { shortcut ->
+                this.shortcut = shortcut
                 if (oldShortcut == null) {
                     oldShortcut = shortcut
+                    initialize(silent = true)
                 }
-                this.shortcut = shortcut
                 updateViewState {
                     copy(
                         toolbarSubtitle = getToolbarSubtitle(),
@@ -143,7 +144,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     }
 
     private fun hasChanges() =
-        oldShortcut?.isSameAs(shortcut) ?: false
+        oldShortcut?.isSameAs(shortcut) == false
 
     private fun canExecute() =
         !shortcut.type.usesUrl ||
@@ -302,6 +303,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
         if (shortcut.name.isBlank()) {
             showSnackbar(R.string.validation_name_not_empty, long = true)
             emitEvent(ShortcutEditorEvent.FocusNameInputField)
+            isSaving = false
             return
         }
         if (
@@ -309,6 +311,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
             (shortcut.type.usesUrl && !shortcut.type.requiresHttpUrl && !isAcceptableUrl(shortcut.url))
         ) {
             showSnackbar(R.string.validation_url_invalid, long = true)
+            isSaving = false
             return
         }
 

@@ -67,7 +67,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
             showOptionVisible = category.hidden,
             changeLayoutTypeOptionVisible = !category.hidden,
             placeOnHomeScreenOptionVisible = !category.hidden && launcherShortcutManager.supportsPinning(context),
-            deleteOptionVisible = categories.size > 1,
+            deleteOptionVisible = category.hidden || categories.count { !it.hidden } > 1,
         ))
     }
 
@@ -80,9 +80,9 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
         updateViewState {
             copy(categories = categories.move(oldPosition, newPosition))
         }
-        performOperation(
-            categoryRepository.moveCategory(categoryId, newPosition)
-        )
+        performOperation(categoryRepository.moveCategory(categoryId, newPosition)) {
+            hasChanged = true
+        }
     }
 
     fun onHelpButtonClicked() {
@@ -97,6 +97,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
         performOperation(
             categoryRepository.createCategory(name)
                 .doOnComplete {
+                    hasChanged = true
                     showSnackbar(R.string.message_category_created)
                 }
         )
@@ -111,6 +112,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
         performOperation(
             categoryRepository.renameCategory(categoryId, newName)
                 .doOnComplete {
+                    hasChanged = true
                     LauncherShortcutManager.updatePinnedCategoryShortcut(context, categoryId, newName)
                     showSnackbar(R.string.message_category_renamed)
                 }
@@ -118,21 +120,17 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
     }
 
     fun onCategoryVisibilityChanged(categoryId: String, hidden: Boolean) {
-        performOperation(
-            categoryRepository.toggleCategoryHidden(categoryId, hidden)
-                .doOnComplete {
-                    showSnackbar(if (hidden) R.string.message_category_hidden else R.string.message_category_visible)
-                }
-        )
+        performOperation(categoryRepository.toggleCategoryHidden(categoryId, hidden)) {
+            hasChanged = true
+            showSnackbar(if (hidden) R.string.message_category_hidden else R.string.message_category_visible)
+        }
     }
 
     fun onCategoryDeletionConfirmed(categoryId: String) {
-        performOperation(
-            categoryRepository.deleteCategory(categoryId)
-                .doOnComplete {
-                    showSnackbar(R.string.message_category_deleted)
-                }
-        )
+        performOperation(categoryRepository.deleteCategory(categoryId)) {
+            hasChanged = true
+            showSnackbar(R.string.message_category_deleted)
+        }
     }
 
     fun onCategoryDeletionSelected(categoryId: String) {
@@ -150,21 +148,17 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
     }
 
     fun onLayoutTypeChanged(categoryId: String, layoutType: CategoryLayoutType) {
-        performOperation(
-            categoryRepository.setLayoutType(categoryId, layoutType)
-                .doOnComplete {
-                    showSnackbar(R.string.message_layout_type_changed)
-                }
-        )
+        performOperation(categoryRepository.setLayoutType(categoryId, layoutType)){
+            hasChanged = true
+            showSnackbar(R.string.message_layout_type_changed)
+        }
     }
 
     fun onBackgroundTypeChanged(categoryId: String, backgroundType: CategoryBackgroundType) {
-        performOperation(
-            categoryRepository.setBackground(categoryId, backgroundType)
-                .doOnComplete {
-                    showSnackbar(R.string.message_background_type_changed)
-                }
-        )
+        performOperation(categoryRepository.setBackground(categoryId, backgroundType)) {
+            hasChanged = true
+            showSnackbar(R.string.message_background_type_changed)
+        }
     }
 
     companion object {

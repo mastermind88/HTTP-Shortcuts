@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.extensions
 
+import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.RealmResults
 
@@ -13,4 +14,7 @@ fun <T : RealmObject> T.detachFromRealm(): T =
     realm?.copyFromRealm(this) ?: this
 
 fun <T : RealmObject> RealmResults<T>.detachFromRealm(): List<T> =
+    realm?.copyFromRealm(this) ?: this
+
+fun <T : RealmObject> RealmList<T>.detachFromRealm(): List<T> =
     realm?.copyFromRealm(this) ?: this

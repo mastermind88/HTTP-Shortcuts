@@ -45,7 +45,6 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     private var initialCategoryId: String? = null
     private var widgetId: Int? = null
     private lateinit var categories: List<Category>
-    private lateinit var activeCategoryId: String
 
     private lateinit var selectionMode: SelectionMode
 
@@ -69,7 +68,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     override fun initViewState() = MainViewState(
         selectionMode = selectionMode,
         categoryTabItems = getCategoryTabItems(),
-        activeCategoryId = initialCategoryId ?: "",
+        activeCategoryId = initialCategoryId ?: categories.first().id,
     )
 
     private fun getCategoryTabItems() =
@@ -206,7 +205,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     fun onCreationDialogOptionSelected(executionType: ShortcutExecutionType) {
         openActivity(
             ShortcutEditorActivity.IntentBuilder()
-                .categoryId(activeCategoryId)
+                .categoryId(currentViewState.activeCategoryId)
                 .executionType(executionType),
             requestCode = MainActivity.REQUEST_CREATE_SHORTCUT,
         )
@@ -227,7 +226,10 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     }
 
     fun onSwitchedToCategory(position: Int) {
-        activeCategoryId = categories.getOrNull(position)?.id ?: ""
+        val activateCategoryId = categories.getOrNull(position)?.id ?: return
+        updateViewState {
+            copy(activeCategoryId = activateCategoryId)
+        }
     }
 
     fun onUnlockButtonClicked() {

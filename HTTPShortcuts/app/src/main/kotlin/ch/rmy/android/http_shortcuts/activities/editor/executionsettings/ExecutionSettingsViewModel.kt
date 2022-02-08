@@ -22,7 +22,7 @@ class ExecutionSettingsViewModel(application: Application) : BaseViewModel<Execu
     )
 
     override fun onInitialized() {
-        temporaryShortcutRepository.getTemporaryShortcut()
+        temporaryShortcutRepository.getObservableTemporaryShortcut()
             .subscribe(
                 ::initViewStateFromShortcut,
                 ::onInitializationError,

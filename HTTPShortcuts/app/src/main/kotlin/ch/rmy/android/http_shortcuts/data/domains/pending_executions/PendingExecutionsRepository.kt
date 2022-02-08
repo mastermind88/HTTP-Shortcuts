@@ -17,7 +17,7 @@ class PendingExecutionsRepository : BaseRepository() {
         }
 
     fun getObservablePendingExecutions(): Observable<List<PendingExecution>> =
-        observe {
+        observeQuery {
             getPendingExecutions()
         }
 

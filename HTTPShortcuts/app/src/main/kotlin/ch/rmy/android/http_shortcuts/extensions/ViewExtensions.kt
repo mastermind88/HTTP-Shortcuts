@@ -94,7 +94,9 @@ fun EditText.observeTextChanges(): Observable<CharSequence> {
     val subject = PublishSubject.create<CharSequence>()
     val watcher = object : SimpleTextWatcher() {
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            subject.onNext(s)
+            if (getTag(R.string.edit_text_suppress_listeners) != true) {
+                subject.onNext(s)
+            }
         }
     }
     return subject
@@ -124,12 +126,17 @@ fun EditText.setTextSafely(text: CharSequence) {
     if (isFocused) {
         return
     }
-    val start = selectionStart
-    val end = selectionEnd
-    setText(text)
-    if (start != -1 && end != -1) {
-        val length = length()
-        setSelection(min(start, length), min(end, length))
+    try {
+        setTag(R.string.edit_text_suppress_listeners, true)
+        val start = selectionStart
+        val end = selectionEnd
+        setText(text)
+        if (start != -1 && end != -1) {
+            val length = length()
+            setSelection(min(start, length), min(end, length))
+        }
+    } finally {
+        setTag(R.string.edit_text_suppress_listeners, false)
     }
 }
 

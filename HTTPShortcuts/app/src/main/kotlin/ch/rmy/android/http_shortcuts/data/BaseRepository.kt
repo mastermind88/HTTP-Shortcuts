@@ -6,6 +6,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.RealmQuery
 
@@ -27,13 +28,18 @@ abstract class BaseRepository {
                 it.first()
             }
 
-    protected fun <T : RealmObject> observe(query: RealmContext.() -> RealmQuery<T>): Observable<List<T>> =
-        RealmObservable(RealmFactory.getInstance(), query)
+    protected fun <T : RealmObject> observeQuery(query: RealmContext.() -> RealmQuery<T>): Observable<List<T>> =
+        RealmQueryObservable(RealmFactory.getInstance(), query)
+            .subscribeOn(AndroidSchedulers.mainThread()) // TODO: Move this away from main thread
+            .observeOn(AndroidSchedulers.mainThread())
+
+    protected fun <T : RealmObject> observeList(query: RealmContext.() -> RealmList<T>): Observable<List<T>> =
+        RealmListObservable(RealmFactory.getInstance(), query)
             .subscribeOn(AndroidSchedulers.mainThread()) // TODO: Move this away from main thread
             .observeOn(AndroidSchedulers.mainThread())
 
     protected fun <T : RealmObject> observeItem(query: RealmContext.() -> RealmQuery<T>): Observable<T> =
-        observe(query)
+        observeQuery(query)
             .filter { it.isNotEmpty() }
             .map { it.first() }
 

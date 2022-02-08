@@ -22,12 +22,9 @@ class CategoryRepository : BaseRepository() {
             }
 
     fun getObservableCategories(): Observable<List<Category>> =
-        observeItem {
-            getBase()
+        observeList {
+            getBase().findFirst()!!.categories
         }
-            .map { base ->
-                base.categories
-            }
 
     fun getObservableCategory(categoryId: String): Observable<Category> =
         observeItem {

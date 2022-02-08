@@ -110,9 +110,9 @@ class MainActivity : BaseActivity(), Entrypoint {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
+            setTitle(viewState.toolbarTitleLocalizable)
             adapter.setCategories(viewState.categoryTabItems, viewState.selectionMode)
             binding.viewPager.currentItem = viewState.activeCategoryIndex
-            toolbar?.title = viewState.toolbarTitleLocalizable.localize(context)
             binding.tabs.visible = viewState.isTabBarVisible
             binding.buttonCreateShortcut.visible = viewState.isCreateButtonVisible
             menuItemSettings?.isVisible = viewState.isRegularMenuButtonVisible
@@ -297,6 +297,7 @@ class MainActivity : BaseActivity(), Entrypoint {
     override val navigateUpIcon = 0
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_activity_menu, menu)
         menuItemSettings = menu.findItem(R.id.action_settings)
         menuItemImportExport = menu.findItem(R.id.action_import_export)
         menuItemAbout = menu.findItem(R.id.action_about)
@@ -315,21 +316,6 @@ class MainActivity : BaseActivity(), Entrypoint {
         R.id.action_unlock -> consume { viewModel.onUnlockButtonClicked() }
         else -> super.onOptionsItemSelected(item)
     }
-
-    /* TODO
-    private fun placeShortcutOnHomeScreen(shortcut: Shortcut) {
-        if (LauncherShortcutManager.supportsPinning(context)) {
-            LauncherShortcutManager.pinShortcut(context, shortcut)
-        } else {
-            sendBroadcast(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, true))
-            showSnackbar(String.format(getString(R.string.shortcut_placed), shortcut.name))
-        }
-    }
-
-    private fun removeShortcutFromHomeScreen(shortcut: Shortcut) {
-        sendBroadcast(IntentUtil.getLegacyShortcutPlacementIntent(context, shortcut, false))
-    }
-     */
 
     override fun onBackPressed() {
         supportFragmentManager.fragments

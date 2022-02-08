@@ -6,6 +6,7 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
+import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
 import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExecutionsRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
@@ -36,6 +37,7 @@ import ch.rmy.curlcommand.CurlConstructor
 
 class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutListViewState>(application) {
 
+    private val appRepository = AppRepository()
     private val shortcutRepository = ShortcutRepository()
     private val categoryRepository = CategoryRepository()
     private val variableRepository = VariableRepository()
@@ -47,24 +49,30 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
 
     private val settings = Settings(context)
 
-    private var initialized: Boolean = false
+    private var initializeCalled: Boolean = false
+    private var viewModelInitialized: Boolean = false
     private lateinit var selectionMode: SelectionMode
     private lateinit var category: Category
     private var categories: List<Category> = emptyList()
     private var variables: List<Variable> = emptyList()
     private var pendingShortcuts: List<PendingExecution> = emptyList()
+    private var isAppLocked = false
 
     private var exportingShortcutId: String? = null
 
     fun initialize(categoryId: String, selectionMode: SelectionMode) {
+        if (initializeCalled) {
+            return
+        }
+        initializeCalled = true
         this.selectionMode = selectionMode
         categoryRepository.getObservableCategory(categoryId)
             .subscribe { category ->
                 this.category = category
-                if (initialized) {
+                if (viewModelInitialized) {
                     recomputeShortcutList()
                 } else {
-                    initialized = true
+                    viewModelInitialized = true
                     initialize()
                 }
             }
@@ -86,6 +94,14 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
             .subscribe { pendingShortcuts ->
                 this.pendingShortcuts = pendingShortcuts
                 recomputeShortcutList()
+            }
+            .attachTo(destroyer)
+
+        appRepository.getObservableLock()
+            .subscribe { lockOptional ->
+                updateViewState {
+                    copy(isAppLocked = lockOptional.value != null)
+                }
             }
             .attachTo(destroyer)
     }
@@ -200,7 +216,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
             ShortcutEditorActivity.IntentBuilder()
                 .categoryId(category.id)
                 .shortcutId(shortcutId),
-            requestCode = ListFragment.REQUEST_EDIT_SHORTCUT,
+            requestCode = ShortcutListFragment.REQUEST_EDIT_SHORTCUT,
         )
     }
 
