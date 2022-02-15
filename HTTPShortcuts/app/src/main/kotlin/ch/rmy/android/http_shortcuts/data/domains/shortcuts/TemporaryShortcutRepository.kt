@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.data.domains.shortcuts
 import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.RealmTransactionContext
 import ch.rmy.android.http_shortcuts.data.domains.getTemporaryShortcut
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.ClientCertParams
 import ch.rmy.android.http_shortcuts.data.models.Header
@@ -20,7 +21,7 @@ import java.net.URLDecoder
 import kotlin.time.Duration
 
 class TemporaryShortcutRepository : BaseRepository() {
-    
+
     fun getObservableTemporaryShortcut(): Observable<Shortcut> =
         observeItem {
             getTemporaryShortcut()
@@ -126,12 +127,12 @@ class TemporaryShortcutRepository : BaseRepository() {
                 ?.deleteFromRealm()
         }
 
-    fun setRequestBodyType(type: String): Completable =
+    fun setRequestBodyType(type: RequestBodyType): Completable =
         commitTransactionForShortcut { shortcut ->
-            shortcut.requestBodyType = type
-            if (type != Shortcut.REQUEST_BODY_TYPE_FORM_DATA) {
+            shortcut.bodyType = type
+            if (type != RequestBodyType.FORM_DATA) {
                 shortcut.parameters
-                    .filter { it.isFileParameter || it.isFilesParameter }
+                    .filterNot { it.isStringParameter }
                     .forEach { parameter ->
                         parameter.deleteFromRealm()
                     }
@@ -317,17 +318,17 @@ class TemporaryShortcutRepository : BaseRepository() {
             shortcut.timeout = curlCommand.timeout
 
             if (curlCommand.usesBinaryData) {
-                shortcut.requestBodyType = Shortcut.REQUEST_BODY_TYPE_FILE
+                shortcut.bodyType = RequestBodyType.FILE
             } else if (curlCommand.isFormData || curlCommand.data.all { data -> data.count { it == '=' } == 1 }) {
-                shortcut.requestBodyType = if (curlCommand.isFormData) {
-                    Shortcut.REQUEST_BODY_TYPE_FORM_DATA
+                shortcut.bodyType = if (curlCommand.isFormData) {
+                    RequestBodyType.FORM_DATA
                 } else {
-                    Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE
+                    RequestBodyType.X_WWW_FORM_URLENCODE
                 }
                 prepareParameters(curlCommand, shortcut)
             } else {
                 shortcut.bodyContent = curlCommand.data.joinToString(separator = "&")
-                shortcut.requestBodyType = Shortcut.REQUEST_BODY_TYPE_CUSTOM_TEXT
+                shortcut.bodyType = RequestBodyType.CUSTOM_TEXT
             }
             curlCommand.headers.getCaseInsensitive(HttpHeaders.CONTENT_TYPE)
                 ?.let {

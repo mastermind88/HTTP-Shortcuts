@@ -17,6 +17,7 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
+import java.lang.IllegalStateException
 
 abstract class BaseViewModel<ViewState : Any>(application: Application) : AndroidViewModel(application) {
 
@@ -38,17 +39,26 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
         eventSubject.onNext(event)
     }
 
-    private var viewStateTransactionInProgress = false
+    private var suppressViewStatePublishing = false
 
     @UiThread
     protected fun updateViewState(mutation: ViewState.() -> ViewState) {
-        val publishViewState = !viewStateTransactionInProgress
-        viewStateTransactionInProgress = true
         currentViewState = mutation(currentViewState)
-        viewStateTransactionInProgress = false
-        if (publishViewState) {
+        if (!suppressViewStatePublishing) {
             viewStateSubject.onNext(currentViewState)
         }
+    }
+
+    @UiThread
+    protected fun atomicallyUpdateViewState(action: () -> Unit) {
+        if (suppressViewStatePublishing) {
+            action()
+            return
+        }
+        suppressViewStatePublishing = true
+        action()
+        suppressViewStatePublishing = false
+        viewStateSubject.onNext(currentViewState)
     }
 
     protected val destroyer = Destroyer()

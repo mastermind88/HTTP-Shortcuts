@@ -123,7 +123,7 @@ fun CheckBox.observeChecked(): Observable<Boolean> {
 }
 
 fun EditText.setTextSafely(text: CharSequence) {
-    if (isFocused) {
+    if (isFocused || this.text.toString() == text.toString()) {
         return
     }
     try {

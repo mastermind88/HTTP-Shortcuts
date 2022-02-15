@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.activities.editor.authentication
 import android.app.Application
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.logException
@@ -10,6 +11,7 @@ import ch.rmy.android.http_shortcuts.extensions.logException
 class AuthenticationViewModel(application: Application) : BaseViewModel<AuthenticationViewState>(application) {
 
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
+    private val variableRepository = VariableRepository()
 
     override fun initViewState() = AuthenticationViewState()
 
@@ -19,6 +21,14 @@ class AuthenticationViewModel(application: Application) : BaseViewModel<Authenti
                 ::initViewStateFromShortcut,
                 ::onInitializationError,
             )
+            .attachTo(destroyer)
+
+        variableRepository.getObservableVariables()
+            .subscribe { variables ->
+                updateViewState {
+                    copy(variables = variables)
+                }
+            }
             .attachTo(destroyer)
     }
 

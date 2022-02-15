@@ -18,9 +18,10 @@ open class Category(
     var shortcuts: RealmList<Shortcut> = RealmList()
 
     @Required
-    var layoutType: String = CategoryLayoutType.LINEAR_LIST.type
+    private var layoutType: String = CategoryLayoutType.LINEAR_LIST.type
 
-    var background: String = CategoryBackgroundType.WHITE.type
+    @Required
+    private var background: String = CategoryBackgroundType.WHITE.type
     var hidden: Boolean = false
 
     var categoryLayoutType

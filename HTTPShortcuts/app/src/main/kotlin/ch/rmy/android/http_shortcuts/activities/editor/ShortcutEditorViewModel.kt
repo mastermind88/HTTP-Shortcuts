@@ -21,6 +21,7 @@ import ch.rmy.android.http_shortcuts.activities.editor.shortcuts.TriggerShortcut
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Shortcut.Companion.TEMPORARY_ID
@@ -191,9 +192,9 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
 
     private fun getRequestBodySubtitle(): Localizable =
         if (shortcut.allowsBody()) {
-            when (shortcut.requestBodyType) {
-                Shortcut.REQUEST_BODY_TYPE_FORM_DATA,
-                Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE,
+            when (shortcut.bodyType) {
+                RequestBodyType.FORM_DATA,
+                RequestBodyType.X_WWW_FORM_URLENCODE,
                 -> {
                     val count = shortcut.parameters.size
                     if (count == 0) {
@@ -202,7 +203,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
                         QuantityStringLocalizable(R.plurals.subtitle_request_body_params_pattern, count)
                     }
                 }
-                Shortcut.REQUEST_BODY_TYPE_FILE -> StringResLocalizable(R.string.subtitle_request_body_file)
+                RequestBodyType.FILE -> StringResLocalizable(R.string.subtitle_request_body_file)
                 else -> if (shortcut.bodyContent.isBlank()) {
                     StringResLocalizable(R.string.subtitle_request_body_none)
                 } else {

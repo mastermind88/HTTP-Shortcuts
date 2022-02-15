@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.activities.editor.basicsettings
 import android.app.Application
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
+import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.attachTo
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit
 class BasicRequestSettingsViewModel(application: Application) : BaseViewModel<BasicRequestSettingsViewState>(application) {
 
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
+    private val variableRepository = VariableRepository()
 
     private val urlSubject = PublishSubject.create<String>()
 
@@ -27,8 +29,16 @@ class BasicRequestSettingsViewModel(application: Application) : BaseViewModel<Ba
             )
             .attachTo(destroyer)
 
+        variableRepository.getObservableVariables()
+            .subscribe { variables ->
+                updateViewState {
+                    copy(variables = variables)
+                }
+            }
+            .attachTo(destroyer)
+
         urlSubject
-            .throttleLatest(300, TimeUnit.MILLISECONDS, true)
+            .throttleLatest(200, TimeUnit.MILLISECONDS, true)
             .concatMapCompletable { url ->
                 temporaryShortcutRepository.setUrl(url)
                     .compose(progressMonitor.transformer())
@@ -54,8 +64,6 @@ class BasicRequestSettingsViewModel(application: Application) : BaseViewModel<Ba
     }
 
     fun onBackPressed() {
-        // TODO: Trigger a save
-        // and then finish
         waitForOperationsToFinish {
             finish()
         }

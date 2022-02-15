@@ -123,9 +123,9 @@ class AppRepository : BaseRepository() {
             base.categories.add(realmTransactionContext.copyOrUpdate(category))
         } else {
             oldCategory.name = category.name
-            oldCategory.background = category.background
+            oldCategory.categoryBackgroundType = category.categoryBackgroundType
             oldCategory.hidden = category.hidden
-            oldCategory.layoutType = category.layoutType
+            oldCategory.categoryLayoutType = category.categoryLayoutType
             category.shortcuts.forEach { shortcut ->
                 importShortcut(realmTransactionContext, oldCategory, shortcut)
             }

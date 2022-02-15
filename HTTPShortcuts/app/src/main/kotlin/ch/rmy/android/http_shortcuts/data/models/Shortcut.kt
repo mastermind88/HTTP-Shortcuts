@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.data.models
 
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.extensions.takeUnlessEmpty
 import ch.rmy.android.http_shortcuts.extensions.type
@@ -64,7 +65,7 @@ open class Shortcut(
     var delay: Int = 0
 
     @Required
-    var requestBodyType: String = REQUEST_BODY_TYPE_CUSTOM_TEXT
+    private var requestBodyType: String = RequestBodyType.CUSTOM_TEXT.type
 
     @Required
     var contentType: String = ""
@@ -105,6 +106,12 @@ open class Shortcut(
             clientCert = value?.toString() ?: ""
         }
 
+    var bodyType: RequestBodyType
+        get() = RequestBodyType.parse(requestBodyType)
+        set(value) {
+            requestBodyType = value.type
+        }
+
     fun allowsBody(): Boolean =
         METHOD_POST == method ||
             METHOD_PUT == method ||
@@ -120,11 +127,11 @@ open class Shortcut(
 
     fun usesRequestParameters() =
         allowsBody() &&
-            (requestBodyType == REQUEST_BODY_TYPE_FORM_DATA || requestBodyType == REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE)
+            (bodyType.let { it == RequestBodyType.FORM_DATA || it == RequestBodyType.X_WWW_FORM_URLENCODE })
 
-    fun usesCustomBody() = allowsBody() && requestBodyType == REQUEST_BODY_TYPE_CUSTOM_TEXT
+    fun usesCustomBody() = allowsBody() && bodyType == RequestBodyType.CUSTOM_TEXT
 
-    fun usesFileBody() = allowsBody() && requestBodyType == REQUEST_BODY_TYPE_FILE
+    fun usesFileBody() = allowsBody() && bodyType == RequestBodyType.FILE
 
     fun isSameAs(other: Shortcut): Boolean {
         if (other.name != name ||
@@ -223,13 +230,7 @@ open class Shortcut(
             throw IllegalArgumentException("Invalid retry policy: $retryPolicy")
         }
 
-        if (requestBodyType !in setOf(
-                REQUEST_BODY_TYPE_FORM_DATA,
-                REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE,
-                REQUEST_BODY_TYPE_CUSTOM_TEXT,
-                REQUEST_BODY_TYPE_FILE,
-            )
-        ) {
+        if (RequestBodyType.values().none { it.type == requestBodyType }) {
             throw IllegalArgumentException("Invalid request body type: $requestBodyType")
         }
 
@@ -268,11 +269,6 @@ open class Shortcut(
 
         private const val RETRY_POLICY_NONE = "none"
         private const val RETRY_POLICY_WAIT_FOR_INTERNET = "wait_for_internet"
-
-        const val REQUEST_BODY_TYPE_FORM_DATA = "form_data"
-        const val REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE = "x_www_form_urlencode"
-        const val REQUEST_BODY_TYPE_CUSTOM_TEXT = "custom_text"
-        const val REQUEST_BODY_TYPE_FILE = "file"
 
         const val AUTHENTICATION_NONE = "none"
         const val AUTHENTICATION_BASIC = "basic"

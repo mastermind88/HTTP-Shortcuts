@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseAdapter
+import ch.rmy.android.http_shortcuts.activities.categories.CategoryAdapter
 import ch.rmy.android.http_shortcuts.databinding.ListEmptyItemBinding
 import ch.rmy.android.http_shortcuts.databinding.ListItemParameterBinding
 import ch.rmy.android.http_shortcuts.extensions.color
@@ -60,11 +61,20 @@ class ParameterAdapter(
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
+        private lateinit var parameterId: String
+
+        init {
+            binding.root.setOnClickListener {
+                userEventSubject.onNext(UserEvent.ParameterClicked(parameterId))
+            }
+        }
+
         private val variablePlaceholderColor by lazy {
             color(context, R.color.variable)
         }
 
         fun setItem(item: ParameterListItem.Parameter) {
+            parameterId = item.id
             binding.parameterKey.text = Variables.rawPlaceholdersToVariableSpans(
                 item.key,
                 variablePlaceholderProvider,

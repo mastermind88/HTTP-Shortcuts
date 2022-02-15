@@ -56,7 +56,6 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
     private var categories: List<Category> = emptyList()
     private var variables: List<Variable> = emptyList()
     private var pendingShortcuts: List<PendingExecution> = emptyList()
-    private var isAppLocked = false
 
     private var exportingShortcutId: String? = null
 
@@ -125,7 +124,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
             val textColor = when (category.categoryBackgroundType) {
                 CategoryBackgroundType.WHITE -> ShortcutListItem.TextColor.DARK
                 CategoryBackgroundType.BLACK -> ShortcutListItem.TextColor.BRIGHT
-                CategoryBackgroundType.WALLPAPER -> ShortcutListItem.TextColor.DARK
+                CategoryBackgroundType.WALLPAPER -> ShortcutListItem.TextColor.BRIGHT
             }
             shortcuts.map { shortcut ->
                 ShortcutListItem.Shortcut(

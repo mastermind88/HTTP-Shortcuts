@@ -5,6 +5,7 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.models.Parameter
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.attachTo
@@ -47,13 +48,15 @@ class RequestBodyViewModel(application: Application) : BaseViewModel<RequestBody
     }
 
     private fun initViewStateFromShortcut(shortcut: Shortcut) {
-        updateViewState {
-            this@RequestBodyViewModel.parameters = shortcut.parameters
-            copy(
-                requestBodyType = shortcut.requestBodyType,
-                bodyContent = shortcut.bodyContent,
-                contentType = shortcut.contentType,
-            )
+        atomicallyUpdateViewState {
+            this.parameters = shortcut.parameters
+            updateViewState {
+                copy(
+                    requestBodyType = shortcut.bodyType,
+                    bodyContent = shortcut.bodyContent,
+                    contentType = shortcut.contentType,
+                )
+            }
         }
     }
 
@@ -63,9 +66,14 @@ class RequestBodyViewModel(application: Application) : BaseViewModel<RequestBody
         finish()
     }
 
-    fun onRequestBodyTypeChanged(type: String) {
-        updateViewState {
-            copy(requestBodyType = type)
+    fun onRequestBodyTypeChanged(type: RequestBodyType) {
+        atomicallyUpdateViewState {
+            if (type == RequestBodyType.X_WWW_FORM_URLENCODE) {
+                parameters = parameters.filter { it.isStringParameter }
+            }
+            updateViewState {
+                copy(requestBodyType = type)
+            }
         }
         performOperation(
             temporaryShortcutRepository.setRequestBodyType(type)
@@ -128,7 +136,7 @@ class RequestBodyViewModel(application: Application) : BaseViewModel<RequestBody
     }
 
     fun onAddParameterButtonClicked() {
-        if (currentViewState.requestBodyType == Shortcut.REQUEST_BODY_TYPE_FORM_DATA) {
+        if (currentViewState.requestBodyType == RequestBodyType.FORM_DATA) {
             emitEvent(RequestBodyEvent.ShowAddParameterTypeSelectionDialog)
         } else {
             emitEvent(RequestBodyEvent.ShowAddParameterForStringDialog)

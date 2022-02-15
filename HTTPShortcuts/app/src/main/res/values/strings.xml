@@ -89,7 +89,7 @@
     <!-- Validation error, shown when user tries to save a shortcut without a name -->
     <string name="validation_name_not_empty">Please enter a name.</string>
     <!-- Validation error, shown when user tries to save a shortcut without a valid URL -->
-    <string name="validation_url_invalid">Please enter a HTTP(S) url.</string>
+    <string name="validation_url_invalid">Please enter an HTTP(S) url.</string>
     <!-- Error shown in Toast when shortcut failed with an HTTP status code. %1$s is a placeholder for the shortcut's name, %2$d is a placeholder for the status code. -->
     <string name="error_http">%1$s failed with status code %2$d (%3$s).</string>
     <!-- Error shown in Toast when shortcut failed. %1$s is a placeholder for the shortcut's name, %2$s is a placeholder for the error message. -->
@@ -247,7 +247,7 @@
     <!-- Label, for option in dialog to pick a client certificate from a .p12 file -->
     <string name="label_client_cert_from_file">Import from .p12 File</string>
     <!-- Subtitle for Label, for option in dialog to pick a client certificate from a .p12 file -->
-    <string name="label_client_cert_from_file_subtitle">A copy of the file and password will be stored inside the app without special protected. Use at your own risk.</string>
+    <string name="label_client_cert_from_file_subtitle">A copy of the file and password will be stored inside the app without special protection. Use at your own risk.</string>
     <!-- Title of dialog, for entering the password for a client cert file -->
     <string name="title_client_cert_file_password">Password</string>
     <!-- Used in various places to indicate a number of seconds, e.g. for a delay. %s is a placeholder for the actual number. -->

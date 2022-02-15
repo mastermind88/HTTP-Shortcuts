@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityRequestBodyBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -47,7 +48,7 @@ class RequestBodyActivity : BaseActivity() {
     private fun initViews() {
         binding.inputRequestBodyType.setItemsFromPairs(
             REQUEST_BODY_TYPES.map {
-                it.first to getString(it.second)
+                it.first.type to getString(it.second)
             }
         )
 
@@ -83,7 +84,7 @@ class RequestBodyActivity : BaseActivity() {
 
         binding.inputRequestBodyType.selectionChanges
             .subscribe { requestBodyType ->
-                viewModel.onRequestBodyTypeChanged(requestBodyType)
+                viewModel.onRequestBodyTypeChanged(RequestBodyType.parse(requestBodyType))
             }
             .attachTo(destroyer)
 
@@ -121,7 +122,7 @@ class RequestBodyActivity : BaseActivity() {
             adapter.items = viewState.parameters
             isDraggingEnabled = viewState.isDraggingEnabled
 
-            binding.inputRequestBodyType.selectedItem = viewState.requestBodyType
+            binding.inputRequestBodyType.selectedItem = viewState.requestBodyType.type
             binding.inputContentType.setTextSafely(viewState.contentType)
             binding.inputBodyContent.rawString = viewState.bodyContent
             binding.parameterList.visible = viewState.parameterListVisible
@@ -266,10 +267,10 @@ class RequestBodyActivity : BaseActivity() {
     companion object {
 
         private val REQUEST_BODY_TYPES = listOf(
-            Shortcut.REQUEST_BODY_TYPE_FORM_DATA to R.string.request_body_option_form_data,
-            Shortcut.REQUEST_BODY_TYPE_X_WWW_FORM_URLENCODE to R.string.request_body_option_x_www_form_urlencoded,
-            Shortcut.REQUEST_BODY_TYPE_CUSTOM_TEXT to R.string.request_body_option_custom_text,
-            Shortcut.REQUEST_BODY_TYPE_FILE to R.string.request_body_option_file,
+            RequestBodyType.CUSTOM_TEXT to R.string.request_body_option_custom_text,
+            RequestBodyType.FORM_DATA to R.string.request_body_option_form_data,
+            RequestBodyType.X_WWW_FORM_URLENCODE to R.string.request_body_option_x_www_form_urlencoded,
+            RequestBodyType.FILE to R.string.request_body_option_file,
         )
 
         private val CONTENT_TYPE_SUGGESTIONS = listOf(

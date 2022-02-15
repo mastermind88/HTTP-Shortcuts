@@ -2,6 +2,7 @@ package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
+import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.extensions.mapFor
@@ -56,7 +57,7 @@ class CurlExporter(val context: Context) {
                 usesBinaryData()
             }
             .mapIf(shortcut.usesRequestParameters()) {
-                if (shortcut.requestBodyType == Shortcut.REQUEST_BODY_TYPE_FORM_DATA) {
+                if (shortcut.bodyType == RequestBodyType.FORM_DATA) {
                     isFormData()
                         .mapFor(shortcut.parameters) { parameter ->
                             if (parameter.isFileParameter || parameter.isFilesParameter) {

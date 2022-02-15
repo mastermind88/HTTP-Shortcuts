@@ -23,6 +23,7 @@ import ch.rmy.android.http_shortcuts.extensions.observeChecked
 import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
 import ch.rmy.android.http_shortcuts.extensions.setSubtitle
 import ch.rmy.android.http_shortcuts.extensions.setText
+import ch.rmy.android.http_shortcuts.extensions.setTextSafely
 import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.extensions.startActivity
@@ -115,8 +116,8 @@ class AdvancedSettingsActivity : BaseActivity() {
             binding.inputAcceptCookies.isChecked = viewState.acceptCookies
             binding.inputTimeout.setSubtitle(viewState.timeoutSubtitle)
             binding.inputProxyHost.rawString = viewState.proxyHost
-            binding.inputProxyPort.setText(viewState.proxyPort)
-            binding.inputSsid.setText(viewState.wifiSsid)
+            binding.inputProxyPort.setTextSafely(viewState.proxyPort)
+            binding.inputSsid.setTextSafely(viewState.wifiSsid)
             variablePlaceholderProvider.variables = viewState.variables
         }
         viewModel.events.observe(this, ::handleEvent)
