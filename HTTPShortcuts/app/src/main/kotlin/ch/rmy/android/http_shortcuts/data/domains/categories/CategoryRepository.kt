@@ -3,9 +3,9 @@ package ch.rmy.android.http_shortcuts.data.domains.categories
 import ch.rmy.android.http_shortcuts.data.BaseRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getCategoryById
-import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -91,5 +91,4 @@ class CategoryRepository : BaseRepository() {
             val oldPosition = categories.indexOf(category)
             categories.move(oldPosition, position)
         }
-
 }

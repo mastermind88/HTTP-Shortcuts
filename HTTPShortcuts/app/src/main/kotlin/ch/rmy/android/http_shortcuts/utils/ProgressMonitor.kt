@@ -61,5 +61,4 @@ class ProgressMonitor {
     private fun onChange() {
         isInProgress = inProgress.isNotEmpty()
     }
-
 }

@@ -60,7 +60,6 @@ class AuthenticationActivity : BaseActivity() {
             }
             .attachTo(destroyer)
 
-
         binding.inputPassword.observeTextChanges()
             .subscribe {
                 viewModel.onPasswordChanged(binding.inputPassword.rawString)

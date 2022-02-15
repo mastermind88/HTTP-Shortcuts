@@ -97,6 +97,5 @@ class WidgetManager {
                 ?.takeUnless {
                     it == AppWidgetManager.INVALID_APPWIDGET_ID
                 }
-
     }
 }

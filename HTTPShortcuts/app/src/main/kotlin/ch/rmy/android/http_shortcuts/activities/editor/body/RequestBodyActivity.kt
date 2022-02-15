@@ -7,7 +7,6 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityRequestBodyBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
@@ -198,10 +197,12 @@ class RequestBodyActivity : BaseActivity() {
             .show(context)
             .subscribe { event ->
                 when (event) {
-                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.onAddFileParameterDialogConfirmed(event.keyName,
+                    is FileParameterDialog.Event.DataChangedEvent -> viewModel.onAddFileParameterDialogConfirmed(
+                        event.keyName,
                         event.fileName,
-                        multiple)
-                    else -> Completable.complete()
+                        multiple,
+                    )
+                    is FileParameterDialog.Event.DataRemovedEvent -> Unit
                 }
             }
             .attachTo(destroyer)

@@ -23,9 +23,11 @@ class DeepLinkViewModel(application: Application) : BaseViewModel<Unit>(applicat
 
     fun initialize(url: Uri?) {
         if (url == null) {
-            showMessageDialog(Localizable.create { context ->
-                HTMLUtil.format(context.getString(R.string.instructions_deep_linking, EXAMPLE_URL))
-            })
+            showMessageDialog(
+                Localizable.create { context ->
+                    HTMLUtil.format(context.getString(R.string.instructions_deep_linking, EXAMPLE_URL))
+                }
+            )
             return
         }
         this.url = url

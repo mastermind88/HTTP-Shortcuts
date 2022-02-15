@@ -116,5 +116,4 @@ class AuthenticationViewModel(application: Application) : BaseViewModel<Authenti
         private fun isTokenVisible(authenticationMethod: String) =
             authenticationMethod == Shortcut.AUTHENTICATION_BEARER
     }
-
 }

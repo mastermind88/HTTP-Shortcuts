@@ -141,9 +141,11 @@ class AdvancedSettingsViewModel(application: Application) : BaseViewModel<Advanc
     }
 
     fun onTimeoutButtonClicked() {
-        emitEvent(AdvancedSettingsEvent.ShowTimeoutDialog(currentViewState.timeout) { duration ->
-            DurationLocalizable(duration)
-        })
+        emitEvent(
+            AdvancedSettingsEvent.ShowTimeoutDialog(currentViewState.timeout) { duration ->
+                DurationLocalizable(duration)
+            }
+        )
     }
 
     fun onBackPressed() {

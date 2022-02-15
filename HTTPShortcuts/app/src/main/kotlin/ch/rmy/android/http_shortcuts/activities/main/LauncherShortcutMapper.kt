@@ -16,5 +16,4 @@ class LauncherShortcutMapper {
             .map { shortcut ->
                 shortcut.toLauncherShortcut()
             }
-
 }

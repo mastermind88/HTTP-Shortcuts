@@ -6,13 +6,13 @@ import android.content.Intent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.extensions.attachTo
 import ch.rmy.android.http_shortcuts.extensions.context
 import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.extensions.toLocalizable
-import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 import ch.rmy.android.http_shortcuts.utils.text.QuantityStringLocalizable
@@ -60,15 +60,17 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
 
     private fun showContextMenu(categoryId: String) {
         val category = getCategory(categoryId) ?: return
-        emitEvent(CategoriesEvent.ShowContextMenu(
-            categoryId = category.id,
-            title = category.name.toLocalizable(),
-            hideOptionVisible = !category.hidden && categories.count { !it.hidden } > 1,
-            showOptionVisible = category.hidden,
-            changeLayoutTypeOptionVisible = !category.hidden,
-            placeOnHomeScreenOptionVisible = !category.hidden && launcherShortcutManager.supportsPinning(context),
-            deleteOptionVisible = category.hidden || categories.count { !it.hidden } > 1,
-        ))
+        emitEvent(
+            CategoriesEvent.ShowContextMenu(
+                categoryId = category.id,
+                title = category.name.toLocalizable(),
+                hideOptionVisible = !category.hidden && categories.count { !it.hidden } > 1,
+                showOptionVisible = category.hidden,
+                changeLayoutTypeOptionVisible = !category.hidden,
+                placeOnHomeScreenOptionVisible = !category.hidden && launcherShortcutManager.supportsPinning(context),
+                deleteOptionVisible = category.hidden || categories.count { !it.hidden } > 1,
+            )
+        )
     }
 
     private fun getCategory(categoryId: String) =
@@ -148,7 +150,7 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
     }
 
     fun onLayoutTypeChanged(categoryId: String, layoutType: CategoryLayoutType) {
-        performOperation(categoryRepository.setLayoutType(categoryId, layoutType)){
+        performOperation(categoryRepository.setLayoutType(categoryId, layoutType)) {
             hasChanged = true
             showSnackbar(R.string.message_layout_type_changed)
         }
@@ -186,6 +188,4 @@ class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesVi
                 )
             }
     }
-
 }
-

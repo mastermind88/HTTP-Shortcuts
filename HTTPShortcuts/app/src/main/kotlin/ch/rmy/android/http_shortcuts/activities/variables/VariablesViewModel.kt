@@ -60,19 +60,21 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
     }
 
     fun onCreateButtonClicked() {
-        emitEvent(VariablesEvent.ShowCreationDialog(
-            VariableTypeMappings.TYPES.flatMap { typeMapping ->
-                listOf<VariablesEvent.ShowCreationDialog.VariableTypeOption>(
-                    VariablesEvent.ShowCreationDialog.VariableTypeOption.Variable(
-                        name = StringResLocalizable(typeMapping.name),
-                        type = typeMapping.type,
+        emitEvent(
+            VariablesEvent.ShowCreationDialog(
+                VariableTypeMappings.TYPES.flatMap { typeMapping ->
+                    listOf<VariablesEvent.ShowCreationDialog.VariableTypeOption>(
+                        VariablesEvent.ShowCreationDialog.VariableTypeOption.Variable(
+                            name = StringResLocalizable(typeMapping.name),
+                            type = typeMapping.type,
+                        )
                     )
-                )
-                    .mapIf(typeMapping.type == VariableType.CONSTANT) {
-                        plusElement(VariablesEvent.ShowCreationDialog.VariableTypeOption.Separator)
-                    }
-            }
-        ))
+                        .mapIf(typeMapping.type == VariableType.CONSTANT) {
+                            plusElement(VariablesEvent.ShowCreationDialog.VariableTypeOption.Separator)
+                        }
+                }
+            )
+        )
     }
 
     fun onHelpButtonClicked() {
@@ -132,10 +134,12 @@ class VariablesViewModel(application: Application) : BaseViewModel<VariablesView
     fun onDeletionOptionSelected(variableId: String) {
         getShortcutNamesWhereVariableIsInUse(variableId)
             .subscribe { shortcutNames ->
-                emitEvent(VariablesEvent.ShowDeletionDialog(
-                    variableId = variableId,
-                    message = getDeletionMessage(shortcutNames),
-                ))
+                emitEvent(
+                    VariablesEvent.ShowDeletionDialog(
+                        variableId = variableId,
+                        message = getDeletionMessage(shortcutNames),
+                    )
+                )
             }
             .attachTo(destroyer)
     }

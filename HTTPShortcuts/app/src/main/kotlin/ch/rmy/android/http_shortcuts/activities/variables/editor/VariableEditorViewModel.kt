@@ -125,13 +125,15 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
     // fun hasChanges(): Boolean = !variable.isSameAs(getDetachedVariable(variableId))
 
     private fun showDiscardDialog() {
-        emitEvent(ViewModelEvent.ShowDialog { context ->
-            DialogBuilder(context)
-                .message(R.string.confirm_discard_changes_message)
-                .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
-                .negative(R.string.dialog_cancel)
-                .showIfPossible()
-        })
+        emitEvent(
+            ViewModelEvent.ShowDialog { context ->
+                DialogBuilder(context)
+                    .message(R.string.confirm_discard_changes_message)
+                    .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
+                    .negative(R.string.dialog_cancel)
+                    .showIfPossible()
+            }
+        )
     }
 
     private fun onDiscardDialogConfirmed() {

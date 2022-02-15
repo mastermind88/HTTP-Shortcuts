@@ -155,5 +155,4 @@ object LauncherShortcutManager {
             )
             .setIcon(IconUtil.getIcon(context, ShortcutIcon.BuiltInIcon("flat_grey_folder"))) // TODO
             .build()
-
 }

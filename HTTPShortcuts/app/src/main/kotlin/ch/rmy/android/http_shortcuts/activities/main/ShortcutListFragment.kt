@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseFragment
 import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.databinding.FragmentListBinding
 import ch.rmy.android.http_shortcuts.dialogs.CurlExportDialog
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
@@ -27,11 +30,8 @@ import ch.rmy.android.http_shortcuts.extensions.showToast
 import ch.rmy.android.http_shortcuts.extensions.startActivity
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.import_export.ExportUI
-import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
-import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 class ShortcutListFragment : BaseFragment<FragmentListBinding>() {

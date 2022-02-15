@@ -35,5 +35,4 @@ object SnackbarManager {
     }
 
     private data class SnackbarMessage(val message: CharSequence, val long: Boolean)
-
 }

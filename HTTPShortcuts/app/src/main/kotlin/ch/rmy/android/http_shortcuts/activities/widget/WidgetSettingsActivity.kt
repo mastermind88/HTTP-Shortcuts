@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.widget
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -37,7 +36,6 @@ class WidgetSettingsActivity : BaseActivity() {
             shortcutName = intent.getStringExtra(EXTRA_SHORTCUT_NAME)!!,
             shortcutIcon = ShortcutIcon.fromName(intent.getStringExtra(EXTRA_SHORTCUT_ICON)!!),
         )
-
     }
 
     private fun initUserInputBindings() {

@@ -102,13 +102,15 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<GlobalS
 
     fun onBackPressed() {
         if (currentViewState.saveButtonVisible) {
-            emitEvent(ViewModelEvent.ShowDialog { context ->
-                DialogBuilder(context)
-                    .message(R.string.confirm_discard_changes_message)
-                    .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
-                    .negative(R.string.dialog_cancel)
-                    .showIfPossible()
-            })
+            emitEvent(
+                ViewModelEvent.ShowDialog { context ->
+                    DialogBuilder(context)
+                        .message(R.string.confirm_discard_changes_message)
+                        .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
+                        .negative(R.string.dialog_cancel)
+                        .showIfPossible()
+                }
+            )
         } else {
             finish()
         }

@@ -6,10 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseAdapter
-import ch.rmy.android.http_shortcuts.activities.variables.VariableAdapter
-import ch.rmy.android.http_shortcuts.activities.variables.VariableListItem
 import ch.rmy.android.http_shortcuts.databinding.ListEmptyItemBinding
-import ch.rmy.android.http_shortcuts.databinding.ListItemVariableBinding
 import ch.rmy.android.http_shortcuts.extensions.color
 import ch.rmy.android.http_shortcuts.extensions.setText
 import io.reactivex.Observable
@@ -85,5 +82,4 @@ abstract class BaseShortcutAdapter : BaseAdapter<ShortcutListItem>() {
         private const val VIEW_TYPE_SHORTCUT = 1
         private const val VIEW_TYPE_EMPTY_STATE = 2
     }
-
 }

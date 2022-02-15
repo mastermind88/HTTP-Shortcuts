@@ -146,5 +146,4 @@ class ShortcutRepository : BaseRepository() {
                 .findFirst()
                 ?.name = name
         }
-
 }

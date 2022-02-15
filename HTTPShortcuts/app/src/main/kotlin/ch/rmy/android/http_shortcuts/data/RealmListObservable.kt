@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.data
 import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import io.realm.RealmList
 import io.realm.RealmObject
-import kotlin.reflect.KFunction1
 
 class RealmListObservable<T : RealmObject>(
     realmFactory: RealmFactory,
@@ -14,6 +13,9 @@ class RealmListObservable<T : RealmObject>(
     private var list: RealmList<T>? = null
 
     override fun registerChangeListener(realmContext: RealmContext, onDataChanged: (List<T>) -> Unit) {
+        if (list != null) {
+            throw IllegalStateException("RealmListObservable is already subscribed to.")
+        }
         list = query.invoke(realmContext)
             .apply {
                 processData(this, onDataChanged)
@@ -34,5 +36,4 @@ class RealmListObservable<T : RealmObject>(
         list?.removeAllChangeListeners()
         list = null
     }
-
 }

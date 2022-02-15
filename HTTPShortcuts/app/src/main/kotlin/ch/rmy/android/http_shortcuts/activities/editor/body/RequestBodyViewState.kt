@@ -1,7 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.editor.body
 
 import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
 
 data class RequestBodyViewState(
@@ -15,8 +14,8 @@ data class RequestBodyViewState(
         get() = parameters.size > 1
 
     val parameterListVisible: Boolean
-        get() = requestBodyType == RequestBodyType.FORM_DATA
-            || requestBodyType == RequestBodyType.X_WWW_FORM_URLENCODE
+        get() = requestBodyType == RequestBodyType.FORM_DATA ||
+            requestBodyType == RequestBodyType.X_WWW_FORM_URLENCODE
 
     val addParameterButtonVisible: Boolean
         get() = parameterListVisible

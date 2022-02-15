@@ -160,5 +160,4 @@ class ScriptingViewModel(application: Application) : BaseViewModel<ScriptingView
             R.string.placeholder_javascript_code_before
         }
     }
-
 }

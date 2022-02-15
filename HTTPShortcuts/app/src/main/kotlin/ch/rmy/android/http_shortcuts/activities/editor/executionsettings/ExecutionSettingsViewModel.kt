@@ -79,9 +79,11 @@ class ExecutionSettingsViewModel(application: Application) : BaseViewModel<Execu
     }
 
     fun onDelayButtonClicked() {
-        emitEvent(ExecutionSettingsEvent.ShowDelayDialog(currentViewState.delay) { duration ->
-            DurationLocalizable(duration)
-        })
+        emitEvent(
+            ExecutionSettingsEvent.ShowDelayDialog(currentViewState.delay) { duration ->
+                DurationLocalizable(duration)
+            }
+        )
     }
 
     fun onBackPressed() {

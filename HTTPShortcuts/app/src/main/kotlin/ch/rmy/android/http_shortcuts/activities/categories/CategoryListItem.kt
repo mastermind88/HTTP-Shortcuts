@@ -1,7 +1,7 @@
 package ch.rmy.android.http_shortcuts.activities.categories
 
-import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
+import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 data class CategoryListItem(

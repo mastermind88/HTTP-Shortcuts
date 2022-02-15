@@ -99,5 +99,4 @@ class VariableRepository : BaseRepository() {
                     deleteFromRealm()
                 }
         }
-
 }

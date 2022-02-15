@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.TextView
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 
 class ShortcutInfoDialog(
     private val context: Context,

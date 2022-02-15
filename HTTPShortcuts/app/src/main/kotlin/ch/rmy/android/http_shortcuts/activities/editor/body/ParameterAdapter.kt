@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseAdapter
-import ch.rmy.android.http_shortcuts.activities.categories.CategoryAdapter
 import ch.rmy.android.http_shortcuts.databinding.ListEmptyItemBinding
 import ch.rmy.android.http_shortcuts.databinding.ListItemParameterBinding
 import ch.rmy.android.http_shortcuts.extensions.color

@@ -11,5 +11,5 @@ fun Shortcut.toLauncherShortcut() =
     LauncherShortcut(
         id = id,
         name = name,
-        icon = icon
+        icon = icon,
     )

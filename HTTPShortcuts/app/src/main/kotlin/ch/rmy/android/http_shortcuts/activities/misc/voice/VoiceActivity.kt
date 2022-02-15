@@ -18,7 +18,8 @@ class VoiceActivity : BaseActivity(), Entrypoint {
         }
 
         initViewModelBindings()
-        viewModel.initialize(intent.getStringExtra(SearchManager.QUERY)) }
+        viewModel.initialize(intent.getStringExtra(SearchManager.QUERY))
+    }
 
     private fun initViewModelBindings() {
         viewModel.events.observe(this, ::handleEvent)

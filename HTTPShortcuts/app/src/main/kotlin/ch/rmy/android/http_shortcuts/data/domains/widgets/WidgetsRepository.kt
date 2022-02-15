@@ -48,5 +48,4 @@ class WidgetsRepository : BaseRepository() {
                 .findAll()
                 .deleteAllFromRealm()
         }
-
 }

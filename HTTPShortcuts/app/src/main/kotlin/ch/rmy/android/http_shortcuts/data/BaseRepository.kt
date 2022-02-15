@@ -52,5 +52,4 @@ abstract class BaseRepository {
             }
         }
             .subscribeOn(Schedulers.single())
-
 }

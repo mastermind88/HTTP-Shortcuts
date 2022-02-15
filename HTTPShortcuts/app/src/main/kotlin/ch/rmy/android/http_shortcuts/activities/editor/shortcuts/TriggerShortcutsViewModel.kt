@@ -101,13 +101,15 @@ class TriggerShortcutsViewModel(application: Application) : BaseViewModel<Trigge
     }
 
     private fun showNoShortcutsError() {
-        emitEvent(ViewModelEvent.ShowDialog { context ->
-            DialogBuilder(context)
-                .title(R.string.title_add_trigger_shortcut)
-                .message(R.string.error_add_trigger_shortcut_no_shortcuts)
-                .positive(R.string.dialog_ok)
-                .showIfPossible()
-        })
+        emitEvent(
+            ViewModelEvent.ShowDialog { context ->
+                DialogBuilder(context)
+                    .title(R.string.title_add_trigger_shortcut)
+                    .message(R.string.error_add_trigger_shortcut_no_shortcuts)
+                    .positive(R.string.dialog_ok)
+                    .showIfPossible()
+            }
+        )
     }
 
     fun onAddShortcutDialogConfirmed(shortcutId: String) {

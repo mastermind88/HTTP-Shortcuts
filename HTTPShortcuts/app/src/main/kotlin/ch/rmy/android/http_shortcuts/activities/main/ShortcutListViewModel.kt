@@ -12,6 +12,8 @@ import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExec
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.domains.widgets.WidgetsRepository
+import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
+import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
@@ -27,8 +29,6 @@ import ch.rmy.android.http_shortcuts.extensions.type
 import ch.rmy.android.http_shortcuts.import_export.CurlExporter
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
-import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
-import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.Settings
 import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 import ch.rmy.android.http_shortcuts.variables.VariableManager
@@ -221,12 +221,14 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
 
     private fun showContextMenu(shortcutId: String) {
         val shortcut = getShortcutById(shortcutId) ?: return
-        emitEvent(ShortcutListEvent.ShowContextMenu(
-            shortcutId,
-            title = shortcut.name,
-            isPending = pendingShortcuts.any { it.shortcutId == shortcut.id },
-            isMovable = canMoveWithinCategory() || canMoveAcrossCategories(),
-        ))
+        emitEvent(
+            ShortcutListEvent.ShowContextMenu(
+                shortcutId,
+                title = shortcut.name,
+                isPending = pendingShortcuts.any { it.shortcutId == shortcut.id },
+                isMovable = canMoveWithinCategory() || canMoveAcrossCategories(),
+            )
+        )
     }
 
     private fun canMoveWithinCategory() =
@@ -346,36 +348,42 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
 
     private fun showFileExportDialog(shortcutId: String) {
         val shortcut = getShortcutById(shortcutId) ?: return
-        emitEvent(ShortcutListEvent.ShowFileExportDialog(
-            shortcutId,
-            format = getPreferredExportFormat(),
-            variableIds = getVariableIdsRequiredForExport(shortcut),
-        ))
+        emitEvent(
+            ShortcutListEvent.ShowFileExportDialog(
+                shortcutId,
+                format = getPreferredExportFormat(),
+                variableIds = getVariableIdsRequiredForExport(shortcut),
+            )
+        )
     }
 
     fun onExportDestinationSelected(uri: Uri) {
         val shortcut = exportingShortcutId?.let(::getShortcutById) ?: return
         exportingShortcutId = null
-        emitEvent(ShortcutListEvent.StartExport(
-            shortcutId = shortcut.id,
-            uri = uri,
-            format = getPreferredExportFormat(),
-            variableIds = getVariableIdsRequiredForExport(shortcut),
-        ))
+        emitEvent(
+            ShortcutListEvent.StartExport(
+                shortcutId = shortcut.id,
+                uri = uri,
+                format = getPreferredExportFormat(),
+                variableIds = getVariableIdsRequiredForExport(shortcut),
+            )
+        )
     }
 
     private fun getPreferredExportFormat() =
         if (settings.useLegacyExportFormat) ExportFormat.LEGACY_JSON else ExportFormat.ZIP
 
     fun onMoveToCategoryOptionSelected(shortcutId: String) {
-        emitEvent(ShortcutListEvent.ShowMoveToCategoryDialog(
-            shortcutId,
-            categoryOptions = categories
-                .filter { it.id != category.id }
-                .map { category ->
-                    ShortcutListEvent.ShowMoveToCategoryDialog.CategoryOption(category.id, category.name)
-                }
-        ))
+        emitEvent(
+            ShortcutListEvent.ShowMoveToCategoryDialog(
+                shortcutId,
+                categoryOptions = categories
+                    .filter { it.id != category.id }
+                    .map { category ->
+                        ShortcutListEvent.ShowMoveToCategoryDialog.CategoryOption(category.id, category.name)
+                    }
+            )
+        )
     }
 
     fun onMoveTargetCategorySelected(shortcutId: String, categoryId: String) {

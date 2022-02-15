@@ -17,7 +17,6 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
-import java.lang.IllegalStateException
 
 abstract class BaseViewModel<ViewState : Any>(application: Application) : AndroidViewModel(application) {
 
@@ -75,7 +74,6 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
     }
 
     protected open fun onInitialized() {
-
     }
 
     protected abstract fun initViewState(): ViewState

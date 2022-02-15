@@ -2,7 +2,6 @@ package ch.rmy.android.http_shortcuts.scheduling
 
 import android.content.Context
 import androidx.work.RxWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory

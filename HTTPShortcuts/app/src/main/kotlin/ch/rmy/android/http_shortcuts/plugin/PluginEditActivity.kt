@@ -6,7 +6,6 @@ import android.os.Bundle
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.Entrypoint
 import ch.rmy.android.http_shortcuts.activities.main.MainActivity
-import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.extensions.startActivity
 import com.joaomgcd.taskerpluginlibrary.config.TaskerPluginConfig

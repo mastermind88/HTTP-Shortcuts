@@ -29,5 +29,4 @@ class DurationLocalizable(private val duration: Duration) : Localizable {
             context.resources.getQuantityString(R.plurals.seconds, seconds, seconds)
         }
     }
-
 }

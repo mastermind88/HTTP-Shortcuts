@@ -7,7 +7,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.realm.Realm
 import io.realm.RealmObject
-import kotlin.reflect.KFunction1
 
 abstract class RealmObservable<T : RealmObject>(
     private val realmFactory: RealmFactory,

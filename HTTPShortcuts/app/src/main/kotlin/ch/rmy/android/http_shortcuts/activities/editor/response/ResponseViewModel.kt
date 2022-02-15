@@ -50,9 +50,12 @@ class ResponseViewModel(application: Application) : BaseViewModel<ResponseViewSt
     }
 
     private fun getSuccessMessageHint(shortcut: Shortcut): Localizable =
-        StringResLocalizable(R.string.executed, Localizable.create { context ->
-            shortcut.name.ifEmpty { context.getString(R.string.shortcut_safe_name) }
-        })
+        StringResLocalizable(
+            R.string.executed,
+            Localizable.create { context ->
+                shortcut.name.ifEmpty { context.getString(R.string.shortcut_safe_name) }
+            },
+        )
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
@@ -110,5 +113,4 @@ class ResponseViewModel(application: Application) : BaseViewModel<ResponseViewSt
             finish()
         }
     }
-
 }

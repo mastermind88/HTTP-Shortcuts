@@ -3,14 +3,9 @@ package ch.rmy.android.http_shortcuts.import_export
 import android.content.Context
 import android.net.Uri
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
-import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.migration.ImportMigrator
 import ch.rmy.android.http_shortcuts.data.migration.ImportVersionMismatchException
-import ch.rmy.android.http_shortcuts.data.models.Base
-import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.isWebUrl
 import ch.rmy.android.http_shortcuts.extensions.logInfo
 import ch.rmy.android.http_shortcuts.utils.FileUtil
@@ -23,7 +18,6 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
-import io.realm.Realm
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
@@ -112,7 +106,6 @@ class Importer(private val context: Context) {
             context.contentResolver.openInputStream(uri)
                 ?: throw IOException("Failed to open input stream")
         }
-
 
     private fun handleError(error: Throwable): Throwable =
         getHumanReadableErrorMessage(error)

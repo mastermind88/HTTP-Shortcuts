@@ -63,6 +63,7 @@ abstract class BaseAdapter<T : Any> : RecyclerView.Adapter<RecyclerView.ViewHold
                 override fun areContentsTheSame(oldItem: T, newItem: T): Boolean =
                     this@BaseAdapter.areItemContentsTheSame(oldItem, newItem)
             },
-        ).build()
+        )
+            .build(),
     )
 }

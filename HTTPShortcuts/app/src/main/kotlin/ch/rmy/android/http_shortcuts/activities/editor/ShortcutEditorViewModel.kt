@@ -349,13 +349,15 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     }
 
     private fun showDiscardDialog() {
-        emitEvent(ViewModelEvent.ShowDialog { context ->
-            DialogBuilder(context)
-                .message(R.string.confirm_discard_changes_message)
-                .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
-                .negative(R.string.dialog_cancel)
-                .showIfPossible()
-        })
+        emitEvent(
+            ViewModelEvent.ShowDialog { context ->
+                DialogBuilder(context)
+                    .message(R.string.confirm_discard_changes_message)
+                    .positive(R.string.dialog_discard) { onDiscardDialogConfirmed() }
+                    .negative(R.string.dialog_cancel)
+                    .showIfPossible()
+            }
+        )
     }
 
     private fun onDiscardDialogConfirmed() {
@@ -386,13 +388,17 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     }
 
     fun onScriptingButtonClicked() {
-        openActivity(ScriptingActivity.IntentBuilder()
-            .shortcutId(shortcutId))
+        openActivity(
+            ScriptingActivity.IntentBuilder()
+                .shortcutId(shortcutId)
+        )
     }
 
     fun onTriggerShortcutsButtonClicked() {
-        openActivity(TriggerShortcutsActivity.IntentBuilder()
-            .shortcutId(shortcutId))
+        openActivity(
+            TriggerShortcutsActivity.IntentBuilder()
+                .shortcutId(shortcutId)
+        )
     }
 
     fun onExecutionSettingsButtonClicked() {

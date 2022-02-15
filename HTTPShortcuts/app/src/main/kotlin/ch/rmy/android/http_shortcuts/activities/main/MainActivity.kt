@@ -19,6 +19,7 @@ import ch.rmy.android.http_shortcuts.activities.misc.CurlImportActivity
 import ch.rmy.android.http_shortcuts.activities.settings.ImportExportActivity
 import ch.rmy.android.http_shortcuts.activities.settings.SettingsActivity
 import ch.rmy.android.http_shortcuts.activities.widget.WidgetSettingsActivity
+import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.databinding.ActivityMainBinding
 import ch.rmy.android.http_shortcuts.dialogs.ChangeLogDialog
@@ -36,7 +37,6 @@ import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
 import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
-import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.utils.text.Localizable
 import ch.rmy.android.http_shortcuts.widget.WidgetManager
 import ch.rmy.curlcommand.CurlCommand

@@ -51,6 +51,5 @@ class WidgetSettingsViewModel(application: Application) : BaseViewModel<WidgetSe
                 .putExtra(WidgetSettingsActivity.EXTRA_SHOW_LABEL, currentViewState.showLabel)
                 .putExtra(WidgetSettingsActivity.EXTRA_LABEL_COLOR, currentViewState.labelColorFormatted)
         )
-
     }
 }

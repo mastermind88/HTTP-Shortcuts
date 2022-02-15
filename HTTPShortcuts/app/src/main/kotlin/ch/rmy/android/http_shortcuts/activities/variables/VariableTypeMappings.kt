@@ -3,7 +3,6 @@ package ch.rmy.android.http_shortcuts.activities.variables
 import androidx.annotation.StringRes
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
-import ch.rmy.android.http_shortcuts.data.models.Variable
 
 object VariableTypeMappings {
 

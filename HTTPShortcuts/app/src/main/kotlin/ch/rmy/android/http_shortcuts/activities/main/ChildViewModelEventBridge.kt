@@ -1,6 +1,5 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import com.victorrendina.rxqueue2.QueueSubject
 import io.reactivex.Observable
 
