@@ -153,7 +153,7 @@ class DisplayResponseActivity : BaseActivity() {
 
     private fun displayImage() {
         val binding = applyBinding(ActivityDisplayResponseImageBinding.inflate(layoutInflater))
-        binding.responseImage.loadImage(responseFileUri!!)
+        binding.responseImage.loadImage(responseFileUri!!, preventMemoryCache = true)
     }
 
     private fun displayAsPlainText(text: String, italic: Boolean = false) {

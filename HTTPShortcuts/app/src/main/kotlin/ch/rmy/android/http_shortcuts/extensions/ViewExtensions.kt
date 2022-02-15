@@ -151,13 +151,15 @@ val Toolbar.titleView: TextView?
         return null
     }
 
-fun ImageView.loadImage(uri: Uri) {
+fun ImageView.loadImage(uri: Uri, preventMemoryCache: Boolean = false) {
     Picasso.get()
         .load(uri)
         .noFade()
         .placeholder(R.drawable.image_placeholder)
         .networkPolicy(NetworkPolicy.NO_CACHE)
-        .memoryPolicy(MemoryPolicy.NO_CACHE)
+        .mapIf(preventMemoryCache) {
+            memoryPolicy(MemoryPolicy.NO_CACHE)
+        }
         .error(R.drawable.bitsies_cancel)
         .into(this)
 }

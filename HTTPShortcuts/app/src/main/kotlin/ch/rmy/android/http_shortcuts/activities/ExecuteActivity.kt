@@ -626,7 +626,7 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
                     .let { builder ->
                         if (isImage(response?.contentType)) {
                             val imageView = ImageView(context)
-                            imageView.loadImage(response!!.contentFile!!)
+                            imageView.loadImage(response!!.contentFile!!, preventMemoryCache = true)
                             builder.view(imageView)
                         } else {
                             builder.message(HTMLUtil.format(output.ifBlank { getString(R.string.message_blank_response) }))
