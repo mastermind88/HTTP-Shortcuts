@@ -8,6 +8,9 @@ import ch.rmy.android.http_shortcuts.extensions.observe
 
 class DeepLinkActivity : BaseActivity(), Entrypoint {
 
+    override val initializeWithTheme: Boolean
+        get() = false
+
     private val viewModel: DeepLinkViewModel by bindViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {

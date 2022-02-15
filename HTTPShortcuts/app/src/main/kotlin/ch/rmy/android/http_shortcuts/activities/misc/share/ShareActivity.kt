@@ -21,6 +21,9 @@ import io.reactivex.schedulers.Schedulers
 
 class ShareActivity : BaseActivity(), Entrypoint {
 
+    override val initializeWithTheme: Boolean
+        get() = false
+
     private val viewModel: ShareViewModel by bindViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {

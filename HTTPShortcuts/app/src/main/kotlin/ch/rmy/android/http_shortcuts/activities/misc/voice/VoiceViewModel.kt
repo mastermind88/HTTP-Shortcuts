@@ -25,6 +25,7 @@ class VoiceViewModel(application: Application) : BaseViewModel<Unit>(application
             return
         }
         this.shortcutName = shortcutName
+        initialize()
     }
 
     private fun showMessageDialog(message: Localizable) {

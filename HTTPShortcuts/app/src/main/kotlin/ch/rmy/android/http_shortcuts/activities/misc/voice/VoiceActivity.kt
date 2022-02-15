@@ -9,6 +9,9 @@ import ch.rmy.android.http_shortcuts.extensions.observe
 
 class VoiceActivity : BaseActivity(), Entrypoint {
 
+    override val initializeWithTheme: Boolean
+        get() = false
+
     private val viewModel: VoiceViewModel by bindViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
