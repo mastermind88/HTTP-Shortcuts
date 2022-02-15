@@ -74,7 +74,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     private fun getCategoryTabItems() =
         categories
             .mapIf(selectionMode == SelectionMode.NORMAL) {
-                filter { !it.hidden }
+                filterNot { it.hidden }
             }
             .map { category ->
                 CategoryTabItem(
@@ -227,7 +227,9 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
 
     fun onSwitchedToCategory(position: Int) {
         val activateCategoryId = categories
-            .filterNot { it.hidden }
+            .mapIf(selectionMode == SelectionMode.NORMAL) {
+                filterNot { it.hidden }
+            }
             .getOrNull(position)?.id ?: return
         updateViewState {
             copy(activeCategoryId = activateCategoryId)
