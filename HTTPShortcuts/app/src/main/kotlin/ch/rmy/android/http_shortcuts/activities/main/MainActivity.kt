@@ -112,6 +112,7 @@ class MainActivity : BaseActivity(), Entrypoint {
         viewModel.viewState.observe(this) { viewState ->
             setTitle(viewState.toolbarTitleLocalizable)
             adapter.setCategories(viewState.categoryTabItems, viewState.selectionMode)
+            setTabLongPressListener()
             binding.viewPager.currentItem = viewState.activeCategoryIndex
             binding.tabs.visible = viewState.isTabBarVisible
             binding.buttonCreateShortcut.visible = viewState.isCreateButtonVisible
@@ -327,11 +328,6 @@ class MainActivity : BaseActivity(), Entrypoint {
                 }
             }
         super.onBackPressed()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setTabLongPressListener()
     }
 
     private fun setTabLongPressListener() {

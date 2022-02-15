@@ -226,7 +226,9 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     }
 
     fun onSwitchedToCategory(position: Int) {
-        val activateCategoryId = categories.getOrNull(position)?.id ?: return
+        val activateCategoryId = categories
+            .filterNot { it.hidden }
+            .getOrNull(position)?.id ?: return
         updateViewState {
             copy(activeCategoryId = activateCategoryId)
         }
