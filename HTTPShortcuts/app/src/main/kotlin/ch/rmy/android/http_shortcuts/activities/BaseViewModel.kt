@@ -62,14 +62,18 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
 
     protected val destroyer = Destroyer()
 
+    protected var isInitialized: Boolean = false
+        private set
+
     fun initialize(silent: Boolean = false) {
-        if (::currentViewState.isInitialized) {
+        if (isInitialized) {
             return
         }
         currentViewState = initViewState()
         if (!silent) {
             viewStateSubject.onNext(currentViewState)
         }
+        isInitialized = true
         onInitialized()
     }
 

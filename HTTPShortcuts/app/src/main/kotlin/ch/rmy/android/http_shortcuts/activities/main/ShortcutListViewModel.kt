@@ -140,13 +140,13 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
     }
 
     fun onPaused() {
-        if (currentViewState.isInMovingMode) {
+        if (isInitialized && currentViewState.isInMovingMode) {
             disableMovingMode()
         }
     }
 
     fun onBackPressed(): Boolean =
-        if (currentViewState.isInMovingMode) {
+        if (isInitialized && currentViewState.isInMovingMode) {
             disableMovingMode()
             true
         } else {

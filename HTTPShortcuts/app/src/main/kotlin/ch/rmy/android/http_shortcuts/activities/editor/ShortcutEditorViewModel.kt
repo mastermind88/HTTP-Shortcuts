@@ -60,7 +60,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
         color(context, R.color.variable)
     }
 
-    private var isInitialized = false
+    private var initializeCalled = false
     private var isSaving = false
 
     private var categoryId: String? = null
@@ -70,10 +70,10 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     private lateinit var shortcut: Shortcut
 
     fun initialize(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: ShortcutExecutionType) {
-        if (isInitialized) {
+        if (initializeCalled) {
             return
         }
-        isInitialized = true
+        initializeCalled = true
 
         this.categoryId = categoryId
         this.shortcutId = shortcutId

@@ -31,6 +31,7 @@ class DeepLinkViewModel(application: Application) : BaseViewModel<Unit>(applicat
             return
         }
         this.url = url
+        initialize()
     }
 
     private fun showMessageDialog(message: Localizable) {
