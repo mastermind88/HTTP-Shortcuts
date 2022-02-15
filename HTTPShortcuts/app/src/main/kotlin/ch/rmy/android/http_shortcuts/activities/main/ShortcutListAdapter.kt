@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -45,7 +46,9 @@ class ShortcutListAdapter : BaseShortcutAdapter() {
             binding.description.visible = item.description.isNotEmpty()
             binding.icon.setIcon(item.icon)
             binding.waitingIcon.visible = item.isPending
-            binding.name.setTextColor(getPrimaryTextColor(context, item.textColor))
+            val primaryColor = getPrimaryTextColor(context, item.textColor)
+            binding.waitingIcon.imageTintList = ColorStateList.valueOf(primaryColor)
+            binding.name.setTextColor(primaryColor)
             binding.description.setTextColor(getSecondaryTextColor(context, item.textColor))
         }
     }

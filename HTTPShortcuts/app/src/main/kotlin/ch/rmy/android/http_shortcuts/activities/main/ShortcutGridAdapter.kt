@@ -1,5 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -11,6 +12,7 @@ import ch.rmy.android.http_shortcuts.databinding.ListItemVariableBinding
 import ch.rmy.android.http_shortcuts.extensions.consume
 import ch.rmy.android.http_shortcuts.extensions.context
 import ch.rmy.android.http_shortcuts.extensions.setText
+import ch.rmy.android.http_shortcuts.extensions.visible
 
 class ShortcutGridAdapter : BaseShortcutAdapter() {
 
@@ -46,7 +48,10 @@ class ShortcutGridAdapter : BaseShortcutAdapter() {
             shortcutId = item.id
             binding.name.text = item.name
             binding.icon.setIcon(item.icon)
-            binding.name.setTextColor(getPrimaryTextColor(context, item.textColor))
+            binding.waitingIcon.visible = item.isPending
+            val primaryColor = getPrimaryTextColor(context, item.textColor)
+            binding.waitingIcon.imageTintList = ColorStateList.valueOf(primaryColor)
+            binding.name.setTextColor(primaryColor)
         }
     }
 }
