@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import ch.rmy.android.http_shortcuts.Application
+import android.app.Application
 import kotlin.properties.ReadOnlyProperty
 
 inline fun <reified V : ViewModel> FragmentActivity.bindViewModel(): ReadOnlyProperty<FragmentActivity, V> =
@@ -41,4 +41,4 @@ private fun <T, V : ViewModel> bind(clazz: Class<V>, finder: T.() -> ViewModelPr
 
 @Deprecated("Avoid using context in a view model")
 val AndroidViewModel.context: Context
-    get() = getApplication<Application>().context
+    get() = getApplication<Application>().applicationContext

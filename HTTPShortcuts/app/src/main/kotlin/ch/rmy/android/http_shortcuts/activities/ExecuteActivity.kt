@@ -68,6 +68,7 @@ import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.android.http_shortcuts.variables.Variables
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -447,8 +448,11 @@ class ExecuteActivity : BaseActivity(), Entrypoint {
         }
 
     private fun requestPermissionsForWifiCheck() =
-        RxPermissions(this)
-            .request(Manifest.permission.ACCESS_FINE_LOCATION)
+        Observable.defer {
+            RxPermissions(this)
+                .request(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+            .subscribeOn(AndroidSchedulers.mainThread())
             .flatMapCompletable { granted ->
                 if (granted) {
                     Completable.complete()

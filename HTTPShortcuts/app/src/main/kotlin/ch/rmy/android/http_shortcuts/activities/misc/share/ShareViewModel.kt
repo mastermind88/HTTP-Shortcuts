@@ -2,7 +2,7 @@ package ch.rmy.android.http_shortcuts.activities.misc.share
 
 import android.net.Uri
 import androidx.annotation.StringRes
-import ch.rmy.android.http_shortcuts.Application
+import android.app.Application
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
