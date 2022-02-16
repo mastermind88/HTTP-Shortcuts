@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.initialize
 import ch.rmy.android.framework.extensions.mapFor
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.ui.BaseIntentBuilder
@@ -37,7 +38,7 @@ class TriggerShortcutsActivity : BaseActivity() {
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize(currentShortcutId)
+        viewModel.initialize(TriggerShortcutsViewModel.InitData(currentShortcutId))
     }
 
     private fun initViews() {

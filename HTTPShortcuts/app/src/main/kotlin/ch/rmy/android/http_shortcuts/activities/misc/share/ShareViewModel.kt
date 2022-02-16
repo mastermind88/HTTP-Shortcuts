@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.mapFor
-import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
@@ -18,34 +18,29 @@ import ch.rmy.android.http_shortcuts.variables.VariableLookup
 import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 
-class ShareViewModel(application: Application) : BaseViewModel<Unit>(application) {
+class ShareViewModel(application: Application) : BaseViewModel<ShareViewModel.InitData, Unit>(application) {
 
     private val shortcutRepository = ShortcutRepository()
     private val variableRepository = VariableRepository()
 
-    private var initialized = false
-
     private lateinit var shortcuts: List<Shortcut>
     private lateinit var variables: List<Variable>
-    private lateinit var text: String
-    private lateinit var fileUris: List<Uri>
+
+    private val text: String
+        get() = initData.text ?: ""
+    private val fileUris: List<Uri>
+        get() = initData.fileUris
 
     override fun initViewState() = Unit
 
-    fun initialize(text: String?, fileUris: List<Uri>) {
-        if (initialized) {
-            return
-        }
-        initialized = true
-        this.text = text ?: ""
-        this.fileUris = fileUris
+    override fun onInitializationStarted(data: InitData) {
         shortcutRepository.getShortcuts()
             .subscribe { shortcuts ->
                 this.shortcuts = shortcuts
                 variableRepository.getVariables()
                     .subscribe { variables ->
                         this.variables = variables
-                        initialize()
+                        finalizeInitialization()
                     }
                     .attachTo(destroyer)
             }
@@ -152,6 +147,11 @@ class ShareViewModel(application: Application) : BaseViewModel<Unit>(application
     private fun onShortcutSelectionDismissed() {
         finish(skipAnimation = true)
     }
+
+    data class InitData(
+        val text: String?,
+        val fileUris: List<Uri>,
+    )
 
     companion object {
 

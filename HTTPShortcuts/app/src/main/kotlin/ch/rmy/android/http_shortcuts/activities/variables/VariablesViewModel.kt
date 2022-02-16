@@ -3,9 +3,9 @@ package ch.rmy.android.http_shortcuts.activities.variables
 import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.mapIf
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.Localizable
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.variables.editor.VariableEditorActivity
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
@@ -20,7 +20,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-class VariablesViewModel(application: Application) : BaseViewModel<VariablesViewState>(application) {
+class VariablesViewModel(application: Application) : BaseViewModel<Unit, VariablesViewState>(application) {
 
     private val variableRepository = VariableRepository()
     private val shortcutRepository = ShortcutRepository()

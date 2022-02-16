@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.framework.extensions.bindViewModel
 import ch.rmy.android.framework.extensions.consume
+import ch.rmy.android.framework.extensions.initialize
 import ch.rmy.android.framework.extensions.mapIf
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.ui.BaseIntentBuilder

@@ -9,11 +9,11 @@ import ch.rmy.android.framework.extensions.color
 import ch.rmy.android.framework.extensions.context
 import ch.rmy.android.framework.extensions.mapIfNotNull
 import ch.rmy.android.framework.extensions.toLocalizable
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.UUIDUtils.newUUID
 import ch.rmy.android.framework.utils.localization.Localizable
 import ch.rmy.android.framework.utils.localization.QuantityStringLocalizable
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
@@ -47,7 +47,7 @@ import ch.rmy.android.http_shortcuts.variables.Variables
 import ch.rmy.android.http_shortcuts.widget.WidgetManager
 import ch.rmy.curlcommand.CurlCommand
 
-class ShortcutEditorViewModel(application: Application) : BaseViewModel<ShortcutEditorViewState>(application) {
+class ShortcutEditorViewModel(application: Application) : BaseViewModel<ShortcutEditorViewModel.InitData, ShortcutEditorViewState>(application) {
 
     private val shortcutRepository = ShortcutRepository()
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
@@ -60,34 +60,32 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
         color(context, R.color.variable)
     }
 
-    private var initializeCalled = false
     private var isSaving = false
 
-    private var categoryId: String? = null
-    private var shortcutId: String? = null
     private var oldShortcut: Shortcut? = null
-    private lateinit var executionType: ShortcutExecutionType
+
     private lateinit var shortcut: Shortcut
 
-    fun initialize(categoryId: String?, shortcutId: String?, curlCommand: CurlCommand?, executionType: ShortcutExecutionType) {
-        if (initializeCalled) {
-            return
-        }
-        initializeCalled = true
+    private val categoryId
+        get() = initData.categoryId
 
-        this.categoryId = categoryId
-        this.shortcutId = shortcutId
-        this.executionType = executionType
+    private val shortcutId
+        get() = initData.shortcutId
 
-        if (shortcutId == null) {
+    private val executionType
+        get() = initData.executionType
+
+    override fun onInitializationStarted(data: InitData) {
+        super.onInitializationStarted(data)
+        if (data.shortcutId == null) {
             temporaryShortcutRepository.createNewTemporaryShortcut(
                 initialIcon = Icons.getRandomInitialIcon(context),
                 executionType = executionType,
             )
         } else {
-            shortcutRepository.createTemporaryShortcutFromShortcut(shortcutId)
+            shortcutRepository.createTemporaryShortcutFromShortcut(data.shortcutId)
         }
-            .mapIfNotNull(curlCommand) {
+            .mapIfNotNull(data.curlCommand) {
                 andThen(temporaryShortcutRepository.importFromCurl(it))
             }
             .subscribe(
@@ -119,7 +117,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
                 this.shortcut = shortcut
                 if (oldShortcut == null) {
                     oldShortcut = shortcut
-                    initialize(silent = true)
+                    finalizeInitialization(silent = true)
                 }
                 updateViewState {
                     copy(
@@ -408,4 +406,11 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
     fun onAdvancedSettingsButtonClicked() {
         openActivity(AdvancedSettingsActivity.IntentBuilder())
     }
+
+    data class InitData(
+        val categoryId: String?,
+        val shortcutId: String?,
+        val curlCommand: CurlCommand?,
+        val executionType: ShortcutExecutionType,
+    )
 }

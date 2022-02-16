@@ -3,8 +3,8 @@ package ch.rmy.android.http_shortcuts.activities.editor.advancedsettings
 import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.DurationLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.ClientCertParams
@@ -12,7 +12,7 @@ import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-class AdvancedSettingsViewModel(application: Application) : BaseViewModel<AdvancedSettingsViewState>(application) {
+class AdvancedSettingsViewModel(application: Application) : BaseViewModel<Unit, AdvancedSettingsViewState>(application) {
 
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
     private val variableRepository = VariableRepository()

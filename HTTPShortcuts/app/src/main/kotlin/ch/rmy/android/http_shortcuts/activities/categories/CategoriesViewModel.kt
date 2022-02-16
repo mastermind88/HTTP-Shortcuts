@@ -7,9 +7,9 @@ import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.context
 import ch.rmy.android.framework.extensions.move
 import ch.rmy.android.framework.extensions.toLocalizable
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.QuantityStringLocalizable
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
@@ -18,7 +18,7 @@ import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
 
-class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesViewState>(application) {
+class CategoriesViewModel(application: Application) : BaseViewModel<Unit, CategoriesViewState>(application) {
 
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val launcherShortcutManager = LauncherShortcutManager

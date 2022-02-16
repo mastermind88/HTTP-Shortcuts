@@ -4,21 +4,23 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.graphics.Color
-import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 
-class WidgetSettingsViewModel(application: Application) : BaseViewModel<WidgetSettingsViewState>(application) {
+class WidgetSettingsViewModel(application: Application) : BaseViewModel<WidgetSettingsViewModel.InitData, WidgetSettingsViewState>(application) {
 
-    private lateinit var shortcutId: String
-    private lateinit var shortcutName: String
-    private lateinit var shortcutIcon: ShortcutIcon
+    private val shortcutId: String
+        get() = initData.shortcutId
+    private val shortcutName: String
+        get() = initData.shortcutName
+    private val shortcutIcon: ShortcutIcon
+        get() = initData.shortcutIcon
 
-    fun initialize(shortcutId: String, shortcutName: String, shortcutIcon: ShortcutIcon) {
-        this.shortcutId = shortcutId
-        this.shortcutName = shortcutName
-        this.shortcutIcon = shortcutIcon
-        initialize()
-    }
+    data class InitData(
+        val shortcutId: String,
+        val shortcutName: String,
+        val shortcutIcon: ShortcutIcon,
+    )
 
     override fun initViewState() = WidgetSettingsViewState(
         showLabel = true,

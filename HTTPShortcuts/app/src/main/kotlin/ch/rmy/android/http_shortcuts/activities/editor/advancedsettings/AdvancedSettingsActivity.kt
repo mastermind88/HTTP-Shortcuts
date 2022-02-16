@@ -10,6 +10,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.initialize
 import ch.rmy.android.framework.extensions.logException
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.extensions.observeChecked

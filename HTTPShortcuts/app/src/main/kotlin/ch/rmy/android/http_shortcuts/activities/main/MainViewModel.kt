@@ -6,8 +6,8 @@ import android.content.Intent
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.context
 import ch.rmy.android.framework.extensions.mapIf
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.EventBridge
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
@@ -35,7 +35,7 @@ import ch.rmy.curlcommand.CurlCommand
 import io.reactivex.Single
 import org.mindrot.jbcrypt.BCrypt
 
-class MainViewModel(application: Application) : BaseViewModel<MainViewState>(application) {
+class MainViewModel(application: Application) : BaseViewModel<Unit, MainViewState>(application) {
 
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val appRepository: AppRepository = AppRepository()
@@ -61,7 +61,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
         categoryRepository.getCategories()
             .subscribe { categories ->
                 this.categories = categories
-                initialize()
+                finalizeInitialization()
             }
             .attachTo(destroyer)
     }

@@ -4,7 +4,7 @@ import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
 import ch.rmy.android.framework.extensions.move
-import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
@@ -15,9 +15,11 @@ import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getCodeFromTriggeredShortcutIds
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getTriggeredShortcutIdsFromCode
 
-class TriggerShortcutsViewModel(application: Application) : BaseViewModel<TriggerShortcutsViewState>(application) {
+class TriggerShortcutsViewModel(application: Application) :
+    BaseViewModel<TriggerShortcutsViewModel.InitData, TriggerShortcutsViewState>(application) {
 
-    private var currentShortcutId: String? = null
+    private val currentShortcutId
+        get() = initData.currentShortcutId
 
     private var shortcutInitialized = false
     private lateinit var shortcutPlaceholders: List<ShortcutPlaceholder>
@@ -26,11 +28,6 @@ class TriggerShortcutsViewModel(application: Application) : BaseViewModel<Trigge
     private val shortcutRepository = ShortcutRepository()
 
     override fun initViewState() = TriggerShortcutsViewState()
-
-    fun initialize(shortcutId: String?) {
-        currentShortcutId = shortcutId
-        initialize()
-    }
 
     override fun onInitialized() {
         shortcutRepository.getObservableShortcuts()
@@ -129,4 +126,8 @@ class TriggerShortcutsViewModel(application: Application) : BaseViewModel<Trigge
             ?: return
         emitEvent(TriggerShortcutsEvent.ShowRemoveShortcutDialog(shortcutId, shortcutPlaceholder.name))
     }
+
+    data class InitData(
+        val currentShortcutId: String?,
+    )
 }

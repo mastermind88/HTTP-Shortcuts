@@ -5,7 +5,7 @@ import android.text.SpannableStringBuilder
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.color
 import ch.rmy.android.framework.extensions.takeUnlessEmpty
-import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
@@ -19,7 +19,7 @@ import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.Variables
 import io.reactivex.android.schedulers.AndroidSchedulers
 
-class GlobalScriptingViewModel(application: Application) : BaseViewModel<GlobalScriptingViewState>(application) {
+class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, GlobalScriptingViewState>(application) {
 
     private val appRepository = AppRepository()
     private val shortcutRepository = ShortcutRepository()

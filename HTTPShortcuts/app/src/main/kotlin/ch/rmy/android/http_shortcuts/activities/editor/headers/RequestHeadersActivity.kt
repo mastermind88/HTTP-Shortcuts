@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.initialize
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.framework.utils.DragOrderingHelper
@@ -15,7 +16,6 @@ import ch.rmy.android.http_shortcuts.databinding.ActivityRequestHeadersBinding
 import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
-
 class RequestHeadersActivity : BaseActivity() {
 
     private val viewModel: RequestHeadersViewModel by bindViewModel()

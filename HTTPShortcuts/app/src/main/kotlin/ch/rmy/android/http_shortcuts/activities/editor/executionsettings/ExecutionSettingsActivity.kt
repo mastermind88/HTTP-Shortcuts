@@ -6,6 +6,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.initialize
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.extensions.observeChecked
 import ch.rmy.android.framework.extensions.setSubtitle
@@ -23,7 +24,6 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-
 class ExecutionSettingsActivity : BaseActivity() {
 
     private val viewModel: ExecutionSettingsViewModel by bindViewModel()

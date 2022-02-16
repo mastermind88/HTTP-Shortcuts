@@ -1,4 +1,4 @@
-package ch.rmy.android.framework.ui
+package ch.rmy.android.framework.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -7,10 +7,10 @@ import androidx.annotation.UiThread
 import androidx.lifecycle.AndroidViewModel
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.framework.utils.Destroyer
 import ch.rmy.android.framework.utils.ProgressMonitor
 import ch.rmy.android.framework.utils.localization.Localizable
-import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import com.victorrendina.rxqueue2.QueueSubject
 import io.reactivex.Completable
@@ -18,7 +18,10 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
 
-abstract class BaseViewModel<ViewState : Any>(application: Application) : AndroidViewModel(application) {
+abstract class BaseViewModel<InitData : Any, ViewState : Any>(application: Application) : AndroidViewModel(application) {
+
+    protected lateinit var initData: InitData
+        private set
 
     protected val progressMonitor = ProgressMonitor()
 
@@ -62,13 +65,28 @@ abstract class BaseViewModel<ViewState : Any>(application: Application) : Androi
 
     protected val destroyer = Destroyer()
 
+    private var isInitializationStarted = false
+
     protected var isInitialized: Boolean = false
         private set
 
-    fun initialize(silent: Boolean = false) {
-        if (isInitialized) {
+    fun initialize(data: InitData) {
+        if (isInitializationStarted) {
             return
         }
+        this.initData = data
+        isInitializationStarted = true
+        onInitializationStarted(data)
+    }
+
+    /**
+     * Must eventually call finalizeInitialization or terminate the view
+     */
+    protected open fun onInitializationStarted(data: InitData) {
+        finalizeInitialization()
+    }
+
+    protected fun finalizeInitialization(silent: Boolean = false) {
         currentViewState = initViewState()
         if (!silent) {
             viewStateSubject.onNext(currentViewState)

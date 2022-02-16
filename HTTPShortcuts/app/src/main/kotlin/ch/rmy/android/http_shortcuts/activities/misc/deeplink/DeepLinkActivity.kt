@@ -20,7 +20,7 @@ class DeepLinkActivity : BaseActivity(), Entrypoint {
         }
 
         initViewModelBindings()
-        viewModel.initialize(intent.data)
+        viewModel.initialize(DeepLinkViewModel.InitData(intent.data))
     }
 
     private fun initViewModelBindings() {

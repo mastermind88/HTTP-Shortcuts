@@ -3,8 +3,8 @@ package ch.rmy.android.http_shortcuts.activities.variables.editor
 import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.variables.VariableTypeMappings
@@ -14,12 +14,14 @@ import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.variables.Variables
 
-class VariableEditorViewModel(application: Application) : BaseViewModel<VariableEditorViewState>(application) {
+class VariableEditorViewModel(application: Application) : BaseViewModel<VariableEditorViewModel.InitData, VariableEditorViewState>(application) {
 
     private val variableRepository = VariableRepository()
 
-    private var variableId: String? = null
-    private lateinit var variableType: VariableType
+    private val variableId: String?
+        get() = initData.variableId
+    private val variableType: VariableType
+        get() = initData.variableType
 
     private lateinit var variable: Variable
 
@@ -36,23 +38,26 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
             }
         }
 
-    fun initialize(variableId: String?, variableType: VariableType) {
-        this.variableId = variableId
-        this.variableType = variableType
-        if (variableId != null) {
+    data class InitData(
+        val variableId: String?,
+        val variableType: VariableType,
+    )
+
+    override fun onInitializationStarted(data: InitData) {
+        if (data.variableId != null) {
             variableRepository
-                .getVariableById(variableId)
+                .getVariableById(data.variableId)
                 .subscribe(
                     { variable ->
                         this.variable = variable
-                        initialize()
+                        finalizeInitialization()
                     },
                     ::handleInitializationError,
                 )
                 .attachTo(destroyer)
         } else {
             this.variable = Variable()
-            initialize()
+            finalizeInitialization()
         }
     }
 

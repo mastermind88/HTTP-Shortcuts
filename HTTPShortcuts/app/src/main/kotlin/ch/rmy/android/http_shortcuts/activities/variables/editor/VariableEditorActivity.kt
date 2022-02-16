@@ -39,8 +39,10 @@ class VariableEditorActivity : BaseActivity() {
         initUserInputBindings()
         initViewModelBindings()
         viewModel.initialize(
-            variableId = intent.getStringExtra(EXTRA_VARIABLE_ID),
-            variableType = VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE)),
+            VariableEditorViewModel.InitData(
+                variableId = intent.getStringExtra(EXTRA_VARIABLE_ID),
+                variableType = VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE)),
+            ),
         )
     }
 

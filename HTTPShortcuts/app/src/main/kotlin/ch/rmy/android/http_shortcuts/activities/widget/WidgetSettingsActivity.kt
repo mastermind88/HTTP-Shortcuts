@@ -32,9 +32,11 @@ class WidgetSettingsActivity : BaseActivity() {
         initUserInputBindings()
         initViewModelBindings()
         viewModel.initialize(
-            shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID)!!,
-            shortcutName = intent.getStringExtra(EXTRA_SHORTCUT_NAME)!!,
-            shortcutIcon = ShortcutIcon.fromName(intent.getStringExtra(EXTRA_SHORTCUT_ICON)!!),
+            WidgetSettingsViewModel.InitData(
+                shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID)!!,
+                shortcutName = intent.getStringExtra(EXTRA_SHORTCUT_NAME)!!,
+                shortcutIcon = ShortcutIcon.fromName(intent.getStringExtra(EXTRA_SHORTCUT_ICON)!!),
+            ),
         )
     }
 

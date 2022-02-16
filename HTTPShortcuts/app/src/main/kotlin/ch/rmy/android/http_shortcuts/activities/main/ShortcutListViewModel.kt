@@ -7,8 +7,8 @@ import ch.rmy.android.framework.extensions.context
 import ch.rmy.android.framework.extensions.logException
 import ch.rmy.android.framework.extensions.move
 import ch.rmy.android.framework.extensions.toLocalizable
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.EventBridge
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
@@ -36,7 +36,7 @@ import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.curlcommand.CurlConstructor
 
-class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutListViewState>(application) {
+class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, ShortcutListViewState>(application) {
 
     private val appRepository = AppRepository()
     private val shortcutRepository = ShortcutRepository()
@@ -73,7 +73,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
                     recomputeShortcutList()
                 } else {
                     viewModelInitialized = true
-                    initialize()
+                    finalizeInitialization()
                 }
             }
             .attachTo(destroyer)

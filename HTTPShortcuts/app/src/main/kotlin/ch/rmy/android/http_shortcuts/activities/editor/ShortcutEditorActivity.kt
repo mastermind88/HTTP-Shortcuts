@@ -45,12 +45,14 @@ class ShortcutEditorActivity : BaseActivity() {
         initUserInputBindings()
         initViewModelBindings()
         viewModel.initialize(
-            categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID),
-            shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID),
-            curlCommand = intent.getSerializableExtra(EXTRA_CURL_COMMAND) as CurlCommand?,
-            executionType = intent.getStringExtra(EXTRA_EXECUTION_TYPE)
-                ?.let(ShortcutExecutionType::get)
-                ?: ShortcutExecutionType.APP,
+            ShortcutEditorViewModel.InitData(
+                categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID),
+                shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID),
+                curlCommand = intent.getSerializableExtra(EXTRA_CURL_COMMAND) as CurlCommand?,
+                executionType = intent.getStringExtra(EXTRA_EXECUTION_TYPE)
+                    ?.let(ShortcutExecutionType::get)
+                    ?: ShortcutExecutionType.APP,
+            ),
         )
     }
 

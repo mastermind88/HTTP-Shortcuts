@@ -3,8 +3,8 @@ package ch.rmy.android.http_shortcuts.activities.editor.scripting
 import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
-import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
@@ -14,7 +14,7 @@ import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.extensions.type
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 
-class ScriptingViewModel(application: Application) : BaseViewModel<ScriptingViewState>(application) {
+class ScriptingViewModel(application: Application) : BaseViewModel<Unit, ScriptingViewState>(application) {
 
     private val temporaryShortcutRepository = TemporaryShortcutRepository()
     private val shortcutRepository = ShortcutRepository()
