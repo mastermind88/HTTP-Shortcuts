@@ -1,17 +1,18 @@
 package ch.rmy.android.http_shortcuts.data.domains.variables
 
-import ch.rmy.android.http_shortcuts.data.BaseRepository
+import ch.rmy.android.framework.data.BaseRepository
+import ch.rmy.android.framework.extensions.detachFromRealm
+import ch.rmy.android.framework.utils.UUIDUtils.newUUID
+import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getVariableById
 import ch.rmy.android.http_shortcuts.data.domains.getVariableByKeyOrId
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
-class VariableRepository : BaseRepository() {
+class VariableRepository : BaseRepository(RealmFactory.getInstance()) {
 
     fun getVariableById(variableId: String): Single<Variable> =
         queryItem {

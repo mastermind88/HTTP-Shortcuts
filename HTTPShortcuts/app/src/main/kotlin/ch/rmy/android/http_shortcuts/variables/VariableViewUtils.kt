@@ -1,11 +1,11 @@
 package ch.rmy.android.http_shortcuts.variables
 
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.showSoftKeyboard
+import ch.rmy.android.framework.extensions.showToast
+import ch.rmy.android.framework.extensions.toDestroyable
+import ch.rmy.android.framework.utils.Destroyable
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.showSoftKeyboard
-import ch.rmy.android.http_shortcuts.extensions.showToast
-import ch.rmy.android.http_shortcuts.extensions.toDestroyable
-import ch.rmy.android.http_shortcuts.utils.Destroyable
 
 object VariableViewUtils {
 

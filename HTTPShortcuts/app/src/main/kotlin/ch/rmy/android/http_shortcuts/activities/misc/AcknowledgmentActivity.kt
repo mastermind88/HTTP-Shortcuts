@@ -1,12 +1,12 @@
 package ch.rmy.android.http_shortcuts.activities.misc
 
 import android.os.Bundle
+import ch.rmy.android.framework.extensions.showToast
+import ch.rmy.android.framework.extensions.tryOrLog
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.databinding.ActivityAcknowledgmentsBinding
-import ch.rmy.android.http_shortcuts.extensions.showToast
-import ch.rmy.android.http_shortcuts.extensions.tryOrLog
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 
 class AcknowledgmentActivity : BaseActivity() {
 

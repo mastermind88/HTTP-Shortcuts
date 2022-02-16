@@ -3,9 +3,14 @@ package ch.rmy.android.http_shortcuts.activities.main
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.context
+import ch.rmy.android.framework.extensions.mapIf
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.EventBridge
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.activities.categories.CategoriesActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
 import ch.rmy.android.http_shortcuts.activities.misc.CurlImportActivity
@@ -16,19 +21,15 @@ import ch.rmy.android.http_shortcuts.activities.variables.VariablesActivity
 import ch.rmy.android.http_shortcuts.activities.widget.WidgetSettingsActivity
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
+import ch.rmy.android.http_shortcuts.data.dtos.LauncherShortcut
 import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.extensions.toLauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.IntentUtil
-import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 import ch.rmy.android.http_shortcuts.widget.WidgetManager
 import ch.rmy.curlcommand.CurlCommand
 import io.reactivex.Single
@@ -39,7 +40,7 @@ class MainViewModel(application: Application) : BaseViewModel<MainViewState>(app
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val appRepository: AppRepository = AppRepository()
     private val launcherShortcutMapper: LauncherShortcutMapper = LauncherShortcutMapper()
-    private val eventBridge = ChildViewModelEventBridge()
+    private val eventBridge = EventBridge<ChildViewModelEvent>()
 
     private var initialized = false
     private var initialCategoryId: String? = null

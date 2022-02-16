@@ -6,10 +6,11 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.mapIfNotNull
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.activities.main.MainActivity
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.mapIfNotNull
+import ch.rmy.android.http_shortcuts.data.dtos.LauncherShortcut
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 
 object LauncherShortcutManager {

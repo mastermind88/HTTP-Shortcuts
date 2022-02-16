@@ -1,18 +1,18 @@
 package ch.rmy.android.http_shortcuts.activities.editor.response
 
 import android.os.Bundle
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.extensions.observeChecked
+import ch.rmy.android.framework.extensions.observeTextChanges
+import ch.rmy.android.framework.extensions.setHint
+import ch.rmy.android.framework.extensions.visible
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.databinding.ActivityResponseBinding
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.observe
-import ch.rmy.android.http_shortcuts.extensions.observeChecked
-import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.setHint
-import ch.rmy.android.http_shortcuts.extensions.visible
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils
 

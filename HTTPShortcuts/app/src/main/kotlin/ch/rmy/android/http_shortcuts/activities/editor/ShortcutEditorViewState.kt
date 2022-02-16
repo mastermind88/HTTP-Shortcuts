@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.activities.editor
 
+import ch.rmy.android.framework.utils.localization.Localizable
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 data class ShortcutEditorViewState(
     val toolbarTitle: Localizable,

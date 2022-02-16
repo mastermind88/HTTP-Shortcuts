@@ -1,6 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
-import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
+import ch.rmy.android.http_shortcuts.data.dtos.LauncherShortcut
 
 sealed interface ChildViewModelEvent {
     data class MovingModeChanged(val enabled: Boolean) : ChildViewModelEvent

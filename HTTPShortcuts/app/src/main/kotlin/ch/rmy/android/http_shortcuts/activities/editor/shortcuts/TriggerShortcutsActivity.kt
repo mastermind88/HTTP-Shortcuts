@@ -2,19 +2,19 @@ package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.mapFor
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.ui.BaseIntentBuilder
+import ch.rmy.android.framework.utils.DragOrderingHelper
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.databinding.ActivityTriggerShortcutsBinding
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.mapFor
-import ch.rmy.android.http_shortcuts.extensions.observe
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 
 class TriggerShortcutsActivity : BaseActivity() {
 

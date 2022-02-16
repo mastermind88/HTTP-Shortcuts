@@ -1,16 +1,16 @@
 package ch.rmy.android.http_shortcuts.activities.editor.basicsettings
 
 import android.os.Bundle
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.extensions.observeTextChanges
+import ch.rmy.android.framework.extensions.visible
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.databinding.ActivityBasicRequestSettingsBinding
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.observe
-import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.visible
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils.bindVariableViews
 import io.reactivex.android.schedulers.AndroidSchedulers

@@ -1,9 +1,9 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
 import android.net.Uri
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.framework.utils.localization.Localizable
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 abstract class ShortcutListEvent : ViewModelEvent() {
     data class ShowContextMenu(

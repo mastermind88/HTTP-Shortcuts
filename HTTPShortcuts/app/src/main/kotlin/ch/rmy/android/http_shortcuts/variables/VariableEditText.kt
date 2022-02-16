@@ -4,12 +4,12 @@ import android.content.Context
 import android.text.Spannable
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatAutoCompleteTextView
+import ch.rmy.android.framework.extensions.color
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.setTextSafely
+import ch.rmy.android.framework.extensions.showToast
+import ch.rmy.android.framework.utils.ViewUtil.getAttributeValue
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.extensions.color
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.setTextSafely
-import ch.rmy.android.http_shortcuts.extensions.showToast
-import ch.rmy.android.http_shortcuts.utils.ViewUtil.getAttributeValue
 
 class VariableEditText @JvmOverloads constructor(
     context: Context,

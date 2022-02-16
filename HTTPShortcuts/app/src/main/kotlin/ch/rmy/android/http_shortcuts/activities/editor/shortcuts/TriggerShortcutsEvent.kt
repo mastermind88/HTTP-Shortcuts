@@ -1,6 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
 
 abstract class TriggerShortcutsEvent : ViewModelEvent() {

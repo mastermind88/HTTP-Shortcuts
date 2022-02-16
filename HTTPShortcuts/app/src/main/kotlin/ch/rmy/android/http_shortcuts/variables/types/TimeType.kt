@@ -3,10 +3,10 @@ package ch.rmy.android.http_shortcuts.variables.types
 import android.app.TimePickerDialog
 import android.content.Context
 import android.text.format.DateFormat
+import ch.rmy.android.framework.extensions.showIfPossible
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.extensions.cancel
-import ch.rmy.android.http_shortcuts.extensions.showIfPossible
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.text.ParseException

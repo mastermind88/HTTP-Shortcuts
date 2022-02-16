@@ -1,10 +1,10 @@
 package ch.rmy.android.http_shortcuts.activities.misc.deeplink
 
 import android.os.Bundle
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.ui.Entrypoint
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.Entrypoint
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.observe
 
 class DeepLinkActivity : BaseActivity(), Entrypoint {
 

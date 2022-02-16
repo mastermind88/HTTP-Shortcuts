@@ -1,7 +1,9 @@
 package ch.rmy.android.http_shortcuts.data.domains.shortcuts
 
-import ch.rmy.android.http_shortcuts.data.BaseRepository
-import ch.rmy.android.http_shortcuts.data.RealmTransactionContext
+import ch.rmy.android.framework.data.BaseRepository
+import ch.rmy.android.framework.data.RealmTransactionContext
+import ch.rmy.android.framework.extensions.getCaseInsensitive
+import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getTemporaryShortcut
 import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
@@ -10,7 +12,6 @@ import ch.rmy.android.http_shortcuts.data.models.Header
 import ch.rmy.android.http_shortcuts.data.models.Parameter
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.getCaseInsensitive
 import ch.rmy.android.http_shortcuts.http.HttpHeaders
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.curlcommand.CurlCommand
@@ -20,7 +21,7 @@ import io.reactivex.Single
 import java.net.URLDecoder
 import kotlin.time.Duration
 
-class TemporaryShortcutRepository : BaseRepository() {
+class TemporaryShortcutRepository : BaseRepository(RealmFactory.getInstance()) {
 
     fun getObservableTemporaryShortcut(): Observable<Shortcut> =
         observeItem {

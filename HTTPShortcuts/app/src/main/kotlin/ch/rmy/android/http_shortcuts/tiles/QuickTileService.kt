@@ -6,14 +6,14 @@ import android.os.Build
 import android.service.quicksettings.TileService
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
+import ch.rmy.android.framework.extensions.context
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.mapFor
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.mapFor
 import ch.rmy.android.http_shortcuts.utils.ThemeHelper
 
 @RequiresApi(Build.VERSION_CODES.N)

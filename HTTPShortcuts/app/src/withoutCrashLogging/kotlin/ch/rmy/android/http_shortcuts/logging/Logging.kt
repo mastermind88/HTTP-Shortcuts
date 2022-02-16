@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import ch.rmy.android.framework.extensions.showToast
 import ch.rmy.android.http_shortcuts.BuildConfig
-import ch.rmy.android.http_shortcuts.extensions.showToast
 
 object Logging {
 

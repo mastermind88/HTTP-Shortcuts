@@ -1,6 +1,7 @@
 package ch.rmy.android.http_shortcuts.data.domains
 
-import ch.rmy.android.http_shortcuts.data.RealmContext
+import ch.rmy.android.framework.data.RealmContext
+import ch.rmy.android.framework.extensions.mapIfNotNull
 import ch.rmy.android.http_shortcuts.data.models.AppLock
 import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.Category
@@ -8,7 +9,6 @@ import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.data.models.Widget
-import ch.rmy.android.http_shortcuts.extensions.mapIfNotNull
 import io.realm.Case
 import io.realm.RealmQuery
 import io.realm.kotlin.where

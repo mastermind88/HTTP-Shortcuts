@@ -1,7 +1,9 @@
 package ch.rmy.android.http_shortcuts.data.domains.app
 
-import ch.rmy.android.http_shortcuts.data.BaseRepository
-import ch.rmy.android.http_shortcuts.data.RealmTransactionContext
+import ch.rmy.android.framework.data.BaseRepository
+import ch.rmy.android.framework.data.RealmTransactionContext
+import ch.rmy.android.framework.utils.Optional
+import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getAppLock
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.models.AppLock
@@ -9,12 +11,11 @@ import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.Category
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.import_export.Importer
-import ch.rmy.android.http_shortcuts.utils.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
-class AppRepository : BaseRepository() {
+class AppRepository : BaseRepository(RealmFactory.getInstance()) {
 
     fun getBase(): Single<Base> =
         queryItem {

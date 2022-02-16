@@ -2,16 +2,16 @@ package ch.rmy.android.http_shortcuts.activities.settings.globalcode
 
 import android.app.Application
 import android.text.SpannableStringBuilder
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.color
+import ch.rmy.android.framework.extensions.takeUnlessEmpty
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.color
-import ch.rmy.android.http_shortcuts.extensions.takeUnlessEmpty
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholderProvider
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutSpanManager
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs

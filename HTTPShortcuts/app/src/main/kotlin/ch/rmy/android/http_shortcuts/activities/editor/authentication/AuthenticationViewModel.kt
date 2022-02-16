@@ -1,12 +1,12 @@
 package ch.rmy.android.http_shortcuts.activities.editor.authentication
 
 import android.app.Application
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.logException
 
 class AuthenticationViewModel(application: Application) : BaseViewModel<AuthenticationViewState>(application) {
 

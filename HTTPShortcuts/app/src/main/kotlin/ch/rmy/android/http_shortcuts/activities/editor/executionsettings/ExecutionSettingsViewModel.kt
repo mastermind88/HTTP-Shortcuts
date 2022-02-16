@@ -1,14 +1,14 @@
 package ch.rmy.android.http_shortcuts.activities.editor.executionsettings
 
 import android.app.Application
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.DurationLocalizable
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.tiles.QuickSettingsTileManager
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
-import ch.rmy.android.http_shortcuts.utils.text.DurationLocalizable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

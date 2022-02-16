@@ -8,17 +8,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.preference.Preference
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.showSnackbar
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.activities.settings.globalcode.GlobalScriptingActivity
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.showSnackbar
 import ch.rmy.android.http_shortcuts.http.CookieManager
 import ch.rmy.android.http_shortcuts.logging.Logging
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.utils.DarkThemeHelper
 
 class SettingsActivity : BaseActivity() {

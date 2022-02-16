@@ -3,10 +3,10 @@ package ch.rmy.android.http_shortcuts.activities.variables
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import ch.rmy.android.http_shortcuts.activities.BaseAdapter
+import ch.rmy.android.framework.extensions.setText
+import ch.rmy.android.framework.ui.BaseAdapter
 import ch.rmy.android.http_shortcuts.databinding.ListEmptyItemBinding
 import ch.rmy.android.http_shortcuts.databinding.ListItemVariableBinding
-import ch.rmy.android.http_shortcuts.extensions.setText
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 

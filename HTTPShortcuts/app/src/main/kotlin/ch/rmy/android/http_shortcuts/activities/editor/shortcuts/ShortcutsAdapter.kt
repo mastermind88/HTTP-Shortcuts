@@ -3,8 +3,8 @@ package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import ch.rmy.android.framework.ui.BaseAdapter
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseAdapter
 import ch.rmy.android.http_shortcuts.databinding.ListItemShortcutTriggerBinding
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder

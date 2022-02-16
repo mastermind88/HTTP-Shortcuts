@@ -1,9 +1,9 @@
 package ch.rmy.android.http_shortcuts.scripting.actions.types
 
+import ch.rmy.android.framework.extensions.truncate
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.exceptions.ActionException
-import ch.rmy.android.http_shortcuts.extensions.truncate
 import ch.rmy.android.http_shortcuts.scripting.ExecutionContext
 import io.reactivex.Completable
 

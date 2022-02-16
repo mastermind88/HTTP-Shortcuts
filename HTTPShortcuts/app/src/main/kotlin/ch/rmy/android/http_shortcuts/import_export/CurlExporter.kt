@@ -1,12 +1,12 @@
 package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
+import ch.rmy.android.framework.extensions.detachFromRealm
+import ch.rmy.android.framework.extensions.mapFor
+import ch.rmy.android.framework.extensions.mapIf
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.RequestBodyType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
-import ch.rmy.android.http_shortcuts.extensions.mapFor
-import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.http.HttpHeaders
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.android.http_shortcuts.variables.Variables.rawPlaceholdersToResolvedValues

@@ -1,17 +1,17 @@
 package ch.rmy.android.http_shortcuts.activities.variables.editor
 
 import android.app.Application
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.activities.variables.VariableTypeMappings
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 import ch.rmy.android.http_shortcuts.variables.Variables
 
 class VariableEditorViewModel(application: Application) : BaseViewModel<VariableEditorViewState>(application) {

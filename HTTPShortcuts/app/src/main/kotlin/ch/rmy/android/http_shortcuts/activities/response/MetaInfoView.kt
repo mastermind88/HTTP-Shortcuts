@@ -6,10 +6,10 @@ import android.text.SpannableStringBuilder
 import android.text.style.TypefaceSpan
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import ch.rmy.android.framework.extensions.layoutInflater
+import ch.rmy.android.framework.extensions.tryOrIgnore
+import ch.rmy.android.framework.extensions.visible
 import ch.rmy.android.http_shortcuts.databinding.ViewMetaInfoBinding
-import ch.rmy.android.http_shortcuts.extensions.layoutInflater
-import ch.rmy.android.http_shortcuts.extensions.tryOrIgnore
-import ch.rmy.android.http_shortcuts.extensions.visible
 
 class MetaInfoView @JvmOverloads constructor(
     context: Context,

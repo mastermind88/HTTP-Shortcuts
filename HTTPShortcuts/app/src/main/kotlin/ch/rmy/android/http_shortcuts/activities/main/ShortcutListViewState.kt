@@ -13,4 +13,7 @@ data class ShortcutListViewState(
 
     val isLongClickingEnabled
         get() = !isAppLocked && !isInMovingMode
+
+    val isEmptyStateVisible
+        get() = shortcuts.singleOrNull() is ShortcutListItem.EmptyState
 }

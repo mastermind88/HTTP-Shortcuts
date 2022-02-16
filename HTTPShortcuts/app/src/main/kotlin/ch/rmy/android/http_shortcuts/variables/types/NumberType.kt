@@ -2,9 +2,9 @@ package ch.rmy.android.http_shortcuts.variables.types
 
 import android.content.Context
 import android.text.InputType
+import ch.rmy.android.framework.extensions.mapIf
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.extensions.mapIf
 import io.reactivex.Single
 
 internal class NumberType : TextType() {

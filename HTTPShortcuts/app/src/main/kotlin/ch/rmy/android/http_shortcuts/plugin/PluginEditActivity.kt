@@ -3,11 +3,11 @@ package ch.rmy.android.http_shortcuts.plugin
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import ch.rmy.android.framework.extensions.startActivity
+import ch.rmy.android.framework.ui.Entrypoint
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.Entrypoint
 import ch.rmy.android.http_shortcuts.activities.main.MainActivity
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
-import ch.rmy.android.http_shortcuts.extensions.startActivity
 import com.joaomgcd.taskerpluginlibrary.config.TaskerPluginConfig
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInput
 import com.joaomgcd.taskerpluginlibrary.input.TaskerInputInfo

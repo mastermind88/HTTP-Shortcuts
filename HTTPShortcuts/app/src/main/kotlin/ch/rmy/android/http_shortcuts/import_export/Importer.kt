@@ -2,17 +2,17 @@ package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
 import android.net.Uri
+import ch.rmy.android.framework.extensions.isWebUrl
+import ch.rmy.android.framework.extensions.logInfo
+import ch.rmy.android.framework.utils.RxUtils
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.migration.ImportMigrator
 import ch.rmy.android.http_shortcuts.data.migration.ImportVersionMismatchException
-import ch.rmy.android.http_shortcuts.extensions.isWebUrl
-import ch.rmy.android.http_shortcuts.extensions.logInfo
 import ch.rmy.android.http_shortcuts.utils.FileUtil
 import ch.rmy.android.http_shortcuts.utils.GsonUtil
 import ch.rmy.android.http_shortcuts.utils.IconUtil
 import ch.rmy.android.http_shortcuts.utils.NoCloseInputStream
-import ch.rmy.android.http_shortcuts.utils.RxUtils
 import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException

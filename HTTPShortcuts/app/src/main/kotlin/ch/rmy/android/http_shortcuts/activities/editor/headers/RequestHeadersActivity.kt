@@ -3,17 +3,17 @@ package ch.rmy.android.http_shortcuts.activities.editor.headers
 import android.content.Context
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.ui.BaseIntentBuilder
+import ch.rmy.android.framework.utils.DragOrderingHelper
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.databinding.ActivityRequestHeadersBinding
 import ch.rmy.android.http_shortcuts.dialogs.KeyValueDialog
 import ch.rmy.android.http_shortcuts.extensions.applyTheme
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.observe
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
-import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
 
 class RequestHeadersActivity : BaseActivity() {

@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.activities.main
 
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
-import ch.rmy.android.http_shortcuts.utils.LauncherShortcut
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import ch.rmy.android.framework.utils.localization.Localizable
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
+import ch.rmy.android.http_shortcuts.data.dtos.LauncherShortcut
 
 abstract class MainEvent : ViewModelEvent() {
     object ShowCreationDialog : MainEvent()

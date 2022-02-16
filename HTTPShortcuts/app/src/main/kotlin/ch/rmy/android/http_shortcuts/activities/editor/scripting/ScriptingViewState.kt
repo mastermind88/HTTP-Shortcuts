@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.activities.editor.scripting
 
+import ch.rmy.android.framework.utils.localization.Localizable
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 data class ScriptingViewState(
     val shortcuts: List<Shortcut> = emptyList(),

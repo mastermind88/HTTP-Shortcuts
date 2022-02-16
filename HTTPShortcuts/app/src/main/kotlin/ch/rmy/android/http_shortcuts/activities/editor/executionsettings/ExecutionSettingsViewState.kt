@@ -1,7 +1,7 @@
 package ch.rmy.android.http_shortcuts.activities.editor.executionsettings
 
-import ch.rmy.android.http_shortcuts.utils.text.DurationLocalizable
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import ch.rmy.android.framework.utils.localization.DurationLocalizable
+import ch.rmy.android.framework.utils.localization.Localizable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

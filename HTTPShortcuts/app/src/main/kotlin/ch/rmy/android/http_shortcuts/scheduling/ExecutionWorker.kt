@@ -3,11 +3,11 @@ package ch.rmy.android.http_shortcuts.scheduling
 import android.content.Context
 import androidx.work.RxWorker
 import androidx.work.WorkerParameters
+import ch.rmy.android.framework.extensions.logException
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.pending_executions.PendingExecutionsRepository
 import ch.rmy.android.http_shortcuts.data.models.PendingExecution
-import ch.rmy.android.http_shortcuts.extensions.logException
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers

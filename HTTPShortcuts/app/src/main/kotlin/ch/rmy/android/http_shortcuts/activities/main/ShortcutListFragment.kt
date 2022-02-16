@@ -9,9 +9,20 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import ch.rmy.android.framework.extensions.addArguments
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.color
+import ch.rmy.android.framework.extensions.mapFor
+import ch.rmy.android.framework.extensions.mapIf
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.extensions.showToast
+import ch.rmy.android.framework.extensions.startActivity
+import ch.rmy.android.framework.ui.BaseFragment
+import ch.rmy.android.framework.utils.DragOrderingHelper
+import ch.rmy.android.framework.utils.localization.Localizable
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseFragment
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
@@ -19,20 +30,9 @@ import ch.rmy.android.http_shortcuts.databinding.FragmentListBinding
 import ch.rmy.android.http_shortcuts.dialogs.CurlExportDialog
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
 import ch.rmy.android.http_shortcuts.dialogs.ShortcutInfoDialog
-import ch.rmy.android.http_shortcuts.extensions.addArguments
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.color
-import ch.rmy.android.http_shortcuts.extensions.mapFor
-import ch.rmy.android.http_shortcuts.extensions.mapIf
-import ch.rmy.android.http_shortcuts.extensions.observe
-import ch.rmy.android.http_shortcuts.extensions.showToast
-import ch.rmy.android.http_shortcuts.extensions.startActivity
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.import_export.ExportUI
-import ch.rmy.android.http_shortcuts.utils.DragOrderingHelper
 import ch.rmy.android.http_shortcuts.utils.GridLayoutManager
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 class ShortcutListFragment : BaseFragment<FragmentListBinding>() {
 
@@ -119,6 +119,7 @@ class ShortcutListFragment : BaseFragment<FragmentListBinding>() {
             adapter.items = viewState.shortcuts
             adapter.isLongClickingEnabled = viewState.isLongClickingEnabled
             binding.shortcutList.alpha = if (viewState.isInMovingMode) 0.7f else 1f
+            (binding.shortcutList.layoutManager as? GridLayoutManager)?.setEmpty(viewState.isEmptyStateVisible)
             isDraggingEnabled = viewState.isDraggingEnabled
             updateBackground(viewState.background)
         }

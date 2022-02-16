@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.data.models
 
+import ch.rmy.android.framework.utils.UUIDUtils
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.utils.GsonUtil
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils
 import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey

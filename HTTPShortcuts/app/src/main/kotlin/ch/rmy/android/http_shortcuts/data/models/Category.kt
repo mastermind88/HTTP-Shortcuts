@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.data.models
 
+import ch.rmy.android.framework.utils.UUIDUtils.isUUID
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.isUUID
 import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey

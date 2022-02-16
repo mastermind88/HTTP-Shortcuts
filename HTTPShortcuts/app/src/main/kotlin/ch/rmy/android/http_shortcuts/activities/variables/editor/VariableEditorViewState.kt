@@ -1,6 +1,6 @@
 package ch.rmy.android.http_shortcuts.activities.variables.editor
 
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
+import ch.rmy.android.framework.utils.localization.Localizable
 
 data class VariableEditorViewState(
     val title: Localizable,

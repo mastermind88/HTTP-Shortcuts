@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.activities.editor.response
 
+import ch.rmy.android.framework.utils.localization.Localizable
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 data class ResponseViewState(
     val variables: List<Variable> = emptyList(),

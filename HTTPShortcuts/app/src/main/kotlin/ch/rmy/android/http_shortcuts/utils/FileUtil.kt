@@ -5,7 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
-import ch.rmy.android.http_shortcuts.extensions.tryOrLog
+import ch.rmy.android.framework.extensions.tryOrLog
 import java.io.BufferedWriter
 import java.io.File
 import java.io.OutputStreamWriter

@@ -2,6 +2,11 @@ package ch.rmy.android.http_shortcuts.import_export
 
 import android.content.Context
 import android.net.Uri
+import ch.rmy.android.framework.extensions.applyIf
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.mapFor
+import ch.rmy.android.framework.extensions.mapIf
+import ch.rmy.android.framework.extensions.safeRemoveIf
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.models.Base
@@ -13,11 +18,6 @@ import ch.rmy.android.http_shortcuts.data.models.Parameter
 import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.extensions.applyIf
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.mapFor
-import ch.rmy.android.http_shortcuts.extensions.mapIf
-import ch.rmy.android.http_shortcuts.extensions.safeRemoveIf
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 import ch.rmy.android.http_shortcuts.utils.FileUtil
 import ch.rmy.android.http_shortcuts.utils.GsonUtil

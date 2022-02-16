@@ -4,14 +4,14 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageButton
+import ch.rmy.android.framework.extensions.isDarkThemeEnabled
+import ch.rmy.android.framework.extensions.mapFor
+import ch.rmy.android.framework.extensions.mapIf
+import ch.rmy.android.framework.extensions.setTintCompat
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.variables.VariablesActivity
 import ch.rmy.android.http_shortcuts.activities.variables.editor.VariableEditorActivity
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.isDarkThemeEnabled
-import ch.rmy.android.http_shortcuts.extensions.mapFor
-import ch.rmy.android.http_shortcuts.extensions.mapIf
-import ch.rmy.android.http_shortcuts.extensions.setTintCompat
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 

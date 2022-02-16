@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.provider.MediaStore
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
+import ch.rmy.android.http_shortcuts.data.dtos.LauncherShortcut
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 
 object IntentUtil {

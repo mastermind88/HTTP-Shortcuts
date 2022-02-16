@@ -1,18 +1,18 @@
 package ch.rmy.android.http_shortcuts.activities.variables
 
 import android.app.Application
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.mapIf
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.Localizable
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.activities.variables.editor.VariableEditorActivity
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.data.models.Variable
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.mapIf
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.android.http_shortcuts.variables.Variables.KEY_MAX_LENGTH

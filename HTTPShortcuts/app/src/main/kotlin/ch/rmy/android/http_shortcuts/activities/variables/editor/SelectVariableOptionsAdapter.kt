@@ -3,7 +3,7 @@ package ch.rmy.android.http_shortcuts.activities.variables.editor
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import ch.rmy.android.http_shortcuts.activities.BaseAdapter
+import ch.rmy.android.framework.ui.BaseAdapter
 import ch.rmy.android.http_shortcuts.data.models.Option
 import ch.rmy.android.http_shortcuts.databinding.SelectOptionBinding
 

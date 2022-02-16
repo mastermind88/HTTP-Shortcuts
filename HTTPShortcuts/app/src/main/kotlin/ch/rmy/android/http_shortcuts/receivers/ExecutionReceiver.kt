@@ -3,8 +3,8 @@ package ch.rmy.android.http_shortcuts.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import ch.rmy.android.framework.extensions.startActivity
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
-import ch.rmy.android.http_shortcuts.extensions.startActivity
 
 class ExecutionReceiver : BroadcastReceiver() {
 

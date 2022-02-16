@@ -1,21 +1,22 @@
 package ch.rmy.android.http_shortcuts.data.domains.shortcuts
 
-import ch.rmy.android.http_shortcuts.data.BaseRepository
-import ch.rmy.android.http_shortcuts.data.RealmTransactionContext
+import ch.rmy.android.framework.data.BaseRepository
+import ch.rmy.android.framework.data.RealmTransactionContext
+import ch.rmy.android.framework.extensions.detachFromRealm
+import ch.rmy.android.framework.utils.UUIDUtils.newUUID
+import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getCategoryById
 import ch.rmy.android.http_shortcuts.data.domains.getShortcutById
 import ch.rmy.android.http_shortcuts.data.domains.getShortcutByNameOrId
 import ch.rmy.android.http_shortcuts.data.domains.getTemporaryShortcut
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.detachFromRealm
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
-class ShortcutRepository : BaseRepository() {
+class ShortcutRepository : BaseRepository(RealmFactory.getInstance()) {
 
     fun getShortcutById(shortcutId: String): Single<Shortcut> =
         query {

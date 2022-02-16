@@ -1,16 +1,16 @@
 package ch.rmy.android.http_shortcuts.activities.editor.shortcuts
 
 import android.app.Application
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.move
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholder
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getCodeFromTriggeredShortcutIds
 import ch.rmy.android.http_shortcuts.scripting.shortcuts.TriggerShortcutManager.getTriggeredShortcutIdsFromCode

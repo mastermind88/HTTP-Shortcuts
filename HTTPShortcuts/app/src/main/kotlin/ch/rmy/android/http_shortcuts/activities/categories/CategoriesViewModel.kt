@@ -3,20 +3,20 @@ package ch.rmy.android.http_shortcuts.activities.categories
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.context
+import ch.rmy.android.framework.extensions.move
+import ch.rmy.android.framework.extensions.toLocalizable
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.QuantityStringLocalizable
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.categories.CategoryRepository
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.move
-import ch.rmy.android.http_shortcuts.extensions.toLocalizable
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
 import ch.rmy.android.http_shortcuts.utils.LauncherShortcutManager
-import ch.rmy.android.http_shortcuts.utils.text.QuantityStringLocalizable
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 
 class CategoriesViewModel(application: Application) : BaseViewModel<CategoriesViewState>(application) {
 

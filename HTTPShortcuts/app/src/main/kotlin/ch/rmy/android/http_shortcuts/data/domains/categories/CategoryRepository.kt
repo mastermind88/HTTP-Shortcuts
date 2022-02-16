@@ -1,17 +1,18 @@
 package ch.rmy.android.http_shortcuts.data.domains.categories
 
-import ch.rmy.android.http_shortcuts.data.BaseRepository
+import ch.rmy.android.framework.data.BaseRepository
+import ch.rmy.android.framework.utils.UUIDUtils.newUUID
+import ch.rmy.android.http_shortcuts.data.RealmFactory
 import ch.rmy.android.http_shortcuts.data.domains.getBase
 import ch.rmy.android.http_shortcuts.data.domains.getCategoryById
 import ch.rmy.android.http_shortcuts.data.enums.CategoryBackgroundType
 import ch.rmy.android.http_shortcuts.data.enums.CategoryLayoutType
 import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 
-class CategoryRepository : BaseRepository() {
+class CategoryRepository : BaseRepository(RealmFactory.getInstance()) {
 
     fun getCategories(): Single<List<Category>> =
         queryItem {

@@ -1,8 +1,8 @@
 package ch.rmy.android.http_shortcuts.activities.variables
 
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
+import ch.rmy.android.framework.utils.localization.Localizable
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
-import ch.rmy.android.http_shortcuts.utils.text.Localizable
 
 abstract class VariablesEvent : ViewModelEvent() {
     data class ShowCreationDialog(

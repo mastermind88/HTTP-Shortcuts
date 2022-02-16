@@ -4,7 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.graphics.Color
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
+import ch.rmy.android.framework.ui.BaseViewModel
 import ch.rmy.android.http_shortcuts.icons.ShortcutIcon
 
 class WidgetSettingsViewModel(application: Application) : BaseViewModel<WidgetSettingsViewState>(application) {

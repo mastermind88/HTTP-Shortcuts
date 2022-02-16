@@ -1,18 +1,18 @@
 package ch.rmy.android.http_shortcuts.activities.editor.scripting
 
 import android.app.Application
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.TemporaryShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.ShortcutExecutionType
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.logException
 import ch.rmy.android.http_shortcuts.extensions.type
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 
 class ScriptingViewModel(application: Application) : BaseViewModel<ScriptingViewState>(application) {
 

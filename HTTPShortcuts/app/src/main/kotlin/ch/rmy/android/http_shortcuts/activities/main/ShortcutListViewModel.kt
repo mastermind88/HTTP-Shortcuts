@@ -2,8 +2,15 @@ package ch.rmy.android.http_shortcuts.activities.main
 
 import android.app.Application
 import android.net.Uri
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.context
+import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.extensions.move
+import ch.rmy.android.framework.extensions.toLocalizable
+import ch.rmy.android.framework.ui.BaseViewModel
+import ch.rmy.android.framework.utils.localization.StringResLocalizable
+import ch.rmy.android.framework.viewmodel.EventBridge
 import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.BaseViewModel
 import ch.rmy.android.http_shortcuts.activities.ExecuteActivity
 import ch.rmy.android.http_shortcuts.activities.editor.ShortcutEditorActivity
 import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
@@ -19,18 +26,12 @@ import ch.rmy.android.http_shortcuts.data.models.PendingExecution
 import ch.rmy.android.http_shortcuts.data.models.Shortcut
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.exceptions.CanceledByUserException
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.logException
-import ch.rmy.android.http_shortcuts.extensions.move
 import ch.rmy.android.http_shortcuts.extensions.toLauncherShortcut
-import ch.rmy.android.http_shortcuts.extensions.toLocalizable
 import ch.rmy.android.http_shortcuts.extensions.type
 import ch.rmy.android.http_shortcuts.import_export.CurlExporter
 import ch.rmy.android.http_shortcuts.import_export.ExportFormat
 import ch.rmy.android.http_shortcuts.scheduling.ExecutionScheduler
 import ch.rmy.android.http_shortcuts.utils.Settings
-import ch.rmy.android.http_shortcuts.utils.text.StringResLocalizable
 import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.curlcommand.CurlConstructor
@@ -44,7 +45,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutLi
     private val pendingExecutionsRepository = PendingExecutionsRepository()
     private val widgetsRepository = WidgetsRepository()
     private val curlExporter = CurlExporter(context)
-    private val eventBridge = ChildViewModelEventBridge()
+    private val eventBridge = EventBridge<ChildViewModelEvent>()
     private val executionScheduler = ExecutionScheduler(application)
 
     private val settings = Settings(context)

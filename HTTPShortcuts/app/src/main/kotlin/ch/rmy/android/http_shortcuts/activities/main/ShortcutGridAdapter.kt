@@ -4,10 +4,10 @@ import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import ch.rmy.android.framework.extensions.consume
+import ch.rmy.android.framework.extensions.context
+import ch.rmy.android.framework.extensions.visible
 import ch.rmy.android.http_shortcuts.databinding.GridItemShortcutBinding
-import ch.rmy.android.http_shortcuts.extensions.consume
-import ch.rmy.android.http_shortcuts.extensions.context
-import ch.rmy.android.http_shortcuts.extensions.visible
 
 class ShortcutGridAdapter : BaseShortcutAdapter() {
 

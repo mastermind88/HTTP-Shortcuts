@@ -5,13 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.consume
+import ch.rmy.android.framework.extensions.observeTextChanges
+import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
 import ch.rmy.android.http_shortcuts.databinding.ActivityCurlImportBinding
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.consume
-import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.curlcommand.CurlParser
 
 class CurlImportActivity : BaseActivity() {

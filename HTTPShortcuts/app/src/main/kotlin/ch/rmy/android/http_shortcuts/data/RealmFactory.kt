@@ -1,20 +1,20 @@
 package ch.rmy.android.http_shortcuts.data
 
 import android.content.Context
+import ch.rmy.android.framework.extensions.logInfo
+import ch.rmy.android.framework.utils.UUIDUtils.newUUID
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.migration.DatabaseMigration
 import ch.rmy.android.http_shortcuts.data.models.Base
 import ch.rmy.android.http_shortcuts.data.models.Category
-import ch.rmy.android.http_shortcuts.extensions.logInfo
-import ch.rmy.android.http_shortcuts.utils.UUIDUtils.newUUID
 import com.getkeepsafe.relinker.MissingLibraryException
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmList
 
-class RealmFactory private constructor() {
+class RealmFactory private constructor() : ch.rmy.android.framework.data.RealmFactory {
 
-    fun createRealm(): Realm = Realm.getInstance(configuration)
+    override fun createRealm(): Realm = Realm.getInstance(configuration)
 
     class RealmNotFoundException(e: Throwable) : Exception(e)
 

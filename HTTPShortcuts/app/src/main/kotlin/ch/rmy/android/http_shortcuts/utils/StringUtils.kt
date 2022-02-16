@@ -2,6 +2,7 @@ package ch.rmy.android.http_shortcuts.utils
 
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import ch.rmy.android.framework.utils.spans.OrderedListSpan
 
 object StringUtils {
 

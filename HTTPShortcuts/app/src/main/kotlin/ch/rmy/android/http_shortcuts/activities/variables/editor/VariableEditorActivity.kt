@@ -5,20 +5,20 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import ch.rmy.android.framework.extensions.attachTo
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.consume
+import ch.rmy.android.framework.extensions.focus
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.extensions.observeChecked
+import ch.rmy.android.framework.extensions.observeTextChanges
+import ch.rmy.android.framework.extensions.visible
+import ch.rmy.android.framework.ui.BaseIntentBuilder
+import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.ViewModelEvent
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariableEditorBinding
-import ch.rmy.android.http_shortcuts.extensions.attachTo
-import ch.rmy.android.http_shortcuts.extensions.bindViewModel
-import ch.rmy.android.http_shortcuts.extensions.consume
-import ch.rmy.android.http_shortcuts.extensions.focus
-import ch.rmy.android.http_shortcuts.extensions.observe
-import ch.rmy.android.http_shortcuts.extensions.observeChecked
-import ch.rmy.android.http_shortcuts.extensions.observeTextChanges
-import ch.rmy.android.http_shortcuts.extensions.visible
-import ch.rmy.android.http_shortcuts.utils.BaseIntentBuilder
 import ch.rmy.android.http_shortcuts.variables.types.VariableEditorFragment
 
 class VariableEditorActivity : BaseActivity() {
