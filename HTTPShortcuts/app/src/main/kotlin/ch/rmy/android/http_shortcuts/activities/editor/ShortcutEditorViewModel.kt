@@ -76,7 +76,6 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
         get() = initData.executionType
 
     override fun onInitializationStarted(data: InitData) {
-        super.onInitializationStarted(data)
         if (data.shortcutId == null) {
             temporaryShortcutRepository.createNewTemporaryShortcut(
                 initialIcon = Icons.getRandomInitialIcon(context),

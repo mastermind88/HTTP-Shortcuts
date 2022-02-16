@@ -87,6 +87,9 @@ abstract class BaseViewModel<InitData : Any, ViewState : Any>(application: Appli
     }
 
     protected fun finalizeInitialization(silent: Boolean = false) {
+        if (isInitialized) {
+            throw IllegalStateException("view model already initialized")
+        }
         currentViewState = initViewState()
         if (!silent) {
             viewStateSubject.onNext(currentViewState)
