@@ -20,6 +20,8 @@ class ScriptingViewModel(application: Application) : BaseViewModel<Unit, Scripti
     private val shortcutRepository = ShortcutRepository()
     private val variableRepository = VariableRepository()
 
+    var iconPickerShortcutPlaceholder: String? = null
+
     private lateinit var shortcut: Shortcut
 
     override fun initViewState() = ScriptingViewState()

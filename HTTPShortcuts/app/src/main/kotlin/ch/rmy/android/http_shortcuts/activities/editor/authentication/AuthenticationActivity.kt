@@ -85,7 +85,7 @@ class AuthenticationActivity : BaseActivity() {
             binding.inputPassword.rawString = viewState.password
             binding.inputToken.rawString = viewState.token
 
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

@@ -130,7 +130,7 @@ class RequestBodyActivity : BaseActivity() {
             binding.containerInputContentType.visible = viewState.contentTypeVisible
             binding.containerInputBodyContent.visible = viewState.bodyContentVisible
 
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

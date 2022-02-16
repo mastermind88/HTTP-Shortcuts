@@ -46,12 +46,7 @@ internal class SelectType : BaseVariableType() {
                     }
                     .showIfPossible()
             }
-            .flatMap { resolvedValue ->
-                variablesRepository.setVariableValue(variable.id, resolvedValue)
-                    .toSingle { resolvedValue }
-            }
-
-    override fun createEditorFragment() = SelectEditorFragment()
+            .storeValueIfNeeded(variable, variablesRepository)
 
     companion object {
         const val KEY_MULTI_SELECT = "multi_select"

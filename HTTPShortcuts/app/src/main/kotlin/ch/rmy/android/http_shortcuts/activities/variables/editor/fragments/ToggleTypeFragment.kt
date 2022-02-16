@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.variables.types
+package ch.rmy.android.http_shortcuts.activities.variables.editor.fragments
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,15 +18,14 @@ import ch.rmy.android.http_shortcuts.variables.VariableButton
 import ch.rmy.android.http_shortcuts.variables.VariableEditText
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils.bindVariableViews
 
-class ToggleEditorFragment : VariableEditorFragment<VariableEditorToggleBinding>() {
-
-    private var variable: Variable? = null
+class ToggleTypeFragment : BaseVariableTypeFragment<VariableEditorToggleBinding>() {
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         VariableEditorToggleBinding.inflate(inflater, container, false)
 
     private val optionsAdapter = ToggleVariableOptionsAdapter()
 
+    /*
     override fun setupViews() {
         optionsAdapter.variablePlaceholderProvider = variablePlaceholderProvider
 
@@ -113,4 +112,5 @@ class ToggleEditorFragment : VariableEditorFragment<VariableEditorToggleBinding>
         }
         return true
     }
+     */
 }

@@ -119,7 +119,7 @@ class AdvancedSettingsActivity : BaseActivity() {
             binding.inputProxyHost.rawString = viewState.proxyHost
             binding.inputProxyPort.setTextSafely(viewState.proxyPort)
             binding.inputSsid.setTextSafely(viewState.wifiSsid)
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

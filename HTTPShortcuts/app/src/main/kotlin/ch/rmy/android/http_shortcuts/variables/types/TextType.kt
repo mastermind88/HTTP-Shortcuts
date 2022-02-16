@@ -2,7 +2,6 @@ package ch.rmy.android.http_shortcuts.variables.types
 
 import android.content.Context
 import android.text.InputType
-import ch.rmy.android.framework.extensions.mapIf
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import io.reactivex.Single
@@ -17,17 +16,9 @@ open class TextType : BaseVariableType() {
                 .textInput(
                     prefill = variable.value?.takeIf { variable.rememberValue } ?: "",
                     inputType = InputType.TYPE_CLASS_TEXT or (if (variable.isMultiline) InputType.TYPE_TEXT_FLAG_MULTI_LINE else 0),
-                ) { input ->
-                    emitter.onSuccess(input)
-                }
+                    callback = emitter::onSuccess,
+                )
                 .showIfPossible()
         }
-            .mapIf(variable.rememberValue) {
-                flatMap { resolvedValue ->
-                    variablesRepository.setVariableValue(variable.id, resolvedValue)
-                        .toSingle { resolvedValue }
-                }
-            }
-
-    override fun createEditorFragment() = TextEditorFragment()
+            .storeValueIfNeeded(variable, variablesRepository)
 }

@@ -79,7 +79,7 @@ class RequestHeadersActivity : BaseActivity() {
         viewModel.viewState.observe(this) { viewState ->
             adapter.items = viewState.headerItems
             isDraggingEnabled = viewState.isDraggingEnabled
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

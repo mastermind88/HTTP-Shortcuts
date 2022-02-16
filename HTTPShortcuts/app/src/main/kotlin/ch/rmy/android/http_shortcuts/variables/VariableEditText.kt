@@ -10,6 +10,7 @@ import ch.rmy.android.framework.extensions.setTextSafely
 import ch.rmy.android.framework.extensions.showToast
 import ch.rmy.android.framework.utils.ViewUtil.getAttributeValue
 import ch.rmy.android.http_shortcuts.R
+import ch.rmy.android.http_shortcuts.data.dtos.VariablePlaceholder
 
 class VariableEditText @JvmOverloads constructor(
     context: Context,

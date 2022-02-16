@@ -40,13 +40,11 @@ class ScriptingActivity : BaseActivity() {
     private val shortcutPlaceholderProvider = ShortcutPlaceholderProvider()
     private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
-    private var iconPickerShortcutPlaceholder: String? = null
-
     private val iconPicker: IconPicker by lazy {
         IconPicker(this) { icon ->
             codeSnippetPicker.insertChangeIconSnippet(
-                iconPickerShortcutPlaceholder ?: return@IconPicker,
-                getCodeInsertion(lastActiveCodeInput ?: return@IconPicker),
+                viewModel.iconPickerShortcutPlaceholder ?: return@IconPicker,
+                getCodeInsertion(lastActiveCodeInput ?: binding.inputCodePrepare),
                 icon,
             )
         }
@@ -58,7 +56,7 @@ class ScriptingActivity : BaseActivity() {
             variablePlaceholderProvider,
             shortcutPlaceholderProvider,
         ) { shortcutPlaceholder ->
-            iconPickerShortcutPlaceholder = shortcutPlaceholder
+            viewModel.iconPickerShortcutPlaceholder = shortcutPlaceholder
             iconPicker.openIconSelectionDialog()
         }
     }
@@ -98,19 +96,19 @@ class ScriptingActivity : BaseActivity() {
         binding.inputCodePrepare
             .observeTextChanges()
             .subscribe {
-                viewModel.onCodePrepareChanged(binding.inputCodePrepare.text.toString())
+                viewModel.onCodePrepareChanged(it.toString())
             }
             .attachTo(destroyer)
         binding.inputCodeSuccess
             .observeTextChanges()
             .subscribe {
-                viewModel.onCodeSuccessChanged(binding.inputCodeSuccess.text.toString())
+                viewModel.onCodeSuccessChanged(it.toString())
             }
             .attachTo(destroyer)
         binding.inputCodeFailure
             .observeTextChanges()
             .subscribe {
-                viewModel.onCodeFailureChanged(binding.inputCodeFailure.text.toString())
+                viewModel.onCodeFailureChanged(it.toString())
             }
             .attachTo(destroyer)
     }
@@ -150,8 +148,8 @@ class ScriptingActivity : BaseActivity() {
             binding.inputCodeFailure.setTextSafely(processTextForView(viewState.codeOnFailure))
             binding.inputCodePrepare.setTextSafely(processTextForView(viewState.codeOnPrepare))
 
-            shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
-            variablePlaceholderProvider.variables = viewState.variables
+            shortcutPlaceholderProvider.applyShortcuts(viewState.shortcuts)
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }
@@ -207,7 +205,7 @@ class ScriptingActivity : BaseActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             codeSnippetPicker.handleRequestResult(
-                getCodeInsertion(lastActiveCodeInput ?: return),
+                getCodeInsertion(lastActiveCodeInput ?: binding.inputCodePrepare),
                 requestCode,
                 data,
             )

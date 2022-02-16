@@ -68,8 +68,6 @@ internal class TimeType : BaseVariableType() {
                 }
             }
 
-    override fun createEditorFragment() = TimeEditorFragment()
-
     companion object {
 
         const val KEY_FORMAT = "format"

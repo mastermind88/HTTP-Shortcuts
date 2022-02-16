@@ -1,9 +1,7 @@
 package ch.rmy.android.http_shortcuts.activities.settings.globalcode
 
 import android.app.Application
-import android.text.SpannableStringBuilder
 import ch.rmy.android.framework.extensions.attachTo
-import ch.rmy.android.framework.extensions.color
 import ch.rmy.android.framework.extensions.takeUnlessEmpty
 import ch.rmy.android.framework.viewmodel.BaseViewModel
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
@@ -12,11 +10,7 @@ import ch.rmy.android.http_shortcuts.data.domains.app.AppRepository
 import ch.rmy.android.http_shortcuts.data.domains.shortcuts.ShortcutRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutPlaceholderProvider
-import ch.rmy.android.http_shortcuts.scripting.shortcuts.ShortcutSpanManager
 import ch.rmy.android.http_shortcuts.utils.ExternalURLs
-import ch.rmy.android.http_shortcuts.variables.VariablePlaceholderProvider
-import ch.rmy.android.http_shortcuts.variables.Variables
 import io.reactivex.android.schedulers.AndroidSchedulers
 
 class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, GlobalScriptingViewState>(application) {
@@ -24,17 +18,6 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
     private val appRepository = AppRepository()
     private val shortcutRepository = ShortcutRepository()
     private val variableRepository = VariableRepository()
-
-    private var hasChanges = false
-
-    private val variablePlaceholderColor by lazy {
-        color(application, R.color.variable)
-    }
-    private val shortcutPlaceholderColor by lazy {
-        color(application, R.color.shortcut)
-    }
-    private val shortcutPlaceholderProvider = ShortcutPlaceholderProvider()
-    private val variablePlaceholderProvider = VariablePlaceholderProvider()
 
     private var shortcutsInitialized = false
     private var variablesInitialized = false
@@ -47,7 +30,6 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
     override fun onInitialized() {
         shortcutRepository.getObservableShortcuts()
             .subscribe { shortcuts ->
-                shortcutPlaceholderProvider.shortcuts = shortcuts
                 shortcutsInitialized = true
                 updateViewState {
                     copy(shortcuts = shortcuts)
@@ -57,7 +39,6 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
 
         variableRepository.getObservableVariables()
             .subscribe { variables ->
-                variablePlaceholderProvider.variables = variables
                 variablesInitialized = true
                 initializeGlobalCodeIfPossible()
                 updateViewState {
@@ -75,25 +56,10 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
         appRepository.getGlobalCode()
             .subscribe { globalCode ->
                 updateViewState {
-                    copy(globalCode = processTextForView(globalCode))
+                    copy(globalCode = globalCode)
                 }
             }
             .attachTo(destroyer)
-    }
-
-    private fun processTextForView(input: String): CharSequence {
-        val text = SpannableStringBuilder(input)
-        Variables.applyVariableFormattingToJS(
-            text,
-            variablePlaceholderProvider,
-            variablePlaceholderColor,
-        )
-        ShortcutSpanManager.applyShortcutFormattingToJS(
-            text,
-            shortcutPlaceholderProvider,
-            shortcutPlaceholderColor,
-        )
-        return text
     }
 
     fun onHelpButtonClicked() {
@@ -121,7 +87,7 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
     }
 
     fun onSaveButtonClicked() {
-        appRepository.setGlobalCode(currentViewState.globalCode.toString().trim().takeUnlessEmpty())
+        appRepository.setGlobalCode(currentViewState.globalCode.trim().takeUnlessEmpty())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 finish()
@@ -129,7 +95,7 @@ class GlobalScriptingViewModel(application: Application) : BaseViewModel<Unit, G
             .attachTo(destroyer)
     }
 
-    fun onGlobalCodeChanged(globalCode: CharSequence) {
+    fun onGlobalCodeChanged(globalCode: String) {
         if (!globalCodeInitialized) {
             return
         }

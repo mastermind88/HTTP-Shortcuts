@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.variables
+package ch.rmy.android.http_shortcuts.data.dtos
 
 data class VariablePlaceholder(
     val variableId: String,

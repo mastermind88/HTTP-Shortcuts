@@ -5,6 +5,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import androidx.annotation.ColorInt
 import ch.rmy.android.framework.utils.UUIDUtils.UUID_REGEX
+import ch.rmy.android.http_shortcuts.data.dtos.VariablePlaceholder
 import java.util.LinkedList
 import java.util.regex.Matcher
 import java.util.regex.Pattern

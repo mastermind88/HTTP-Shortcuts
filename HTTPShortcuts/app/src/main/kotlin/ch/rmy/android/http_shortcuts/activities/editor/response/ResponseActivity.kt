@@ -100,7 +100,7 @@ class ResponseActivity : BaseActivity() {
             binding.inputResponseUiType.visible = viewState.responseUiTypeVisible
             binding.containerInputSuccessMessage.visible = viewState.successMessageVisible
             binding.inputIncludeMetaInformation.visible = viewState.includeMetaInformationVisible
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

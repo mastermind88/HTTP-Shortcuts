@@ -71,6 +71,8 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
         title = StringResLocalizable(if (variableId == null) R.string.create_variable else R.string.edit_variable),
         subtitle = StringResLocalizable(VariableTypeMappings.getTypeName(variableType)),
         titleInputVisible = variableType.hasDialogTitle,
+        variableKey = variable.key,
+        variableTitle = variable.title,
         urlEncodeChecked = variable.urlEncode,
         jsonEncodeChecked = variable.jsonEncode,
         allowShareChecked = variable.isShareText,

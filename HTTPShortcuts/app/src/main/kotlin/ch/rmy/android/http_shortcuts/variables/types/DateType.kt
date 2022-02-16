@@ -78,8 +78,6 @@ internal class DateType : BaseVariableType() {
         return calendar
     }
 
-    override fun createEditorFragment() = DateEditorFragment()
-
     companion object {
 
         const val KEY_FORMAT = "format"

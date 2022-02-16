@@ -6,5 +6,5 @@ data class BasicRequestSettingsViewState(
     val methodVisible: Boolean = false,
     val method: String = "GET",
     val url: String = "",
-    val variables: List<Variable> = emptyList(),
+    val variables: List<Variable>? = null,
 )

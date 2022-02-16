@@ -9,9 +9,15 @@ import ch.rmy.android.http_shortcuts.R
 
 object VariableViewUtils {
 
-    fun bindVariableViews(editText: VariableEditText, button: VariableButton, variablePlaceholderProvider: VariablePlaceholderProvider): Destroyable {
+    fun bindVariableViews(
+        editText: VariableEditText,
+        button: VariableButton,
+        variablePlaceholderProvider: VariablePlaceholderProvider,
+        allowEditing: Boolean = true,
+    ): Destroyable {
         editText.variablePlaceholderProvider = variablePlaceholderProvider
         button.variablePlaceholderProvider = variablePlaceholderProvider
+        button.allowEditing = allowEditing
         return button.variableSource
             .subscribe(
                 { variablePlaceholder ->

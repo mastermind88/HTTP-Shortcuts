@@ -91,14 +91,14 @@ class VariablesViewModel(application: Application) : BaseViewModel<Unit, Variabl
 
     fun onCreationDialogVariableTypeSelected(variableType: VariableType) {
         openActivity(
-            VariableEditorActivity.IntentBuilder()
-                .variableType(variableType)
+            VariableEditorActivity.IntentBuilder(variableType)
         )
     }
 
     fun onEditOptionSelected(variableId: String) {
+        val variable = getVariable(variableId) ?: return
         openActivity(
-            VariableEditorActivity.IntentBuilder()
+            VariableEditorActivity.IntentBuilder(variable.variableType)
                 .variableId(variableId)
         )
     }

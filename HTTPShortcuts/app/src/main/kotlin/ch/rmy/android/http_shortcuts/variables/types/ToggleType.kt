@@ -19,6 +19,4 @@ internal class ToggleType : BaseVariableType() {
             variablesRepository.setVariableValue(variable.id, index.toString())
                 .toSingleDefault(options[index]!!.value)
         }
-
-    override fun createEditorFragment() = ToggleEditorFragment()
 }

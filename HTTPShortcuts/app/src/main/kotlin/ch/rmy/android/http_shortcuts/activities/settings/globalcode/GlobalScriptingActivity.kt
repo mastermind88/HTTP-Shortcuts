@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.activities.settings.globalcode
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -93,13 +94,28 @@ class GlobalScriptingActivity : BaseActivity() {
 
     private fun initViewModelBindings() {
         viewModel.viewState.observe(this) { viewState ->
-            binding.inputCode.setTextSafely(viewState.globalCode)
+            binding.inputCode.setTextSafely(processTextForView(viewState.globalCode))
             saveButton?.isVisible = viewState.saveButtonVisible
 
-            shortcutPlaceholderProvider.shortcuts = viewState.shortcuts
-            variablePlaceholderProvider.variables = viewState.variables
+            shortcutPlaceholderProvider.applyShortcuts(viewState.shortcuts)
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
+    }
+
+    private fun processTextForView(input: String): CharSequence {
+        val text = SpannableStringBuilder(input)
+        Variables.applyVariableFormattingToJS(
+            text,
+            variablePlaceholderProvider,
+            variablePlaceholderColor,
+        )
+        ShortcutSpanManager.applyShortcutFormattingToJS(
+            text,
+            shortcutPlaceholderProvider,
+            shortcutPlaceholderColor,
+        )
+        return text
     }
 
     private fun bindTextChangeListener(textView: EditText) {
@@ -107,7 +123,7 @@ class GlobalScriptingActivity : BaseActivity() {
             .throttleFirst(300, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                viewModel.onGlobalCodeChanged(it)
+                viewModel.onGlobalCodeChanged(it.toString())
             }
             .attachTo(destroyer)
     }

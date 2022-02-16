@@ -9,5 +9,5 @@ data class AuthenticationViewState(
     val username: String = "",
     val password: String = "",
     val token: String = "",
-    val variables: List<Variable> = emptyList(),
+    val variables: List<Variable>? = null,
 )

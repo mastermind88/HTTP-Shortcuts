@@ -5,7 +5,7 @@ import ch.rmy.android.http_shortcuts.data.models.ResponseHandling
 import ch.rmy.android.http_shortcuts.data.models.Variable
 
 data class ResponseViewState(
-    val variables: List<Variable> = emptyList(),
+    val variables: List<Variable>? = null,
     val successMessageHint: Localizable = Localizable.EMPTY,
     val responseUiType: String = "",
     val responseSuccessOutput: String = "",

@@ -68,7 +68,7 @@ class BasicRequestSettingsActivity : BaseActivity() {
             binding.inputMethod.selectedItem = viewState.method
             binding.inputUrl.rawString = viewState.url
 
-            variablePlaceholderProvider.variables = viewState.variables
+            viewState.variables?.let(variablePlaceholderProvider::applyVariables)
         }
         viewModel.events.observe(this, ::handleEvent)
     }

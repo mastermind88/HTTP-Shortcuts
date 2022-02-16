@@ -12,24 +12,35 @@ import ch.rmy.android.framework.extensions.focus
 import ch.rmy.android.framework.extensions.observe
 import ch.rmy.android.framework.extensions.observeChecked
 import ch.rmy.android.framework.extensions.observeTextChanges
+import ch.rmy.android.framework.extensions.setTextSafely
 import ch.rmy.android.framework.extensions.visible
 import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ColorTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ConstantTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.DateTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.SelectTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.SliderTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.TextTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.TimeTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ToggleTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.BaseVariableTypeFragment
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariableEditorBinding
-import ch.rmy.android.http_shortcuts.variables.types.VariableEditorFragment
 
 class VariableEditorActivity : BaseActivity() {
+
+    private val variableType by lazy {
+        VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE))
+    }
 
     private lateinit var defaultColor: ColorStateList
 
     private val viewModel: VariableEditorViewModel by bindViewModel()
 
     private lateinit var binding: ActivityVariableEditorBinding
-
-    private var fragment: VariableEditorFragment<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,15 +52,41 @@ class VariableEditorActivity : BaseActivity() {
         viewModel.initialize(
             VariableEditorViewModel.InitData(
                 variableId = intent.getStringExtra(EXTRA_VARIABLE_ID),
-                variableType = VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE)),
+                variableType = variableType,
             ),
         )
     }
 
     private fun initViews() {
-        // TODO
         defaultColor = binding.inputVariableKey.textColors
+
+        initVariableTypeFragment()
     }
+
+    private fun initVariableTypeFragment() {
+        val tag = "variable_edit_fragment_${variableType.type}"
+        val fragment = supportFragmentManager.findFragmentByTag(tag) as? BaseVariableTypeFragment<*>
+            ?: createEditorFragment()
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.variable_type_fragment_container, fragment, tag)
+            .commitAllowingStateLoss()
+    }
+
+    private fun createEditorFragment(): BaseVariableTypeFragment<*> =
+        when (variableType) {
+            VariableType.CONSTANT -> ConstantTypeFragment()
+            VariableType.TEXT -> TextTypeFragment()
+            VariableType.NUMBER -> TextTypeFragment()
+            VariableType.PASSWORD -> TextTypeFragment()
+            VariableType.SELECT -> SelectTypeFragment()
+            VariableType.TOGGLE -> ToggleTypeFragment()
+            VariableType.COLOR -> ColorTypeFragment()
+            VariableType.DATE -> DateTypeFragment()
+            VariableType.TIME -> TimeTypeFragment()
+            VariableType.SLIDER -> SliderTypeFragment()
+        }
 
     private fun initUserInputBindings() {
         binding.inputVariableKey
@@ -88,8 +125,8 @@ class VariableEditorActivity : BaseActivity() {
             setSubtitle(viewState.subtitle)
             binding.dialogTitleContainer.visible = viewState.titleInputVisible
             binding.inputVariableKey.error = viewState.variableKeyInputError?.localize(context)
-            binding.inputVariableKey.setText(viewState.variableKey)
-            binding.inputVariableTitle.setText(viewState.variableTitle)
+            binding.inputVariableKey.setTextSafely(viewState.variableKey)
+            binding.inputVariableTitle.setTextSafely(viewState.variableTitle)
             if (viewState.variableKeyErrorHighlighting) {
                 binding.inputVariableKey.setTextColor(Color.RED)
             } else {
@@ -109,27 +146,6 @@ class VariableEditorActivity : BaseActivity() {
         }
     }
 
-    /*
-
-    private fun updateTypeEditor() {
-        compileVariable()
-        val variableType = VariableTypeFactory.getType(variable.type)
-
-        fragment = variableType.getEditorFragment(supportFragmentManager)
-
-        fragment?.let { fragment ->
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.variable_type_fragment_container, fragment, variableType.tag)
-                .commitAllowingStateLoss()
-        }
-    }
-
-    fun onFragmentStarted() {
-        fragment?.updateViews(variable)
-    }
-     */
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.variable_editor_activity_menu, menu)
         return super.onCreateOptionsMenu(menu)
@@ -146,18 +162,9 @@ class VariableEditorActivity : BaseActivity() {
         viewModel.onBackPressed()
     }
 
-    private fun compileVariable() {
-        // TODO: fragment?.compileIntoVariable(variable)
-    }
+    class IntentBuilder(type: VariableType) : BaseIntentBuilder(VariableEditorActivity::class.java) {
 
-    override fun onStop() {
-        super.onStop()
-        compileVariable()
-    }
-
-    class IntentBuilder : BaseIntentBuilder(VariableEditorActivity::class.java) {
-
-        fun variableType(type: VariableType) = also {
+        init {
             intent.putExtra(EXTRA_VARIABLE_TYPE, type.type)
         }
 

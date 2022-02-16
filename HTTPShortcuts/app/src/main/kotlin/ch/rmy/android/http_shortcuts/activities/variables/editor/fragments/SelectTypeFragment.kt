@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.variables.types
+package ch.rmy.android.http_shortcuts.activities.variables.editor.fragments
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,13 +18,14 @@ import ch.rmy.android.http_shortcuts.extensions.showMessageDialog
 import ch.rmy.android.http_shortcuts.variables.VariableButton
 import ch.rmy.android.http_shortcuts.variables.VariableEditText
 import ch.rmy.android.http_shortcuts.variables.VariableViewUtils.bindVariableViews
+import ch.rmy.android.http_shortcuts.variables.types.SelectType
 
-class SelectEditorFragment : VariableEditorFragment<VariableEditorSelectBinding>() {
-
-    private var variable: Variable? = null
+class SelectTypeFragment : BaseVariableTypeFragment<VariableEditorSelectBinding>() {
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         VariableEditorSelectBinding.inflate(inflater, container, false)
+
+    /*
 
     private val optionsAdapter = SelectVariableOptionsAdapter()
 
@@ -134,4 +135,5 @@ class SelectEditorFragment : VariableEditorFragment<VariableEditorSelectBinding>
             SelectType.KEY_SEPARATOR to binding.inputSeparator.text.toString(),
         )
     }
+     */
 }

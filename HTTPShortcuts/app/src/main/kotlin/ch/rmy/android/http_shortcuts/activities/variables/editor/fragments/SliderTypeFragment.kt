@@ -1,4 +1,4 @@
-package ch.rmy.android.http_shortcuts.variables.types
+package ch.rmy.android.http_shortcuts.activities.variables.editor.fragments
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,12 +6,14 @@ import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.models.Variable
 import ch.rmy.android.http_shortcuts.databinding.VariableEditorSliderBinding
 import ch.rmy.android.http_shortcuts.extensions.showMessageDialog
+import ch.rmy.android.http_shortcuts.variables.types.SliderType
 
-class SliderEditorFragment : VariableEditorFragment<VariableEditorSliderBinding>() {
+class SliderTypeFragment : BaseVariableTypeFragment<VariableEditorSliderBinding>() {
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         VariableEditorSliderBinding.inflate(inflater, container, false)
 
+    /*
     override fun updateViews(variable: Variable) {
         binding.inputRememberValue.isChecked = variable.rememberValue
 
@@ -46,4 +48,5 @@ class SliderEditorFragment : VariableEditorFragment<VariableEditorSliderBinding>
 
     private val stepSize
         get() = binding.inputSliderStep.text.toString().toIntOrNull() ?: SliderType.DEFAULT_STEP
+     */
 }

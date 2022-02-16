@@ -100,7 +100,7 @@ class ShortcutEditorViewModel(application: Application) : BaseViewModel<Shortcut
 
         variableRepository.getObservableVariables()
             .subscribe { variables ->
-                variablePlaceholderProvider.variables = variables
+                variablePlaceholderProvider.applyVariables(variables)
             }
             .attachTo(destroyer)
     }

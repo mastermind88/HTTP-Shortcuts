@@ -6,7 +6,7 @@ import ch.rmy.android.http_shortcuts.data.models.Variable
 data class RequestBodyViewState(
     val requestBodyType: RequestBodyType = RequestBodyType.CUSTOM_TEXT,
     val parameters: List<ParameterListItem> = emptyList(),
-    val variables: List<Variable> = emptyList(),
+    val variables: List<Variable>? = null,
     val contentType: String = "",
     val bodyContent: String = "",
 ) {

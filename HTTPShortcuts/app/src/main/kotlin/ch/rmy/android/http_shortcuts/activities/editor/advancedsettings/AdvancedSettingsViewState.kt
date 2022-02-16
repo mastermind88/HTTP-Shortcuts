@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 data class AdvancedSettingsViewState(
-    val variables: List<Variable> = emptyList(),
+    val variables: List<Variable>? = null,
     val followRedirects: Boolean = false,
     val acceptAllCertificates: Boolean = false,
     val acceptCookies: Boolean = false,

@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.SeekBar
 import android.widget.TextView
-import ch.rmy.android.framework.extensions.mapIf
 import ch.rmy.android.framework.utils.SimpleOnSeekBarChangeListener
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
@@ -50,20 +49,13 @@ internal class SliderType : BaseVariableType() {
                 .negative(R.string.dialog_cancel)
                 .showIfPossible()
         }
-            .mapIf(variable.rememberValue) {
-                flatMap { resolvedValue ->
-                    variablesRepository.setVariableValue(variable.id, resolvedValue)
-                        .toSingle { resolvedValue }
-                }
-            }
+            .storeValueIfNeeded(variable, variablesRepository)
 
     private fun findSliderMax(variable: Variable): Int =
         ((findMax(variable) - findMin(variable)) / findStep(variable))
 
     private fun findValue(slider: SeekBar, variable: Variable): String =
         (slider.progress * findStep(variable) + findMin(variable)).toString()
-
-    override fun createEditorFragment() = SliderEditorFragment()
 
     companion object {
 
