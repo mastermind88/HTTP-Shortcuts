@@ -44,6 +44,6 @@ class Application : android.app.Application(), WithRealm {
         super.attachBaseContext(LocaleHelper.applyLocale(base))
     }
 
-    val context: Context
+    private val context: Context
         get() = this
 }
