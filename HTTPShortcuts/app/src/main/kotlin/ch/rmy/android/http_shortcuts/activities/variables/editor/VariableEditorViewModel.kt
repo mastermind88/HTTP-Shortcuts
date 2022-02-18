@@ -3,11 +3,14 @@ package ch.rmy.android.http_shortcuts.activities.variables.editor
 import android.app.Application
 import ch.rmy.android.framework.extensions.attachTo
 import ch.rmy.android.framework.extensions.logException
+import ch.rmy.android.framework.utils.UUIDUtils.newUUID
 import ch.rmy.android.framework.utils.localization.StringResLocalizable
 import ch.rmy.android.framework.viewmodel.BaseViewModel
+import ch.rmy.android.framework.viewmodel.EventBridge
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.variables.VariableTypeMappings
+import ch.rmy.android.http_shortcuts.data.domains.variables.TemporaryVariableRepository
 import ch.rmy.android.http_shortcuts.data.domains.variables.VariableRepository
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.data.models.Variable
@@ -17,13 +20,21 @@ import ch.rmy.android.http_shortcuts.variables.Variables
 class VariableEditorViewModel(application: Application) : BaseViewModel<VariableEditorViewModel.InitData, VariableEditorViewState>(application) {
 
     private val variableRepository = VariableRepository()
+    private val temporaryVariableRepository = TemporaryVariableRepository()
+
+    private val outgoingEventBridge = EventBridge(VariableEditorToVariableTypeEvent::class.java)
+    private val incomingEventBridge = EventBridge(VariableTypeToVariableEditorEvent::class.java)
 
     private val variableId: String?
         get() = initData.variableId
     private val variableType: VariableType
         get() = initData.variableType
 
+    private var oldVariable: Variable? = null
     private lateinit var variable: Variable
+    private lateinit var variableKeysInUse: List<String>
+
+    private var isSaving = false
 
     private var variableKeyInputErrorRes: Int? = null
         set(value) {
@@ -38,32 +49,64 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
             }
         }
 
-    data class InitData(
-        val variableId: String?,
-        val variableType: VariableType,
-    )
-
     override fun onInitializationStarted(data: InitData) {
         if (data.variableId != null) {
             variableRepository
-                .getVariableById(data.variableId)
-                .subscribe(
-                    { variable ->
-                        this.variable = variable
-                        finalizeInitialization()
-                    },
-                    ::handleInitializationError,
-                )
-                .attachTo(destroyer)
+                .createTemporaryVariableFromVariable(data.variableId)
         } else {
-            this.variable = Variable()
-            finalizeInitialization()
+            temporaryVariableRepository.createNewTemporaryVariable(variableType)
         }
+            .subscribe(
+                ::onTemporaryVariableCreated,
+                ::handleInitializationError,
+            )
+            .attachTo(destroyer)
+
+        variableRepository.getObservableVariables()
+            .subscribe { variables ->
+                variableKeysInUse = variables
+                    .filter { variable ->
+                        variable.id != variableId
+                    }
+                    .map { variable ->
+                        variable.key
+                    }
+            }
+            .attachTo(destroyer)
+
+        incomingEventBridge.events
+            .subscribe { event ->
+                when (event) {
+                    is VariableTypeToVariableEditorEvent.Validated -> onValidated(event.valid)
+                }
+            }
+            .attachTo(destroyer)
+    }
+
+    private fun onTemporaryVariableCreated() {
+        temporaryVariableRepository.getObservableTemporaryVariable()
+            .subscribe { variable ->
+                this.variable = variable
+                if (oldVariable == null) {
+                    oldVariable = variable
+                    finalizeInitialization(silent = true)
+                }
+                updateViewState {
+                    copy(
+                        variableKey = variable.key,
+                        variableTitle = variable.title,
+                        urlEncodeChecked = variable.urlEncode,
+                        jsonEncodeChecked = variable.jsonEncode,
+                        allowShareChecked = variable.isShareText,
+                    )
+                }
+            }
+            .attachTo(destroyer)
     }
 
     private fun handleInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 
@@ -71,30 +114,47 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
         title = StringResLocalizable(if (variableId == null) R.string.create_variable else R.string.edit_variable),
         subtitle = StringResLocalizable(VariableTypeMappings.getTypeName(variableType)),
         titleInputVisible = variableType.hasDialogTitle,
-        variableKey = variable.key,
-        variableTitle = variable.title,
-        urlEncodeChecked = variable.urlEncode,
-        jsonEncodeChecked = variable.jsonEncode,
-        allowShareChecked = variable.isShareText,
     )
 
     fun onSaveButtonClicked() {
-        TODO("Not yet implemented")
-        // trySave()
+        trySave()
     }
 
     private fun trySave() {
-        // TODO
-        /*
-        compileVariable()
-        if (validate()) {
-            viewModel.save()
-                .subscribe {
-                    finish()
-                }
-                .attachTo(destroyer)
+        if (isSaving) {
+            return
         }
-         */
+        isSaving = true
+        waitForOperationsToFinish {
+            if (validate()) {
+                outgoingEventBridge.submit(VariableEditorToVariableTypeEvent.Validate)
+            } else {
+                isSaving = false
+            }
+        }
+    }
+
+    private fun onValidated(valid: Boolean) {
+        if (valid) {
+            save()
+        } else {
+            isSaving = false
+        }
+    }
+
+    private fun save() {
+        variableRepository.copyTemporaryVariableToVariable(variableId ?: newUUID())
+            .subscribe(
+                {
+                    finish()
+                },
+                { error ->
+                    isSaving = false
+                    showSnackbar(R.string.error_generic)
+                    logException(error)
+                },
+            )
+            .attachTo(destroyer)
     }
 
     private fun validate(): Boolean {
@@ -102,22 +162,15 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
             variableKeyInputErrorRes = R.string.validation_key_non_empty
             return false
         }
-        if (isKeyAlreadyInUse()) {
+        if (!Variables.isValidVariableKey(variable.key)) {
+            variableKeyInputErrorRes = R.string.warning_invalid_variable_key
+            return false
+        }
+        if (variableKeysInUse.contains(variable.key)) {
             variableKeyInputErrorRes = R.string.validation_key_already_exists
             return false
         }
-        return true // TODO: fragment == null || fragment!!.validate()
-    }
-
-    private fun isKeyAlreadyInUse(): Boolean {
-        // TODO
-        /*
-        val otherVariable = variableRepository.getVariableByKey(variable.key)
-            .blockingGet()
-            .firstOrNull() // FIXME
-        return otherVariable != null && otherVariable.id != variable.id
-         */
-        return false
+        return true
     }
 
     fun onBackPressed() {
@@ -128,8 +181,8 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
         }
     }
 
-    private fun hasChanges() = false // TODO
-    // fun hasChanges(): Boolean = !variable.isSameAs(getDetachedVariable(variableId))
+    private fun hasChanges() =
+        oldVariable?.isSameAs(variable) == false
 
     private fun showDiscardDialog() {
         emitEvent(
@@ -149,6 +202,9 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
 
     fun onVariableKeyChanged(key: String) {
         updateVariableKey(key)
+        performOperation(
+            temporaryVariableRepository.setKey(key)
+        )
     }
 
     private fun updateVariableKey(key: String) {
@@ -160,32 +216,31 @@ class VariableEditorViewModel(application: Application) : BaseViewModel<Variable
     }
 
     fun onVariableTitleChanged(title: String) {
-        updateViewState {
-            copy(variableTitle = title)
-        }
+        performOperation(
+            temporaryVariableRepository.setTitle(title)
+        )
     }
 
     fun onUrlEncodeChanged(enabled: Boolean) {
-        updateViewState {
-            copy(urlEncodeChecked = enabled)
-        }
+        performOperation(
+            temporaryVariableRepository.setUrlEncode(enabled)
+        )
     }
 
     fun onJsonEncodeChanged(enabled: Boolean) {
-        updateViewState {
-            copy(jsonEncodeChecked = enabled)
-        }
+        performOperation(
+            temporaryVariableRepository.setJsonEncode(enabled)
+        )
     }
 
     fun onAllowShareChanged(enabled: Boolean) {
-        updateViewState {
-            copy(allowShareChecked = enabled)
-        }
+        performOperation(
+            temporaryVariableRepository.setShareText(enabled)
+        )
     }
 
-    /*
-    fun save(): Completable =
-        variableRepository.saveVariable(variable)
-            .observeOn(AndroidSchedulers.mainThread())
-     */
+    data class InitData(
+        val variableId: String?,
+        val variableType: VariableType,
+    )
 }

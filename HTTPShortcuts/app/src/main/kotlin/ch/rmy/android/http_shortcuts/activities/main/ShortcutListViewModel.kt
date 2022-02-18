@@ -36,7 +36,7 @@ import ch.rmy.android.http_shortcuts.variables.VariableManager
 import ch.rmy.android.http_shortcuts.variables.VariableResolver
 import ch.rmy.curlcommand.CurlConstructor
 
-class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, ShortcutListViewState>(application) {
+class ShortcutListViewModel(application: Application) : BaseViewModel<ShortcutListViewModel.InitData, ShortcutListViewState>(application) {
 
     private val appRepository = AppRepository()
     private val shortcutRepository = ShortcutRepository()
@@ -45,14 +45,10 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, Shor
     private val pendingExecutionsRepository = PendingExecutionsRepository()
     private val widgetsRepository = WidgetsRepository()
     private val curlExporter = CurlExporter(context)
-    private val eventBridge = EventBridge<ChildViewModelEvent>()
+    private val eventBridge = EventBridge(ChildViewModelEvent::class.java)
     private val executionScheduler = ExecutionScheduler(application)
-
     private val settings = Settings(context)
 
-    private var initializeCalled: Boolean = false
-    private var viewModelInitialized: Boolean = false
-    private lateinit var selectionMode: SelectionMode
     private lateinit var category: Category
     private var categories: List<Category> = emptyList()
     private var variables: List<Variable> = emptyList()
@@ -60,19 +56,13 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, Shor
 
     private var exportingShortcutId: String? = null
 
-    fun initialize(categoryId: String, selectionMode: SelectionMode) {
-        if (initializeCalled) {
-            return
-        }
-        initializeCalled = true
-        this.selectionMode = selectionMode
-        categoryRepository.getObservableCategory(categoryId)
+    override fun onInitializationStarted(data: InitData) {
+        categoryRepository.getObservableCategory(data.categoryId)
             .subscribe { category ->
                 this.category = category
-                if (viewModelInitialized) {
+                if (isInitialized) {
                     recomputeShortcutList()
                 } else {
-                    viewModelInitialized = true
                     finalizeInitialization()
                 }
             }
@@ -188,7 +178,7 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, Shor
             showSnackbar(R.string.message_moving_enabled)
             return
         }
-        if (selectionMode != SelectionMode.NORMAL) {
+        if (initData.selectionMode != SelectionMode.NORMAL) {
             selectShortcut(shortcutId)
             return
         }
@@ -422,4 +412,9 @@ class ShortcutListViewModel(application: Application) : BaseViewModel<Unit, Shor
             eventBridge.submit(ChildViewModelEvent.RemoveShortcutFromHomeScreen(shortcut.toLauncherShortcut()))
         }
     }
+
+    data class InitData(
+        val categoryId: String,
+        val selectionMode: SelectionMode,
+    )
 }

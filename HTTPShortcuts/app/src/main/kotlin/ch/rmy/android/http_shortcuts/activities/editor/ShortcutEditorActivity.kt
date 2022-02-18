@@ -41,9 +41,6 @@ class ShortcutEditorActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initViews()
-        initUserInputBindings()
-        initViewModelBindings()
         viewModel.initialize(
             ShortcutEditorViewModel.InitData(
                 categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID),
@@ -54,6 +51,9 @@ class ShortcutEditorActivity : BaseActivity() {
                     ?: ShortcutExecutionType.APP,
             ),
         )
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
     }
 
     private fun initViews() {

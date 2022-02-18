@@ -59,7 +59,7 @@ class BasicRequestSettingsViewModel(application: Application) : BaseViewModel<Un
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

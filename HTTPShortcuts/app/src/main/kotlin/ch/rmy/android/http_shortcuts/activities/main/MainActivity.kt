@@ -67,15 +67,14 @@ class MainActivity : BaseActivity(), Entrypoint {
             return
         }
 
-        initViews()
-        initUserInputBindings()
-        initViewModelBindings()
-
         viewModel.initialize(
             selectionMode = SelectionMode.determineMode(intent.action),
             initialCategoryId = intent?.extras?.getString(EXTRA_CATEGORY_ID),
             widgetId = WidgetManager.getWidgetIdFromIntent(intent),
         )
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
     }
 
     private fun initViews() {

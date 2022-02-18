@@ -102,7 +102,7 @@ class ShortcutRepository : BaseRepository(RealmFactory.getInstance()) {
                 val category = getCategoryById(categoryId)
                     .findFirst()
                     ?: return@commitTransaction
-                category.shortcuts.add(shortcut)
+                category.shortcuts.add(shortcut) // TODO: Do we need to check if the shortcut is already in the list?
             }
         }
 
@@ -118,9 +118,7 @@ class ShortcutRepository : BaseRepository(RealmFactory.getInstance()) {
                 }
                 responseHandling?.id = newUUID()
             }
-            .let {
-                copyOrUpdate(it)
-            }
+            .let(::copyOrUpdate)
 
     fun deleteShortcut(shortcutId: String) =
         commitTransaction {

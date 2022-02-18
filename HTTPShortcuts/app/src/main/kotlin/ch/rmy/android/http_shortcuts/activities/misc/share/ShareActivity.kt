@@ -33,11 +33,11 @@ class ShareActivity : BaseActivity(), Entrypoint {
             return
         }
 
-        initViewModelBindings()
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
         cacheFiles(getFileUris()) { cachedFiles ->
             viewModel.initialize(ShareViewModel.InitData(text, cachedFiles))
         }
+        initViewModelBindings()
     }
 
     private fun initViewModelBindings() {

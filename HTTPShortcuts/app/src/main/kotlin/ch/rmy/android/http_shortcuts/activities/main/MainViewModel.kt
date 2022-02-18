@@ -40,7 +40,7 @@ class MainViewModel(application: Application) : BaseViewModel<Unit, MainViewStat
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val appRepository: AppRepository = AppRepository()
     private val launcherShortcutMapper: LauncherShortcutMapper = LauncherShortcutMapper()
-    private val eventBridge = EventBridge<ChildViewModelEvent>()
+    private val eventBridge = EventBridge(ChildViewModelEvent::class.java)
 
     private var initialized = false
     private var initialCategoryId: String? = null
@@ -70,6 +70,8 @@ class MainViewModel(application: Application) : BaseViewModel<Unit, MainViewStat
         selectionMode = selectionMode,
         categoryTabItems = getCategoryTabItems(),
         activeCategoryId = initialCategoryId ?: categories.first().id,
+        isInMovingMode = false,
+        isLocked = false,
     )
 
     private fun getCategoryTabItems() =

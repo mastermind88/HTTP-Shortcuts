@@ -24,16 +24,16 @@ class AuthenticationActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityAuthenticationBinding.inflate(layoutInflater))
-        setTitle(R.string.section_authentication)
 
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityAuthenticationBinding.inflate(layoutInflater))
+        setTitle(R.string.section_authentication)
         binding.inputAuthenticationMethod.setItemsFromPairs(
             AUTHENTICATION_METHODS.map {
                 it.first to getString(it.second)

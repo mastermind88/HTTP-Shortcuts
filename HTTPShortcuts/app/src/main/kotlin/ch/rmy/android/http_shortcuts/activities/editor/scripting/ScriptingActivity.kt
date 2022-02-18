@@ -73,12 +73,15 @@ class ScriptingActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityScriptingBinding.inflate(layoutInflater))
-        setTitle(R.string.label_scripting)
-
+        viewModel.initialize()
+        initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
+    }
+
+    private fun initViews() {
+        binding = applyBinding(ActivityScriptingBinding.inflate(layoutInflater))
+        setTitle(R.string.label_scripting)
     }
 
     private fun initUserInputBindings() {

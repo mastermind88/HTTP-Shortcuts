@@ -50,7 +50,7 @@ class RequestHeadersViewModel(application: Application) : BaseViewModel<Unit, Re
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

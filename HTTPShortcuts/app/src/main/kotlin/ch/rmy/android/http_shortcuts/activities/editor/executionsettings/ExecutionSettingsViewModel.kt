@@ -44,7 +44,7 @@ class ExecutionSettingsViewModel(application: Application) : BaseViewModel<Unit,
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

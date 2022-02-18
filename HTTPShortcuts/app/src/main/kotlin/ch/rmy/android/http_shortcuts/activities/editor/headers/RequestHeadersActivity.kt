@@ -28,16 +28,16 @@ class RequestHeadersActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityRequestHeadersBinding.inflate(layoutInflater))
-        setTitle(R.string.section_request_headers)
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityRequestHeadersBinding.inflate(layoutInflater))
+        setTitle(R.string.section_request_headers)
+
         adapter = RequestHeadersAdapter(variablePlaceholderProvider)
 
         val manager = LinearLayoutManager(context)

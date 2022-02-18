@@ -20,8 +20,8 @@ class VoiceActivity : BaseActivity(), Entrypoint {
             return
         }
 
-        initViewModelBindings()
         viewModel.initialize(VoiceViewModel.InitData(intent.getStringExtra(SearchManager.QUERY)))
+        initViewModelBindings()
     }
 
     private fun initViewModelBindings() {

@@ -27,16 +27,16 @@ class BasicRequestSettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityBasicRequestSettingsBinding.inflate(layoutInflater))
-        setTitle(R.string.section_basic_request)
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityBasicRequestSettingsBinding.inflate(layoutInflater))
+        setTitle(R.string.section_basic_request)
+
         binding.inputMethod.setItemsFromPairs(
             METHODS.map {
                 it to it

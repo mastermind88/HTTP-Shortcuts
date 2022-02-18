@@ -32,16 +32,16 @@ class TriggerShortcutsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityTriggerShortcutsBinding.inflate(layoutInflater))
-        setTitle(R.string.label_trigger_shortcuts)
-
+        viewModel.initialize(TriggerShortcutsViewModel.InitData(currentShortcutId))
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize(TriggerShortcutsViewModel.InitData(currentShortcutId))
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityTriggerShortcutsBinding.inflate(layoutInflater))
+        setTitle(R.string.label_trigger_shortcuts)
+
         binding.buttonAddTrigger.applyTheme(themeHelper)
 
         val manager = LinearLayoutManager(context)

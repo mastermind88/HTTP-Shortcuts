@@ -1,29 +1,41 @@
-package ch.rmy.android.http_shortcuts.activities.variables.editor.fragments
+package ch.rmy.android.http_shortcuts.activities.variables.editor.types.select
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.recyclerview.widget.LinearLayoutManager
-import ch.rmy.android.framework.extensions.attachTo
-import ch.rmy.android.framework.extensions.mapIfNotNull
-import ch.rmy.android.framework.utils.Destroyer
-import ch.rmy.android.framework.utils.DragOrderingHelper
-import ch.rmy.android.http_shortcuts.R
-import ch.rmy.android.http_shortcuts.activities.variables.editor.SelectVariableOptionsAdapter
-import ch.rmy.android.http_shortcuts.data.models.Option
-import ch.rmy.android.http_shortcuts.data.models.Variable
+import ch.rmy.android.framework.extensions.bindViewModel
+import ch.rmy.android.framework.extensions.initialize
+import ch.rmy.android.framework.extensions.observe
+import ch.rmy.android.framework.ui.BaseFragment
 import ch.rmy.android.http_shortcuts.databinding.VariableEditorSelectBinding
-import ch.rmy.android.http_shortcuts.dialogs.DialogBuilder
-import ch.rmy.android.http_shortcuts.extensions.showMessageDialog
-import ch.rmy.android.http_shortcuts.variables.VariableButton
-import ch.rmy.android.http_shortcuts.variables.VariableEditText
-import ch.rmy.android.http_shortcuts.variables.VariableViewUtils.bindVariableViews
-import ch.rmy.android.http_shortcuts.variables.types.SelectType
 
-class SelectTypeFragment : BaseVariableTypeFragment<VariableEditorSelectBinding>() {
+class SelectTypeFragment : BaseFragment<VariableEditorSelectBinding>() {
+
+    private val viewModel: SelectTypeViewModel by bindViewModel()
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?) =
         VariableEditorSelectBinding.inflate(inflater, container, false)
+
+    override fun setupViews() {
+        viewModel.initialize()
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+    }
+
+    private fun initViews() {
+
+    }
+
+    private fun initUserInputBindings() {
+
+    }
+
+    private fun initViewModelBindings() {
+        viewModel.viewState.observe(this) { viewState ->
+
+        }
+        viewModel.events.observe(this, ::handleEvent)
+    }
 
     /*
 

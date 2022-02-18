@@ -515,9 +515,9 @@
     <!-- Feature label for sharing text into the app, to be used in a specific variable for a configured shortcut -->
     <string name="action_send_to">Send to…</string>
     <!-- Error message, shown when user tries to share text into the app but there are no shortcuts configured to receive it -->
-    <string name="error_not_suitable_shortcuts">No suitable shortcuts found.\n\nTo use this feature you need to have at least one shortcut that uses a variable that allows \'Share …\', or a shortcut that has a file parameter or uses a file as its request body.\n\nClick the help button in the variable section for more information.</string>
+    <string name="error_not_suitable_shortcuts">No suitable shortcuts found.\n\nTo use this feature you need to have at least one shortcut that uses a variable that allows receiving the shared text as its value, or a shortcut that has a file parameter or uses a file as its request body.\n\nClick the help button in the variable section for more information.</string>
     <!-- Checkbox label, for enabling a variable to accept data sent to it via Android's "Share" feature -->
-    <string name="label_allow_share_into">Allow \'Share …\'</string>
+    <string name="label_allow_share_into">Allow Receiving Value from Share Dialog</string>
     <!-- Instructions shown below the "Allow Share…" checkbox in the variable editor -->
     <string name="message_allow_share_instructions">Enabling this allows you to share text from other apps and use that shared text as the temporary value for this variable.</string>
     <!-- Instructions shown below the "JSON encode" checkbox in the variable editor -->
@@ -631,7 +631,7 @@
     <!-- Section subtitle in shortcut editor: "Scripting", allows to write scripts for advanced workflows. Code can run before or after shortcut execution -->
     <string name="label_scripting_subtitle">Run JavaScript code before or after execution</string>
     <!-- Section title in shortcut editor: "Shortcuts", allows to choose which shortcuts to trigger -->
-    <string name="label_trigger_shortcuts">Trigger Shortcuts</string>
+    <string name="label_trigger_shortcuts">Shortcuts</string>
     <!-- Section subtitle in shortcut editor: "Shortcuts", allows to choose which shortcuts to trigger. No shortcuts set. -->
     <string name="label_trigger_shortcuts_subtitle_none">No shortcuts selected yet</string>
     <plurals name="label_trigger_shortcuts_subtitle">

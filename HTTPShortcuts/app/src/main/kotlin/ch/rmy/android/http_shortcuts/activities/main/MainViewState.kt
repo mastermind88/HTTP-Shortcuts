@@ -9,11 +9,11 @@ import ch.rmy.android.http_shortcuts.data.enums.SelectionMode
 
 data class MainViewState(
     val toolbarTitle: String = "",
-    val isLocked: Boolean = false,
-    val categoryTabItems: List<CategoryTabItem> = emptyList(),
-    val selectionMode: SelectionMode = SelectionMode.NORMAL,
-    val isInMovingMode: Boolean = false,
-    val activeCategoryId: String = "",
+    val isLocked: Boolean,
+    val categoryTabItems: List<CategoryTabItem>,
+    val selectionMode: SelectionMode,
+    val isInMovingMode: Boolean,
+    val activeCategoryId: String,
 ) {
     val isRegularMenuButtonVisible
         get() = !isLocked

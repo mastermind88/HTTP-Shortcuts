@@ -72,6 +72,9 @@ abstract class BaseViewModel<InitData : Any, ViewState : Any>(application: Appli
 
     fun initialize(data: InitData) {
         if (isInitializationStarted) {
+            if (data != initData) {
+                logException(IllegalStateException("cannot re-initialize view model with different data"))
+            }
             return
         }
         this.initData = data
@@ -108,15 +111,13 @@ abstract class BaseViewModel<InitData : Any, ViewState : Any>(application: Appli
             .compose(progressMonitor.transformer())
             .subscribe(
                 onComplete,
-                { error ->
-                    logException(error)
-                    showError()
-                },
+                ::handleUnexpectedError,
             )
             .attachTo(destroyer)
     }
 
-    private fun showError() {
+    protected fun handleUnexpectedError(error: Throwable) {
+        logException(error)
         showSnackbar(R.string.error_generic, long = true)
     }
 

@@ -62,7 +62,7 @@ class RequestBodyViewModel(application: Application) : BaseViewModel<Unit, Reque
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

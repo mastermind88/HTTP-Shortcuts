@@ -31,16 +31,17 @@ class CategoriesActivity : BaseActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityCategoriesBinding.inflate(layoutInflater))
-        setTitle(R.string.title_categories)
 
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityCategoriesBinding.inflate(layoutInflater))
+        setTitle(R.string.title_categories)
+
         adapter = CategoryAdapter()
 
         val manager = LinearLayoutManager(context)

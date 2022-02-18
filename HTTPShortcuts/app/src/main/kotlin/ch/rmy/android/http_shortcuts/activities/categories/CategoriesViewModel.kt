@@ -23,17 +23,23 @@ class CategoriesViewModel(application: Application) : BaseViewModel<Unit, Catego
     private val categoryRepository: CategoryRepository = CategoryRepository()
     private val launcherShortcutManager = LauncherShortcutManager
 
-    private lateinit var categories: Set<Category>
+    private lateinit var categories: List<Category>
     private var hasChanged = false
 
-    override fun initViewState() = CategoriesViewState()
+    override fun initViewState() = CategoriesViewState(
+        categories = mapCategories(categories),
+    )
 
-    override fun onInitialized() {
+    override fun onInitializationStarted(data: Unit) {
         categoryRepository.getObservableCategories()
             .subscribe { categories ->
-                this.categories = categories.toSet()
-                updateViewState {
-                    copy(categories = mapCategories(categories))
+                this.categories = categories
+                if (isInitialized) {
+                    updateViewState {
+                        copy(categories = mapCategories(categories))
+                    }
+                } else {
+                    finalizeInitialization()
                 }
             }
             .attachTo(destroyer)

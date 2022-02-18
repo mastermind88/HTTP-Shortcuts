@@ -83,6 +83,7 @@ internal class DateType : BaseVariableType() {
         const val KEY_FORMAT = "format"
         const val DEFAULT_FORMAT = "yyyy-MM-dd"
 
-        private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        private val DATE_FORMAT
+            get() = SimpleDateFormat(DEFAULT_FORMAT, Locale.US)
     }
 }

@@ -52,12 +52,16 @@ class AdvancedSettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityAdvancedSettingsBinding.inflate(layoutInflater))
-        setTitle(R.string.label_advanced_technical_settings)
 
+        viewModel.initialize()
+        initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
+    }
+
+    private fun initViews() {
+        binding = applyBinding(ActivityAdvancedSettingsBinding.inflate(layoutInflater))
+        setTitle(R.string.label_advanced_technical_settings)
     }
 
     private fun initUserInputBindings() {

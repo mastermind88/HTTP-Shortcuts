@@ -59,7 +59,7 @@ class ResponseViewModel(application: Application) : BaseViewModel<Unit, Response
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

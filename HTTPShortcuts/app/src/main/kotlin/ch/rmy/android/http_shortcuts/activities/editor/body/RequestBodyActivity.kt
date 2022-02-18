@@ -36,16 +36,16 @@ class RequestBodyActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityRequestBodyBinding.inflate(layoutInflater))
-        setTitle(R.string.section_request_body)
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityRequestBodyBinding.inflate(layoutInflater))
+        setTitle(R.string.section_request_body)
+
         binding.inputRequestBodyType.setItemsFromPairs(
             REQUEST_BODY_TYPES.map {
                 it.first.type to getString(it.second)

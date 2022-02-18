@@ -1,22 +1,22 @@
 package ch.rmy.android.framework.viewmodel
 
-import ch.rmy.android.framework.utils.Optional
 import com.victorrendina.rxqueue2.QueueSubject
 import io.reactivex.Observable
 
-class EventBridge<T : Any> {
+class EventBridge<T : Any>(private val clazz: Class<T>) {
 
     fun submit(event: T) {
-        eventSubject.onNext(event)
+        getSubject(clazz).onNext(event)
     }
 
     val events: Observable<T> =
-        eventSubject
-            .map { Optional(it as? T) }
-            .filter { it.value != null }
-            .map { it.value!! }
+        getSubject(clazz)
 
     companion object {
-        private val eventSubject = QueueSubject.create<Any>()
+
+        private val subjectsMapSingleton = mutableMapOf<Class<*>, QueueSubject<*>>()
+
+        private fun <T> getSubject(clazz: Class<T>): QueueSubject<T> =
+            subjectsMapSingleton.getOrPut(clazz) { QueueSubject.create<T>() } as QueueSubject<T>
     }
 }

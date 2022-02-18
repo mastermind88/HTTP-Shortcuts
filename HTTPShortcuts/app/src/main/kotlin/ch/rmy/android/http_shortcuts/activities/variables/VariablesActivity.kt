@@ -30,16 +30,16 @@ class VariablesActivity : BaseActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityVariablesBinding.inflate(layoutInflater))
-        setTitle(R.string.title_variables)
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityVariablesBinding.inflate(layoutInflater))
+        setTitle(R.string.title_variables)
+
         adapter = VariableAdapter()
         val manager = LinearLayoutManager(context)
         binding.variableList.layoutManager = manager

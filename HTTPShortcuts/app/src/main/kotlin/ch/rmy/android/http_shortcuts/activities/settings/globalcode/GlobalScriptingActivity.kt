@@ -67,15 +67,14 @@ class GlobalScriptingActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityGlobalScriptingBinding.inflate(layoutInflater))
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityGlobalScriptingBinding.inflate(layoutInflater))
         binding.buttonAddCodeSnippet.setOnClickListener {
             codeSnippetPicker.showCodeSnippetPicker(getCodeInsertion(), includeResponseOptions = false)
         }

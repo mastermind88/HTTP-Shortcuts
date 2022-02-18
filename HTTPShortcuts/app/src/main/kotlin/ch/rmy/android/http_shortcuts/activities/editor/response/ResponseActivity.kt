@@ -26,16 +26,16 @@ class ResponseActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityResponseBinding.inflate(layoutInflater))
-        setTitle(R.string.label_response_handling)
-
+        viewModel.initialize()
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityResponseBinding.inflate(layoutInflater))
+        setTitle(R.string.label_response_handling)
+
         binding.inputResponseUiType.setItemsFromPairs(
             UI_TYPES.map {
                 it.first to getString(it.second)

@@ -49,6 +49,11 @@ fun RealmContext.getVariableByKeyOrId(keyOrId: String): RealmQuery<Variable> =
         .or()
         .equalTo(Variable.FIELD_ID, keyOrId)
 
+fun RealmContext.getTemporaryVariable(): RealmQuery<Variable> =
+    realmInstance
+        .where<Variable>()
+        .equalTo(Variable.FIELD_ID, Variable.TEMPORARY_ID)
+
 fun RealmContext.getPendingExecutions(shortcutId: String? = null, waitForNetwork: Boolean? = null): RealmQuery<PendingExecution> =
     realmInstance
         .where<PendingExecution>()

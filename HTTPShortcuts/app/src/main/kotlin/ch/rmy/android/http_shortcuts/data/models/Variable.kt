@@ -3,6 +3,7 @@ package ch.rmy.android.http_shortcuts.data.models
 import ch.rmy.android.framework.utils.UUIDUtils
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.utils.GsonUtil
+import ch.rmy.android.http_shortcuts.variables.Variables
 import io.realm.RealmList
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
@@ -22,16 +23,21 @@ open class Variable(
     var urlEncode: Boolean = false,
     var jsonEncode: Boolean = false,
 
-    var data: String? = null,
-
     var flags: Int = 0,
 
     @Required
     var title: String = "",
+    variableType: VariableType = VariableType.CONSTANT,
 ) : RealmObject() {
 
     @Required
     var type: String = VariableType.CONSTANT.type
+
+    init {
+        type = variableType.type
+    }
+
+    private var data: String? = null
 
     var variableType: VariableType
         get() = VariableType.parse(type)
@@ -94,12 +100,18 @@ open class Variable(
             throw IllegalArgumentException("Invalid variable ID found, must be UUID: $id")
         }
 
+        if (!Variables.isValidVariableKey(key)) {
+            throw IllegalArgumentException("Invalid variable key: $key")
+        }
+
         if (VariableType.values().none { it.type == type }) {
             throw IllegalArgumentException("Invalid variable type: $type")
         }
     }
 
     companion object {
+
+        const val TEMPORARY_ID: String = "0"
 
         const val FIELD_ID = "id"
         const val FIELD_KEY = "key"

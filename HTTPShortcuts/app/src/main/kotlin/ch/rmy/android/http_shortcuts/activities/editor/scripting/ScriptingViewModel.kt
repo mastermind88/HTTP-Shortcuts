@@ -69,7 +69,7 @@ class ScriptingViewModel(application: Application) : BaseViewModel<Unit, Scripti
 
     private fun onInitializationError(error: Throwable) {
         // TODO: Handle error better
-        logException(error)
+        handleUnexpectedError(error)
         finish()
     }
 

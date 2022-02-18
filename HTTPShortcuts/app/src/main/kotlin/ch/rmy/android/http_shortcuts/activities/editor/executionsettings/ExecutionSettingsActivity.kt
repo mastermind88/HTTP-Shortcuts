@@ -32,12 +32,15 @@ class ExecutionSettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityExecutionSettingsBinding.inflate(layoutInflater))
-        setTitle(R.string.label_execution_settings)
-
+        viewModel.initialize()
+        initViews()
         initUserInputBindings()
         initViewModelBindings()
-        viewModel.initialize()
+    }
+
+    private fun initViews() {
+        binding = applyBinding(ActivityExecutionSettingsBinding.inflate(layoutInflater))
+        setTitle(R.string.label_execution_settings)
     }
 
     private fun initUserInputBindings() {

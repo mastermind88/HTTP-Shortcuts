@@ -26,11 +26,6 @@ class WidgetSettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityWidgetSettingsBinding.inflate(layoutInflater))
-        setTitle(R.string.title_configure_widget)
-
-        initUserInputBindings()
-        initViewModelBindings()
         viewModel.initialize(
             WidgetSettingsViewModel.InitData(
                 shortcutId = intent.getStringExtra(EXTRA_SHORTCUT_ID)!!,
@@ -38,6 +33,14 @@ class WidgetSettingsActivity : BaseActivity() {
                 shortcutIcon = ShortcutIcon.fromName(intent.getStringExtra(EXTRA_SHORTCUT_ICON)!!),
             ),
         )
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
+    }
+
+    private fun initViews() {
+        binding = applyBinding(ActivityWidgetSettingsBinding.inflate(layoutInflater))
+        setTitle(R.string.title_configure_widget)
     }
 
     private fun initUserInputBindings() {

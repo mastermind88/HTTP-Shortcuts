@@ -72,11 +72,10 @@ class ShortcutListFragment : BaseFragment<FragmentListBinding>() {
         FragmentListBinding.inflate(inflater, container, false)
 
     override fun setupViews() {
+        viewModel.initialize(ShortcutListViewModel.InitData(categoryId, selectionMode))
         initViews()
         initUserInputBindings()
         initViewModelBindings()
-
-        viewModel.initialize(categoryId, selectionMode)
     }
 
     private fun initViews() {

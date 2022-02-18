@@ -14,25 +14,28 @@ import ch.rmy.android.framework.extensions.observeChecked
 import ch.rmy.android.framework.extensions.observeTextChanges
 import ch.rmy.android.framework.extensions.setTextSafely
 import ch.rmy.android.framework.extensions.visible
+import ch.rmy.android.framework.ui.BaseFragment
 import ch.rmy.android.framework.ui.BaseIntentBuilder
 import ch.rmy.android.framework.viewmodel.ViewModelEvent
 import ch.rmy.android.http_shortcuts.R
 import ch.rmy.android.http_shortcuts.activities.BaseActivity
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ColorTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ConstantTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.DateTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.SelectTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.SliderTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.TextTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.TimeTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.ToggleTypeFragment
-import ch.rmy.android.http_shortcuts.activities.variables.editor.fragments.BaseVariableTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.color.ColorTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.constant.ConstantTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.date.DateTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.select.SelectTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.slider.SliderTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.text.TextTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.time.TimeTypeFragment
+import ch.rmy.android.http_shortcuts.activities.variables.editor.types.toggle.ToggleTypeFragment
 import ch.rmy.android.http_shortcuts.data.enums.VariableType
 import ch.rmy.android.http_shortcuts.databinding.ActivityVariableEditorBinding
 
 class VariableEditorActivity : BaseActivity() {
 
-    private val variableType by lazy {
+    private val variableId: String? by lazy {
+        intent.getStringExtra(EXTRA_VARIABLE_ID)
+    }
+    private val variableType: VariableType by lazy {
         VariableType.parse(intent.getStringExtra(EXTRA_VARIABLE_TYPE))
     }
 
@@ -44,20 +47,20 @@ class VariableEditorActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = applyBinding(ActivityVariableEditorBinding.inflate(layoutInflater))
-
-        initViews()
-        initUserInputBindings()
-        initViewModelBindings()
         viewModel.initialize(
             VariableEditorViewModel.InitData(
-                variableId = intent.getStringExtra(EXTRA_VARIABLE_ID),
+                variableId = variableId,
                 variableType = variableType,
             ),
         )
+        initViews()
+        initUserInputBindings()
+        initViewModelBindings()
     }
 
     private fun initViews() {
+        binding = applyBinding(ActivityVariableEditorBinding.inflate(layoutInflater))
+
         defaultColor = binding.inputVariableKey.textColors
 
         initVariableTypeFragment()
@@ -65,7 +68,7 @@ class VariableEditorActivity : BaseActivity() {
 
     private fun initVariableTypeFragment() {
         val tag = "variable_edit_fragment_${variableType.type}"
-        val fragment = supportFragmentManager.findFragmentByTag(tag) as? BaseVariableTypeFragment<*>
+        val fragment = supportFragmentManager.findFragmentByTag(tag) as? BaseFragment<*>
             ?: createEditorFragment()
 
         supportFragmentManager
@@ -74,9 +77,9 @@ class VariableEditorActivity : BaseActivity() {
             .commitAllowingStateLoss()
     }
 
-    private fun createEditorFragment(): BaseVariableTypeFragment<*> =
+    private fun createEditorFragment(): BaseFragment<*> =
         when (variableType) {
-            VariableType.CONSTANT -> ConstantTypeFragment()
+            VariableType.CONSTANT -> ConstantTypeFragment.create(variableId)
             VariableType.TEXT -> TextTypeFragment()
             VariableType.NUMBER -> TextTypeFragment()
             VariableType.PASSWORD -> TextTypeFragment()
